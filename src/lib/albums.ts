@@ -63,7 +63,9 @@ function listImageFiles(dir: string): string[] {
 }
 
 function urlFor(...segments: string[]): string {
-  return "/" + segments.map(encodeURIComponent).join("/");
+  // Deliberately unencoded: next/image's built-in loader encodeURIComponent's
+  // the whole src itself, so a pre-encoded path here would get double-encoded.
+  return "/" + segments.join("/");
 }
 
 export function getAlbums(): Album[] {

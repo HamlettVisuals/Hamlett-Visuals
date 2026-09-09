@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { getAlbums } from "@/lib/albums";
 
@@ -33,13 +34,15 @@ export default function Gallery() {
                 href={`/gallery/${album.slug}`}
                 className="group flex flex-col gap-3 rounded-lg border border-zinc-200 p-4 transition-colors hover:border-zinc-400 dark:border-zinc-800 dark:hover:border-zinc-600"
               >
-                <div className="flex h-32 items-center justify-center overflow-hidden rounded-md bg-zinc-200 text-sm text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400">
+                <div className="relative flex h-32 items-center justify-center overflow-hidden rounded-md bg-zinc-200 text-sm text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400">
                   {coverPhoto ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
+                    <Image
                       src={coverPhoto.url}
                       alt=""
-                      className="h-full w-full object-cover"
+                      fill
+                      quality={90}
+                      sizes="(max-width: 640px) 100vw, 33vw"
+                      className="object-cover"
                     />
                   ) : (
                     "No photos yet"

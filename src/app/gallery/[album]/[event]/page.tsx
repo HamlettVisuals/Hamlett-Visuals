@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getAlbums, getAlbumBySlug, getEventBySlug } from "@/lib/albums";
+import PhotoGrid from "@/components/Gallery/PhotoGrid";
 
 export function generateStaticParams() {
   return getAlbums().flatMap((album) =>
@@ -47,21 +48,7 @@ export default async function EventPage({
           No photos yet in this event.
         </p>
       ) : (
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
-          {event.photos.map((photo) => (
-            <div
-              key={photo.filename}
-              className="aspect-square overflow-hidden rounded-md bg-zinc-200 dark:bg-zinc-800"
-            >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={photo.url}
-                alt={`${event.name} photo`}
-                className="h-full w-full object-cover"
-              />
-            </div>
-          ))}
-        </div>
+        <PhotoGrid photos={event.photos} eventName={event.name} />
       )}
     </div>
   );
