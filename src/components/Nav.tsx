@@ -1,10 +1,14 @@
 import Link from "next/link";
 
+// Single-page site: most nav items are anchors into the homepage sections;
+// booking and testimonials are their own routed pages. Plain placeholder markup.
 const links = [
-  { href: "/", label: "Home" },
-  { href: "/about", label: "About" },
-  { href: "/gallery", label: "Gallery" },
-  { href: "/contact", label: "Contact" },
+  { href: "/#categories", label: "Portfolio" },
+  { href: "/#about", label: "About" },
+  { href: "/#offers", label: "Pricing" },
+  { href: "/#instagram", label: "Instagram" },
+  { href: "/testimonials", label: "Testimonials" },
+  { href: "/booking", label: "Book" },
 ];
 
 export default function Nav() {
@@ -14,7 +18,7 @@ export default function Nav() {
         <Link href="/" className="font-semibold tracking-tight">
           Hamlet Visuals
         </Link>
-        <ul className="flex gap-6 text-sm">
+        <ul className="flex flex-wrap gap-4 text-sm">
           {links.map((link) => (
             <li key={link.href}>
               <Link
