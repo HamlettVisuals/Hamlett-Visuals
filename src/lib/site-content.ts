@@ -131,10 +131,56 @@ export const testimonialsTeaser: Testimonial[] = [
   { quote: "Placeholder testimonial quote two.", author: "Client B" },
 ];
 
-// Rotating hero images — placeholder array. Uses existing files in /public so
-// they resolve; real hero images replace these in the design pass.
-export const heroImages: string[] = [
-  "/window.svg",
-  "/globe.svg",
-  "/file.svg",
-];
+// --- Hero filmstrip ------------------------------------------------------------
+// The homepage hero is a cross-category filmstrip: it shows exactly ONE
+// representative image per category and crossfades between them in the order the
+// `categories` array declares (Weddings → Races → Portraits → Real Estate /
+// Construction → repeat). Slug, display name and order come straight from
+// `categories` so the hero can never drift out of sync with the portfolio; only
+// the image path and its alt text are hero-specific and live here.
+//
+// TODO: swap each placeholder in `/public/hero/*.svg` for a real representative
+// photo per category (e.g. `/hero/weddings.jpg`). Keep it to ONE image per
+// category, and rewrite each `alt` to describe what that specific photo shows.
+
+export type HeroSlide = {
+  categorySlug: string;
+  category: string;
+  src: string;
+  alt: string;
+};
+
+const heroImageByCategory: Record<string, { src: string; alt: string }> = {
+  weddings: {
+    src: "/hero/weddings.svg",
+    alt: "A newly married couple sharing their first dance as guests look on.",
+  },
+  races: {
+    src: "/hero/races.svg",
+    alt: "Runners rounding the final bend of a road race at full effort.",
+  },
+  portraits: {
+    src: "/hero/portraits.svg",
+    alt: "A person in soft window light, caught mid-laugh during a portrait session.",
+  },
+  "real-estate-construction": {
+    src: "/hero/real-estate-construction.svg",
+    alt: "A modern house exterior photographed at dusk with the interior lights on.",
+  },
+};
+
+export const heroSlides: HeroSlide[] = categories.map((category) => {
+  const image = heroImageByCategory[category.slug];
+  if (!image) {
+    throw new Error(
+      `No hero image configured for category "${category.slug}". ` +
+        "Add an entry to heroImageByCategory in src/lib/site-content.ts.",
+    );
+  }
+  return {
+    categorySlug: category.slug,
+    category: category.name,
+    src: image.src,
+    alt: image.alt,
+  };
+});
