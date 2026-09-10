@@ -205,6 +205,53 @@
   }
   .link:hover { text-decoration-color: var(--color-accent); }
 
+  /* Link chip: the pill links stacked under the About bio (Backstage,
+     Testimonials). A deliberate exception to the no-radius rule — the fully
+     rounded pill matches the reference layout — but flat in every other
+     respect: one hairline border, no fill, no shadow, no gradient. Layout is a
+     3-track grid: leading icon / (small-caps label + title) / trailing arrow.
+     Hover warms the border hairline → taupe, the same move .link makes on its
+     underline; nothing translates or lifts (DESIGN.md → Motion). */
+  .link-chip {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 0.875rem;
+    padding: 0.8125rem 1.125rem;
+    border: 1px solid var(--color-hairline);
+    border-radius: 999px;
+    transition: border-color 150ms var(--ease-standard);
+  }
+  .link-chip:hover,
+  .link-chip:focus-visible { border-color: var(--color-accent); }
+
+  .link-chip-icon {
+    display: flex;
+    align-items: center;
+    color: var(--color-muted);
+  }
+  .link-chip-icon svg { width: 1rem; height: 1rem; }
+
+  .link-chip-label {
+    display: block;
+    font-size: var(--text-caption);
+    line-height: 1.35;
+    font-variant-caps: all-small-caps;
+    letter-spacing: 0.045em;
+    color: var(--color-muted);
+  }
+  .link-chip-title {
+    display: block;
+    font-size: var(--text-body);
+    line-height: 1.35;
+    font-weight: 500;
+    color: var(--color-ink);
+  }
+  .link-chip-arrow {
+    color: var(--color-muted);
+    font-size: 1rem;
+  }
+
   /* Section rhythm: opt-in helpers for the design pass. */
   .section { padding-block: var(--spacing-section); }
   .section + .section { border-top: 1px solid var(--color-hairline); }

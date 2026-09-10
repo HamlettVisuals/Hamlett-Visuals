@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="1000" viewBox="0 0 800 1000" role="img" aria-label="Placeholder portrait of the photographer behind Hamlet Visuals">
+  <rect width="800" height="1000" fill="#6b5d4f"/>
+  <rect x="32" y="32" width="736" height="936" fill="none" stroke="#f4efe9" stroke-opacity="0.4" stroke-width="2"/>
+  <text x="400" y="486" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="48" fill="#faf9f6" fill-opacity="0.9">Portrait</text>
+  <text x="400" y="536" text-anchor="middle" font-family="system-ui, sans-serif" font-size="20" letter-spacing="8" fill="#faf9f6" fill-opacity="0.6">PLACEHOLDER</text>
+</svg>

@@ -6,10 +6,9 @@ import Link from "next/link";
 
 const footerNav = [
   // "Portfolio" points at the homepage categories section (there is no
-  // /portfolio index route). "Backstage" has no page yet — links home so it
-  // resolves without a 404.
+  // /portfolio index route).
   { href: "/#categories", label: "Portfolio" },
-  { href: "/", label: "Backstage" },
+  { href: "/backstage", label: "Backstage" },
   { href: "/testimonials", label: "Testimonials" },
   { href: "/privacy-policy", label: "Privacy Policy" },
 ];

@@ -87,8 +87,10 @@ so iOS doesn't zoom on focus. Don't set real content below 14px.
 ## Layout & surfaces
 
 - **Flat only.** No cards, no shadows, no gradients, no border-radius on
-  surfaces. The single rounded thing on the site is the button
-  (`--radius-btn: 7px`).
+  surfaces. Two rounded exceptions, both deliberate: the button
+  (`--radius-btn: 7px`) and the About link chips (`.link-chip`, full pill
+  radius, matching the reference layout). Both stay flat otherwise — solid or
+  hairline border, no shadow, no gradient.
 - **Hairline dividers** (`border-hairline`, 1px) separate *top-level sections*
   only — never as intra-section decoration, never as vertical column rules.
 - **Generous vertical rhythm.** `--spacing-section` (`p-section` /
@@ -102,6 +104,17 @@ so iOS doesn't zoom on focus. Don't set real content below 14px.
 `.btn` — solid `--color-btn` fill, `--color-btn-ink` label, 1px same-colour
 border, 7px radius, no gradient, no shadow. Hover is a bare `opacity: 0.88`
 nudge (state feedback, not decoration); `:active` `0.78`.
+
+### Link chips
+
+`.link-chip` — the pill links stacked under the About bio (Backstage,
+Testimonials). Flat surface: 1px `--color-hairline` border, full pill radius,
+no fill, no shadow, no gradient. Grid of `icon / (small-caps label + title) /
+arrow`. Hover (and `:focus-visible`) warms the border hairline → accent, the
+same move `.link` makes on its underline; nothing translates or lifts. The
+small-caps label and the trailing arrow are scoped to this component — they are
+not licence to reintroduce tracked-out eyebrow labels or `→`-suffixed links
+elsewhere.
 
 ---
 

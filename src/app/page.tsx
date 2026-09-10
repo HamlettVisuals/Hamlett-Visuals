@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Hero from "@/components/home/Hero";
 import Categories from "@/components/home/Categories";
+import About from "@/components/home/About";
 import {
   hotOffer,
   instagramPosts,
@@ -36,19 +37,7 @@ export default function Home() {
       <Categories />
 
       {/* 3. About */}
-      <section id="about" className={`${sectionClass} border-t border-hairline`}>
-        <h2 className={headingClass}>About</h2>
-        <div className="mt-6 flex flex-col gap-6 sm:flex-row sm:items-start">
-          <div className="flex h-40 w-40 shrink-0 items-center justify-center rounded-full bg-zinc-200 text-sm text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400">
-            Portrait
-          </div>
-          <p className="max-w-xl text-base leading-7 text-zinc-600 dark:text-zinc-400">
-            Placeholder bio content. A few sentences about Hamlet Visuals, the
-            photographer, background, and approach will go here once the design
-            pass begins.
-          </p>
-        </div>
-      </section>
+      <About />
 
       {/* 4. Hot offer */}
       <section
