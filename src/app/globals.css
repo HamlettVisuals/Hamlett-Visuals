@@ -281,6 +281,17 @@
     padding: 0.5rem 0.9375rem;
   }
 
+  /* .link-chip on a <button> (the Show / Hide details toggle) — strip the UA
+     button skin so it reads exactly like the anchor chips. */
+  button.link-chip {
+    appearance: none;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+    text-align: left;
+  }
+
   /* Offers & pricing row disclosure — the one user-triggered reveal on the
      site, kept separate from the two ambient/hover motions in DESIGN.md.
      Height animates via grid-template-rows 0fr → 1fr (no magic max-height),
@@ -305,10 +316,67 @@
   .offer-disclosure[data-open="true"] .offer-disclosure-inner {
     opacity: 1;
   }
+
+  /* The disclosure trigger is a .link-chip-inline pill whose chevron flips to
+     point up once expanded — part of the same user-triggered reveal, not a new
+     motion. */
+  .offer-details-toggle .link-chip-icon svg {
+    transition: transform 200ms var(--ease-standard);
+  }
+  .offer-details-toggle[aria-expanded="true"] .link-chip-icon svg {
+    transform: rotate(180deg);
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .offer-disclosure,
-    .offer-disclosure-inner {
+    .offer-disclosure-inner,
+    .offer-details-toggle .link-chip-icon svg {
       transition: none;
+    }
+  }
+
+  /* Featured-offer badge — a solid accent dot + small-caps label on a faint
+     accent tint. The only accent-tinted surface on the site; kept tiny and
+     used only on the one featured offer (label "Hot offer" on its section,
+     "Hot deal" on its list row). Flat: no border, no shadow, no gradient. */
+  .offer-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4375rem;
+    padding: 0.25rem 0.625rem;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--color-accent) 16%, var(--color-canvas));
+    white-space: nowrap;
+  }
+  .offer-badge-dot {
+    width: 0.375rem;
+    height: 0.375rem;
+    border-radius: 999px;
+    background: var(--color-accent);
+    flex: none;
+  }
+  .offer-badge-label {
+    font-size: var(--text-caption);
+    line-height: 1;
+    font-variant-caps: all-small-caps;
+    letter-spacing: 0.05em;
+    color: var(--color-muted);
+  }
+
+  /* Featured row inside the Offers & pricing list — a soft accent-bordered box
+     that lifts the one promoted offer out of the plain hairline-divided rows.
+     A deliberate, single-use exception to the flat / no-card / no-radius rule
+     (DESIGN.md → Anti-cliché guardrails): border only, no fill, no shadow, and
+     a barely-there 3px radius. Scoped to this one row. */
+  .offer-row-featured {
+    margin-block: 0.875rem;
+    padding: 1.5rem;
+    border: 1px solid color-mix(in srgb, var(--color-accent) 60%, transparent);
+    border-radius: 3px;
+  }
+  @media (min-width: 40rem) {
+    .offer-row-featured {
+      padding: 2rem;
     }
   }
 

@@ -64,9 +64,10 @@ export type Offer = {
   category: string;
   categorySlug: string;
   title: string;
-  // Placeholder price string — shown as-is. Keep the "From $…" shape so the
-  // number can be swapped without touching layout.
-  price: string;
+  // Placeholder price. `lead` is the small caption above the figure ("From"),
+  // `amount` the figure itself — split so the row can size the two
+  // differently without parsing a string.
+  price: { lead: string; amount: string };
   // One-line highlight shown under the title (and as the hot-offer highlight).
   summary: string;
   // Inclusions list. Revealed behind "Show details" on the regular rows;
@@ -91,7 +92,7 @@ export const offers: Offer[] = [
     category: "Weddings",
     categorySlug: "weddings",
     title: "Wedding Day Coverage",
-    price: "From $2,800",
+    price: { lead: "From", amount: "$2,800" },
     summary:
       "Full-day coverage from getting ready to the last song, with a second shooter for the ceremony.",
     features: [
@@ -109,7 +110,7 @@ export const offers: Offer[] = [
     category: "Portraits",
     categorySlug: "portraits",
     title: "Portrait Session",
-    price: "From $350",
+    price: { lead: "From", amount: "$350" },
     summary:
       "An hour on location for headshots, families, couples, or a personal-branding refresh.",
     features: [
@@ -125,7 +126,7 @@ export const offers: Offer[] = [
     category: "Pets",
     categorySlug: "pets",
     title: "Pet Session",
-    price: "From $300",
+    price: { lead: "From", amount: "$300" },
     summary:
       "A relaxed shoot at home or on a favourite walk — treats, breaks, and patience included.",
     features: [
@@ -141,7 +142,7 @@ export const offers: Offer[] = [
     category: "Brands",
     categorySlug: "brands",
     title: "Brand & Product Shoot",
-    price: "From $600 / half day",
+    price: { lead: "From", amount: "$600 / half day" },
     summary:
       "Product and lifestyle images shot to an agreed shot list, cropped for web and social.",
     features: [
@@ -158,7 +159,7 @@ export const offers: Offer[] = [
     category: "Motorsports",
     categorySlug: "motorsports",
     title: "Race Day Coverage",
-    price: "From $500",
+    price: { lead: "From", amount: "$500" },
     summary:
       "Trackside coverage of practice, qualifying, and the race, turned around fast.",
     features: [
@@ -175,7 +176,7 @@ export const offers: Offer[] = [
     category: "Real Estate",
     categorySlug: "real-estate",
     title: "Property Shoot",
-    price: "From $250",
+    price: { lead: "From", amount: "$250" },
     summary:
       "Interiors and exteriors for a listing or a portfolio, with twilight and drone as add-ons.",
     features: [
@@ -188,15 +189,15 @@ export const offers: Offer[] = [
   },
 ];
 
-// The single promoted offer (Hot offer section) and everything else (the
-// Offers & pricing rows). The featured category is deliberately NOT repeated
-// in the rows below. Both derive from the `featured` flag above.
+// `featuredOffer` drives the standalone Hot offer section. `standardOffers` is
+// the Offers & pricing list — every offer, in category order, INCLUDING the
+// featured one (its row just renders with the badge / accent border / accent
+// title + price). Flip the `featured` flag to another entry and both sections
+// follow, no component change.
 export const featuredOffer: Offer =
   offers.find((offer) => offer.featured) ?? offers[0];
 
-export const standardOffers: Offer[] = offers.filter(
-  (offer) => offer !== featuredOffer,
-);
+export const standardOffers: Offer[] = offers;
 
 export type InstagramPost = {
   id: string;

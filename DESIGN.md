@@ -91,12 +91,20 @@ so iOS doesn't zoom on focus. Don't set real content below 14px.
 ## Layout & surfaces
 
 - **Flat only.** No cards, no shadows, no gradients, no border-radius on
-  surfaces. Two rounded exceptions, both deliberate: the button
-  (`--radius-btn: 7px`) and the About link chips (`.link-chip`, full pill
-  radius, matching the reference layout). Both stay flat otherwise — solid or
-  hairline border, no shadow, no gradient.
+  surfaces. Rounded exceptions, all deliberate: the button (`--radius-btn:
+  7px`), the link chips (`.link-chip`, full pill radius), the offer badge
+  (`.offer-badge`, full pill) and the featured offer row (`.offer-row-featured`,
+  3px). All stay flat otherwise — solid or hairline border, no shadow, no
+  gradient.
+- **One card-like surface, scoped.** `.offer-row-featured` is the single
+  bordered box on the site: a soft accent border (`color-mix` of
+  `--color-accent`) around the one featured offer inside the Offers & pricing
+  list, to lift it out of the plain hairline-divided rows. Border only — no
+  fill, no shadow. Do not generalise it to other rows or sections.
 - **Hairline dividers** (`border-hairline`, 1px) separate *top-level sections*
-  only — never as intra-section decoration, never as vertical column rules.
+  only — never as intra-section decoration, never as vertical column rules. One
+  sanctioned in-section use: row rules between the Offers & pricing entries,
+  where they encode real item boundaries in a list (not decoration).
 - **Generous vertical rhythm.** `--spacing-section` (`p-section` /
   `py-section`) = `clamp(4rem, …, 8rem)` between sections. Side gutter
   `--spacing-gutter` = `clamp(1.25rem, …, 2.5rem)`.
@@ -122,9 +130,31 @@ elsewhere.
 
 `.link-chip-inline` — compact variant (`icon + label`, no small-caps eyebrow,
 no arrow, sized to content) so a pair sits side by side. Used for the
-`View gallery` / `Book` actions on the Featured offer and every standard offer
-row, where the stacked full-width chip would outweigh the row. Same border,
-radius and hover as `.link-chip`.
+`View gallery` / `Book` actions on the Featured offer and every offer row, and
+for the `Show / Hide details` toggle (a `<button>`, UA skin stripped by
+`button.link-chip`; its chevron rotates 180° on `aria-expanded` — part of the
+disclosure reveal, not a new motion). Same border, radius and hover as
+`.link-chip`.
+
+### Offer badge & featured price
+
+`.offer-badge` — a solid `--color-accent` dot + a small-caps label on a faint
+accent tint (`color-mix`, ~16%). The site's only accent-tinted surface; kept
+tiny and used only on the one featured offer ("Hot offer" on its section, "Hot
+deal" on its list row). The label text carries the meaning — colour only
+reinforces it.
+
+**Featured price / title accent (contrast note).** The featured offer renders
+its title and price figure in `--color-accent` in both places. Accent is
+~3.5:1 on canvas: fine for the standalone title at `text-page`, but the price
+figure (`text-title`, ~20px) and the list-row title sit below AA for normal
+text. Deliberate, to match the reference — revisit with a dedicated darker
+`accent-text` token if it stays once real copy lands. The small "From" caption
+stays `--color-muted` (AA) regardless.
+
+**Fine-print italic.** `OfferTerms` renders the placeholder deposit /
+cancellation line in italic caption text — a scoped fine-print convention, not
+a general licence for italic (Inter italic is faux; acceptable at this size).
 
 ---
 
