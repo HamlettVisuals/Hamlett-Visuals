@@ -94,14 +94,20 @@ so iOS doesn't zoom on focus. Don't set real content below 14px.
 - **Flat only.** No cards, no shadows, no gradients, no border-radius on
   surfaces. Rounded exceptions, all deliberate: the button (`--radius-btn:
   7px`), the link chips (`.link-chip`, full pill radius), the offer badge
-  (`.offer-badge`, full pill) and the featured offer row (`.offer-row-featured`,
-  3px). All stay flat otherwise — solid or hairline border, no shadow, no
-  gradient.
+  (`.offer-badge`, full pill), the featured offer row (`.offer-row-featured`,
+  3px) and the Instagram tiles (`--radius-media`, 4px — see below). All stay
+  flat otherwise — solid or hairline border, no shadow, no gradient.
 - **One card-like surface, scoped.** `.offer-row-featured` is the single
   bordered box on the site: a soft accent border (`color-mix` of
   `--color-accent`) around the one featured offer inside the Offers & pricing
   list, to lift it out of the plain hairline-divided rows. Border only — no
   fill, no shadow. Do not generalise it to other rows or sections.
+- **Softened photo corners, scoped.** The `#instagram` grid — and only that
+  grid — rounds its tiles by `--radius-media` (4px), a small nod to the
+  Instagram app's own rounded thumbnails. It stays flat in every other respect:
+  no shadow, no border, same hover-zoom as everywhere else. Category tiles,
+  gallery grids and every other `<HoverZoomImage>` frame keep sharp corners —
+  this is not a licence to round photo frames site-wide.
 - **Hairline dividers** (`border-hairline`, 1px) separate *top-level sections*
   only — never as intra-section decoration, never as vertical column rules. One
   sanctioned in-section use: row rules between the Offers & pricing entries,

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { instagram } from "@/lib/site-content";
 
 // Booking CTA section (#booking-cta), between Offers & pricing and Instagram.
 // A short centered band that just prompts the next step — deliberately the
@@ -6,10 +7,10 @@ import Link from "next/link";
 // hairline above and below. The only emphasis is the single solid button, so
 // it never competes with the Hero or the Featured offer.
 //
-// The contact fallback reuses the Footer's placeholder details on purpose —
-// keep the two in sync.
-// TODO: swap the placeholder headline, supporting line, and contact details
-// for real copy before launch.
+// The Instagram handle comes from the shared `instagram` constant (also used
+// by the Footer and the Instagram section). The email is still a placeholder.
+// TODO: swap the placeholder headline, supporting line, and email for real
+// copy before launch.
 
 export default function BookingCta() {
   return (
@@ -36,12 +37,12 @@ export default function BookingCta() {
           </a>
           , or find me at{" "}
           <a
-            href="https://www.instagram.com/"
+            href={instagram.url}
             target="_blank"
             rel="noopener noreferrer"
             className="link text-ink"
           >
-            @hamletvisuals
+            {instagram.handle}
           </a>
           .
         </p>

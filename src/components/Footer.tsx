@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { instagram } from "@/lib/site-content";
 
 // Section 10 of the homepage flow — the final CTA / footer — and also the
 // site-wide footer rendered on every page via src/app/layout.tsx.
@@ -41,12 +42,12 @@ export default function Footer() {
             <p>
               Instagram:{" "}
               <a
-                href="https://www.instagram.com/"
+                href={instagram.url}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="underline"
               >
-                @hamletvisuals (placeholder)
+                {instagram.handle}
               </a>
             </p>
             <p>Phone: +0 000 000 0000 (placeholder)</p>

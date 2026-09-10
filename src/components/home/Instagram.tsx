@@ -1,22 +1,43 @@
+import Link from "next/link";
 import HoverZoomImage from "@/components/HoverZoomImage";
-import { instagramPosts } from "@/lib/site-content";
+import {
+  instagram,
+  instagramPosts,
+  offers,
+  type InstagramPost,
+} from "@/lib/site-content";
 
 // Recent on Instagram section (#instagram), between the Booking CTA and the
-// Testimonials teaser. One quiet strip of square post tiles under the heading.
+// Testimonials teaser.
 //
-// The shape is deliberately different from the Categories grid: Instagram posts
-// are square (1:1) where the category tiles are tall 9:16, and this row runs
-// six-across on desktop (2 on mobile, 3 on tablet) so it reads as a feed rather
-// than a gallery hang. Each tile is just the photo in the site hover-zoom frame
-// (<HoverZoomImage>), linking out to Instagram in a new tab — no caption, no
-// overlay, no border. Flat, one hover effect only (DESIGN.md → flat surfaces).
+// A fixed 3×3 grid of nine curated posts — 2 columns on mobile, 3 from tablet
+// up. The count is deliberately fixed at 9: this is hand-picked data, not a
+// live feed (a real "most recent posts" sync is a later backend job — see the
+// TODO on `instagramPosts` in src/lib/site-content.ts). The entry shape mirrors
+// an Instagram Graph API media object so wiring up the real feed later is a
+// data-source swap, not a redesign.
 //
-// The @hamletvisuals handle and profile URL are the same placeholders used in
-// the Footer and the Booking CTA — keep the three in sync until the real
-// account details land.
+// Tiles: square, the site hover-zoom (<HoverZoomImage>), and a slight
+// `rounded-media` corner — the one place a photo frame is softened on the site
+// (DESIGN.md → Layout & surfaces). Optional caption + subcaption render as
+// plain text below the tile, never over the photo (consistent with the
+// Categories fix); no italic (Inter's italic isn't loaded, per OfferTerms).
+// When a post names a related offer or category, the caption line links there
+// quietly via .link-quiet — not a button.
+//
+// The @hamlettvisuals handle and URL come from the shared `instagram` constant,
+// the single source of truth also used by the Footer and the Booking CTA.
 
-const instagramProfileUrl = "https://www.instagram.com/";
-const instagramHandle = "@hamletvisuals";
+function relatedHref(post: InstagramPost): string | null {
+  if (post.relatedCategorySlug) {
+    return `/portfolio/${post.relatedCategorySlug}`;
+  }
+  if (post.relatedOfferId) {
+    const offer = offers.find((entry) => entry.id === post.relatedOfferId);
+    return offer ? `/portfolio/${offer.categorySlug}` : null;
+  }
+  return null;
+}
 
 export default function Instagram() {
   return (
@@ -27,33 +48,53 @@ export default function Instagram() {
             Recent on Instagram
           </h2>
           <a
-            href={instagramProfileUrl}
+            href={instagram.url}
             target="_blank"
             rel="noopener noreferrer"
             className="link text-body text-ink"
           >
-            {instagramHandle}
+            {instagram.handle}
           </a>
         </div>
 
-        <ul className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6 lg:gap-4">
-          {instagramPosts.map((post) => (
-            <li key={post.id}>
-              <a
-                href={post.href}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="block"
-              >
-                <HoverZoomImage
-                  src={post.image}
-                  alt={post.caption}
-                  sizes="(min-width: 1024px) 160px, (min-width: 640px) 33vw, 50vw"
-                  className="aspect-square w-full"
-                />
-              </a>
-            </li>
-          ))}
+        <ul className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:gap-4">
+          {instagramPosts.map((post) => {
+            const href = relatedHref(post);
+            return (
+              <li key={post.id}>
+                <a
+                  href={post.permalink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block"
+                >
+                  <HoverZoomImage
+                    src={post.image}
+                    alt={post.alt}
+                    sizes="(min-width: 640px) 33vw, 50vw"
+                    className="aspect-square w-full rounded-media"
+                  />
+                </a>
+
+                {post.caption && (
+                  <div className="mt-2">
+                    <p className="text-caption text-ink">
+                      {href ? (
+                        <Link href={href} className="link-quiet">
+                          {post.caption}
+                        </Link>
+                      ) : (
+                        post.caption
+                      )}
+                    </p>
+                    {post.subcaption && (
+                      <p className="text-caption text-muted">{post.subcaption}</p>
+                    )}
+                  </div>
+                )}
+              </li>
+            );
+          })}
         </ul>
       </div>
     </section>

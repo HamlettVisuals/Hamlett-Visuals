@@ -199,28 +199,116 @@ export const featuredOffer: Offer =
 
 export const standardOffers: Offer[] = offers;
 
-export type InstagramPost = {
-  id: string;
-  // Permalink to the individual post. Placeholder points at the profile for
-  // now; becomes a real per-post permalink once the feed is wired up.
-  href: string;
-  // Square (1:1) thumbnail for the homepage strip.
-  // TODO: replace the /instagram/*.svg placeholders with the six real post
-  // images — either hand-picked here, or populated from an Instagram API sync
-  // if that integration gets built.
-  image: string;
-  // Alt text for the tile. No caption is shown on the page, so this only
-  // needs to describe the image once real photos land.
-  caption: string;
+// Single source of truth for the studio's Instagram identity. Imported by the
+// Footer, the Booking CTA and the homepage Instagram section — change the
+// handle or URL here and every reference follows.
+export const instagram = {
+  handle: "@hamlettvisuals",
+  url: "https://www.instagram.com/hamlettvisuals/",
 };
 
+export type InstagramPost = {
+  // Stable key for the React list. Becomes the Graph API media id under a real
+  // sync.
+  id: string;
+  // Square (1:1) thumbnail. A real sync supplies `media_url` / `thumbnail_url`.
+  image: string;
+  // Describes the photo for screen readers; not shown on the page.
+  alt: string;
+  // Link to the post itself. Placeholder points at the profile for now; a real
+  // sync supplies the per-post `permalink`.
+  permalink: string;
+  // Optional text under the tile — only some posts carry it, so the grid is
+  // not captioned wall-to-wall. `subcaption` is the smaller second line.
+  caption?: string;
+  subcaption?: string;
+  // Optional curation link: when a post is about a specific offer or category,
+  // the caption line links to that portfolio page. `relatedOfferId` matches an
+  // `offers` entry id; `relatedCategorySlug` matches a `categories` slug. Only
+  // takes effect when the post also has a `caption` to attach the link to.
+  relatedOfferId?: string;
+  relatedCategorySlug?: string;
+};
+
+// Nine hand-picked posts. The count is fixed at 9 (a 3×3 grid) — this is NOT a
+// live feed.
+//
+// TODO (backend/admin phase): showing the *actual* most-recent posts needs an
+// Instagram Graph API integration — a Business or Creator account linked to a
+// Facebook Page, a long-lived access token refreshed on a schedule, and a
+// server-side fetch that caches the response (the token must never reach the
+// client). That's out of scope for the design pass; this curated list stands in
+// until then, and the entry shape above deliberately mirrors a Graph API media
+// object so the swap is a data-source change, not a redesign.
 export const instagramPosts: InstagramPost[] = [
-  { id: "1", href: "https://www.instagram.com/", image: "/instagram/post-1.svg", caption: "Placeholder Instagram post 1" },
-  { id: "2", href: "https://www.instagram.com/", image: "/instagram/post-2.svg", caption: "Placeholder Instagram post 2" },
-  { id: "3", href: "https://www.instagram.com/", image: "/instagram/post-3.svg", caption: "Placeholder Instagram post 3" },
-  { id: "4", href: "https://www.instagram.com/", image: "/instagram/post-4.svg", caption: "Placeholder Instagram post 4" },
-  { id: "5", href: "https://www.instagram.com/", image: "/instagram/post-5.svg", caption: "Placeholder Instagram post 5" },
-  { id: "6", href: "https://www.instagram.com/", image: "/instagram/post-6.svg", caption: "Placeholder Instagram post 6" },
+  {
+    id: "1",
+    image: "/instagram/post-1.svg",
+    alt: "A couple's first dance under warm string lights while guests look on.",
+    permalink: instagram.url,
+    caption: "Golden-hour first dance",
+    subcaption: "Riverside barn, September",
+    relatedCategorySlug: "weddings",
+  },
+  {
+    id: "2",
+    image: "/instagram/post-2.svg",
+    alt: "A portrait in soft window light, caught mid-laugh.",
+    permalink: instagram.url,
+  },
+  {
+    id: "3",
+    image: "/instagram/post-3.svg",
+    alt: "A race car in the pit lane during a mid-season round.",
+    permalink: instagram.url,
+    caption: "Pit lane, round four",
+    relatedCategorySlug: "motorsports",
+  },
+  {
+    id: "4",
+    image: "/instagram/post-4.svg",
+    alt: "A dog mid-stride across an open field, ears up.",
+    permalink: instagram.url,
+  },
+  {
+    id: "5",
+    image: "/instagram/post-5.svg",
+    alt: "A styled studio set for a coffee roaster's product shoot.",
+    permalink: instagram.url,
+    caption: "Studio set for a coffee roaster",
+    subcaption: "Product day",
+    relatedOfferId: "brands",
+  },
+  {
+    id: "6",
+    image: "/instagram/post-6.svg",
+    alt: "A modern house exterior photographed at dusk with the interior lights on.",
+    permalink: instagram.url,
+    caption: "Twilight exterior",
+    subcaption: "Listing shoot",
+    relatedCategorySlug: "real-estate",
+  },
+  {
+    id: "7",
+    image: "/instagram/post-7.svg",
+    alt: "An outdoor portrait backlit by late-afternoon sun.",
+    permalink: instagram.url,
+  },
+  {
+    id: "8",
+    image: "/instagram/post-8.svg",
+    alt: "Getting-ready details before a wedding: rings, invitation, and flowers laid out.",
+    permalink: instagram.url,
+    caption: "Getting-ready details",
+  },
+  {
+    id: "9",
+    image: "/instagram/post-9.svg",
+    alt: "Two dogs running a trail with their owner on a bright morning.",
+    permalink: instagram.url,
+    caption: "Trail run with the dogs",
+    relatedCategorySlug: "pets",
+  },
 ];
 
 export type Testimonial = {

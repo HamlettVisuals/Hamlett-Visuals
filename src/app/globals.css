@@ -63,6 +63,7 @@
   /* ---- Layout --------------------------------------------------------------
      Generous, fluid vertical rhythm between sections; flat surfaces only. */
   --radius-btn: 7px;
+  --radius-media: 4px;                                    /* slight corner softening — #instagram tiles only (DESIGN.md → Layout & surfaces) */
   --spacing-section: clamp(4rem, 2.5rem + 7vw, 8rem);     /* section padding-block */
   --spacing-gutter: clamp(1.25rem, 0.6rem + 3vw, 2.5rem); /* page side gutter */
   --spacing-measure: 68ch;                                /* readable text column */
