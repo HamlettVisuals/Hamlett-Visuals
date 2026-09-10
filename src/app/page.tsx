@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Hero from "@/components/home/Hero";
+import Categories from "@/components/home/Categories";
 import {
-  categories,
   hotOffer,
   instagramPosts,
   offers,
@@ -33,31 +33,10 @@ export default function Home() {
       <Hero />
 
       {/* 2. Categories */}
-      <section id="categories" className={sectionClass}>
-        <h2 className={headingClass}>Categories</h2>
-        <div className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2">
-          {categories.map((category) => (
-            <Link
-              key={category.slug}
-              href={`/portfolio/${category.slug}`}
-              className="flex flex-col gap-2 rounded-lg border border-zinc-200 p-4 transition-colors hover:border-zinc-400 dark:border-zinc-800 dark:hover:border-zinc-600"
-            >
-              <div className="flex h-28 items-center justify-center rounded-md bg-zinc-200 text-sm text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400">
-                Image
-              </div>
-              <span className="font-medium text-zinc-950 dark:text-zinc-50">
-                {category.name}
-              </span>
-              <span className="text-sm text-zinc-500 dark:text-zinc-400">
-                {category.blurb}
-              </span>
-            </Link>
-          ))}
-        </div>
-      </section>
+      <Categories />
 
       {/* 3. About */}
-      <section id="about" className={sectionClass}>
+      <section id="about" className={`${sectionClass} border-t border-hairline`}>
         <h2 className={headingClass}>About</h2>
         <div className="mt-6 flex flex-col gap-6 sm:flex-row sm:items-start">
           <div className="flex h-40 w-40 shrink-0 items-center justify-center rounded-full bg-zinc-200 text-sm text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400">

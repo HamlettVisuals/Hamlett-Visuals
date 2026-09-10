@@ -7,29 +7,40 @@
 export type Category = {
   slug: string;
   name: string;
+  // One-line descriptor shown under the name on the homepage category tile.
+  // Purposeful placeholder copy — the real lines come later.
   blurb: string;
+  // Representative image for the homepage category tile. Portrait-oriented so
+  // it fills the tall tile without heavy cropping.
+  // TODO: replace the /categories/*.svg placeholders with one real photo per
+  // category once shots are chosen (keep them portrait, e.g. 3:4 – 9:16).
+  image: string;
 };
 
 export const categories: Category[] = [
   {
     slug: "weddings",
     name: "Weddings",
-    blurb: "Placeholder blurb for the weddings category.",
+    blurb: "The whole day, from first look to last dance",
+    image: "/categories/weddings.svg",
   },
   {
     slug: "races",
     name: "Races",
-    blurb: "Placeholder blurb for the races category.",
+    blurb: "From the start gun to the finish-line sprint",
+    image: "/categories/races.svg",
   },
   {
     slug: "portraits",
     name: "Portraits",
-    blurb: "Placeholder blurb for the portraits category.",
+    blurb: "Honest expressions in natural light",
+    image: "/categories/portraits.svg",
   },
   {
     slug: "real-estate-construction",
     name: "Real Estate / Construction",
-    blurb: "Placeholder blurb for the real estate and construction category.",
+    blurb: "Finished spaces and work in progress",
+    image: "/categories/real-estate-construction.svg",
   },
 ];
 
