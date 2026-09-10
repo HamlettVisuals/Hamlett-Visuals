@@ -58,76 +58,145 @@ export const categories: Category[] = [
 
 export type Offer = {
   id: string;
+  // Display name + slug of the category this offer belongs to. `categorySlug`
+  // must match a `categories` entry so the "View <category> work" link resolves
+  // to a real /portfolio/[category] page.
   category: string;
-  name: string;
-  details: string;
-  // Placeholder gallery — plain labels for now, swapped for real images later.
+  categorySlug: string;
+  title: string;
+  // Placeholder price string — shown as-is. Keep the "From $…" shape so the
+  // number can be swapped without touching layout.
+  price: string;
+  // One-line highlight shown under the title (and as the hot-offer highlight).
+  summary: string;
+  // Inclusions list. Revealed behind "Show details" on the regular rows;
+  // always visible in the hot-offer block.
+  features: string[];
+  // Mini-gallery — plain labels for now, rendered as hairline placeholder
+  // frames. Becomes an array of image paths once shots are chosen.
   gallery: string[];
-  bookHref: string;
+  // Exactly one offer sets this. It drives the Hot offer section; flipping it
+  // to another entry is all that's needed to promote a different offer —
+  // `featuredOffer` / `standardOffers` below do the rest, no component change.
+  featured?: boolean;
 };
 
+// One offer per category, in the same order as `categories`. The first entry
+// (Weddings) is the featured one.
+// TODO: every price and feature list here is placeholder — real numbers,
+// inclusions and package names are pending from her.
 export const offers: Offer[] = [
   {
-    id: "wedding-full-day",
+    id: "weddings",
     category: "Weddings",
-    name: "Wedding — Full Day Coverage",
-    details:
-      "Placeholder details for full-day wedding coverage. Hours, deliverables, and pricing go here.",
-    gallery: ["Image 1", "Image 2", "Image 3"],
-    bookHref: "/booking?offer=wedding-full-day",
+    categorySlug: "weddings",
+    title: "Wedding Day Coverage",
+    price: "From $2,800",
+    summary:
+      "Full-day coverage from getting ready to the last song, with a second shooter for the ceremony.",
+    features: [
+      "Up to 10 hours of coverage on the day",
+      "Second shooter through the ceremony",
+      "Online gallery of 600+ edited images",
+      "Sneak-peek set within 48 hours",
+      "Print release for personal use",
+    ],
+    gallery: ["Getting ready", "Ceremony", "First dance"],
+    featured: true,
   },
   {
-    id: "wedding-elopement",
-    category: "Weddings",
-    name: "Wedding — Elopement",
-    details:
-      "Placeholder details for a smaller elopement package. Hours, deliverables, and pricing go here.",
-    gallery: ["Image 1", "Image 2", "Image 3"],
-    bookHref: "/booking?offer=wedding-elopement",
-  },
-  {
-    id: "race-day",
-    category: "Motorsports",
-    name: "Race Day Coverage",
-    details:
-      "Placeholder details for race day coverage. Session length, number of edits, and pricing go here.",
-    gallery: ["Image 1", "Image 2", "Image 3"],
-    bookHref: "/booking?offer=race-day",
-  },
-  {
-    id: "portrait-session",
+    id: "portraits",
     category: "Portraits",
-    name: "Portrait Session",
-    details:
-      "Placeholder details for a portrait session. Location, wardrobe changes, and pricing go here.",
-    gallery: ["Image 1", "Image 2", "Image 3"],
-    bookHref: "/booking?offer=portrait-session",
+    categorySlug: "portraits",
+    title: "Portrait Session",
+    price: "From $350",
+    summary:
+      "An hour on location for headshots, families, couples, or a personal-branding refresh.",
+    features: [
+      "One hour at a single location",
+      "Two outfit or setup changes",
+      "25+ edited images in an online gallery",
+      "Print release for personal use",
+    ],
+    gallery: ["Natural light", "On location", "Close-up"],
   },
   {
-    id: "property-shoot",
+    id: "pets",
+    category: "Pets",
+    categorySlug: "pets",
+    title: "Pet Session",
+    price: "From $300",
+    summary:
+      "A relaxed shoot at home or on a favourite walk — treats, breaks, and patience included.",
+    features: [
+      "Up to 90 minutes, at home or outdoors",
+      "20+ edited images in an online gallery",
+      "Owners welcome in frame",
+      "Print release for personal use",
+    ],
+    gallery: ["At home", "On the trail", "Portrait"],
+  },
+  {
+    id: "brands",
+    category: "Brands",
+    categorySlug: "brands",
+    title: "Brand & Product Shoot",
+    price: "From $600 / half day",
+    summary:
+      "Product and lifestyle images shot to an agreed shot list, cropped for web and social.",
+    features: [
+      "Half or full day of shooting",
+      "Shot list planned before the day",
+      "40+ edited images per half day",
+      "Web and social crops of every hero shot",
+      "Commercial usage license",
+    ],
+    gallery: ["Product", "Lifestyle", "Detail"],
+  },
+  {
+    id: "motorsports",
+    category: "Motorsports",
+    categorySlug: "motorsports",
+    title: "Race Day Coverage",
+    price: "From $500",
+    summary:
+      "Trackside coverage of practice, qualifying, and the race, turned around fast.",
+    features: [
+      "Half or full race day",
+      "Trackside and paddock, access permitting",
+      "50+ edited images in an online gallery",
+      "Next-day delivery of the full set",
+      "Social-ready crops included",
+    ],
+    gallery: ["On track", "Paddock", "Podium"],
+  },
+  {
+    id: "real-estate",
     category: "Real Estate",
-    name: "Property / Site Shoot",
-    details:
-      "Placeholder details for a real estate shoot. Square footage, drone add-ons, and pricing go here.",
-    gallery: ["Image 1", "Image 2", "Image 3"],
-    bookHref: "/booking?offer=property-shoot",
+    categorySlug: "real-estate",
+    title: "Property Shoot",
+    price: "From $250",
+    summary:
+      "Interiors and exteriors for a listing or a portfolio, with twilight and drone as add-ons.",
+    features: [
+      "Up to 2,500 sq ft (larger on request)",
+      "Interiors and exteriors",
+      "25+ edited images, next-day delivery",
+      "Twilight and drone add-ons",
+    ],
+    gallery: ["Interior", "Exterior", "Twilight"],
   },
 ];
 
-export type HotOffer = {
-  eyebrow: string;
-  name: string;
-  details: string;
-  bookHref: string;
-};
+// The single promoted offer (Hot offer section) and everything else (the
+// Offers & pricing rows). The featured category is deliberately NOT repeated
+// in the rows below. Both derive from the `featured` flag above.
+export const featuredOffer: Offer =
+  offers.find((offer) => offer.featured) ?? offers[0];
 
-export const hotOffer: HotOffer = {
-  eyebrow: "Hot offer",
-  name: "Placeholder featured promo",
-  details:
-    "Placeholder copy for the one highlighted promotion. Deadline, discount, and terms go here.",
-  bookHref: "/booking?offer=hot-offer",
-};
+export const standardOffers: Offer[] = offers.filter(
+  (offer) => offer !== featuredOffer,
+);
 
 export type InstagramPost = {
   id: string;

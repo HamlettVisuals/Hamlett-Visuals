@@ -252,6 +252,37 @@
     font-size: 1rem;
   }
 
+  /* Offers & pricing row disclosure — the one user-triggered reveal on the
+     site, kept separate from the two ambient/hover motions in DESIGN.md.
+     Height animates via grid-template-rows 0fr → 1fr (no magic max-height),
+     with a short fade on the inner content. Toggled by [data-open="true"] on
+     the wrapper; the "Show details" button owns the state. Fully still under
+     prefers-reduced-motion. */
+  .offer-disclosure {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 200ms var(--ease-standard);
+  }
+  .offer-disclosure > * {
+    overflow: hidden;
+  }
+  .offer-disclosure[data-open="true"] {
+    grid-template-rows: 1fr;
+  }
+  .offer-disclosure-inner {
+    opacity: 0;
+    transition: opacity 160ms var(--ease-standard);
+  }
+  .offer-disclosure[data-open="true"] .offer-disclosure-inner {
+    opacity: 1;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .offer-disclosure,
+    .offer-disclosure-inner {
+      transition: none;
+    }
+  }
+
   /* Section rhythm: opt-in helpers for the design pass. */
   .section { padding-block: var(--spacing-section); }
   .section + .section { border-top: 1px solid var(--color-hairline); }

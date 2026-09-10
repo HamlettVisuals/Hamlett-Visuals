@@ -2,12 +2,9 @@ import Link from "next/link";
 import Hero from "@/components/home/Hero";
 import Categories from "@/components/home/Categories";
 import About from "@/components/home/About";
-import {
-  hotOffer,
-  instagramPosts,
-  offers,
-  testimonialsTeaser,
-} from "@/lib/site-content";
+import FeaturedOffer from "@/components/home/FeaturedOffer";
+import Offers from "@/components/home/Offers";
+import { instagramPosts, testimonialsTeaser } from "@/lib/site-content";
 
 // Single flowing homepage. Sections render in this exact order:
 //  1. Hero            (<Hero />)
@@ -40,65 +37,10 @@ export default function Home() {
       <About />
 
       {/* 4. Hot offer */}
-      <section
-        id="hot-offer"
-        className="border-y border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900"
-      >
-        <div className={sectionClass}>
-          <p className="text-xs font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
-            {hotOffer.eyebrow}
-          </p>
-          <h2 className={`${headingClass} mt-2`}>{hotOffer.name}</h2>
-          <p className="mt-3 max-w-xl text-base leading-7 text-zinc-600 dark:text-zinc-400">
-            {hotOffer.details}
-          </p>
-          <p className="mt-6">
-            <Link href={hotOffer.bookHref} className="underline">
-              Book this offer
-            </Link>
-          </p>
-        </div>
-      </section>
+      <FeaturedOffer />
 
       {/* 5. Offers & pricing */}
-      <section id="offers" className={sectionClass}>
-        <h2 className={headingClass}>Offers &amp; pricing</h2>
-        <div className="mt-6 flex flex-col gap-10">
-          {offers.map((offer) => (
-            <div
-              key={offer.id}
-              className="flex flex-col gap-4 border-t border-zinc-200 pt-6 dark:border-zinc-800"
-            >
-              <div>
-                <p className="text-xs uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
-                  {offer.category}
-                </p>
-                <h3 className="mt-1 text-lg font-medium text-zinc-950 dark:text-zinc-50">
-                  {offer.name}
-                </h3>
-                <p className="mt-2 max-w-xl text-sm leading-6 text-zinc-600 dark:text-zinc-400">
-                  {offer.details}
-                </p>
-              </div>
-              <div className="flex gap-3">
-                {offer.gallery.map((label) => (
-                  <div
-                    key={label}
-                    className="flex h-20 w-20 items-center justify-center rounded-md bg-zinc-200 text-xs text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400"
-                  >
-                    {label}
-                  </div>
-                ))}
-              </div>
-              <p>
-                <Link href={offer.bookHref} className="underline">
-                  Book
-                </Link>
-              </p>
-            </div>
-          ))}
-        </div>
-      </section>
+      <Offers />
 
       {/* 6. General booking CTA */}
       <section

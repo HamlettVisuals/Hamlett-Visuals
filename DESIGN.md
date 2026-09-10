@@ -120,7 +120,8 @@ elsewhere.
 
 ## Motion
 
-**Two sanctioned movements. Nothing else animates.**
+**Two ambient/hover movements, plus one user-triggered reveal. Nothing else
+animates.**
 
 1. **Hero image crossfade** — ambient, non-interactive. Token
    `--hero-fade-duration` (1200ms) + `--ease-standard`. (Hero section still to
@@ -134,6 +135,12 @@ elsewhere.
    - `transform` only (no width/height); frame reserves space → no CLS.
    - Use `<HoverZoomImage>` or the `.hover-zoom` class. **Do not** add any other
      hover effect (lift, shadow, colour shift) anywhere on the site.
+3. **Offer row disclosure** — user-triggered, not ambient. The "Show details"
+   toggle on the Offers & pricing rows expands its inclusions via
+   `.offer-disclosure` (`grid-template-rows` 0fr → 1fr, 200ms `--ease-standard`,
+   short inner fade). Collapsed by default; still under `prefers-reduced-motion`.
+   This is the only reveal animation on the site — it does not license
+   fade-up-on-scroll or per-card hover transitions elsewhere.
 
 No scroll-triggered entrances. No per-section fade-up. `scroll-behavior: smooth`
 only when motion is not reduced.
