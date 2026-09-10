@@ -4,6 +4,7 @@ import Categories from "@/components/home/Categories";
 import About from "@/components/home/About";
 import FeaturedOffer from "@/components/home/FeaturedOffer";
 import Offers from "@/components/home/Offers";
+import BookingCta from "@/components/home/BookingCta";
 import { instagramPosts, testimonialsTeaser } from "@/lib/site-content";
 
 // Single flowing homepage. Sections render in this exact order:
@@ -43,22 +44,7 @@ export default function Home() {
       <Offers />
 
       {/* 6. General booking CTA */}
-      <section
-        id="booking-cta"
-        className="border-y border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900"
-      >
-        <div className={`${sectionClass} text-center`}>
-          <h2 className={headingClass}>Ready to book?</h2>
-          <p className="mt-3 text-base text-zinc-600 dark:text-zinc-400">
-            Placeholder booking call-to-action copy.
-          </p>
-          <p className="mt-6">
-            <Link href="/booking" className="underline">
-              Go to booking
-            </Link>
-          </p>
-        </div>
-      </section>
+      <BookingCta />
 
       {/* 7. Recent Instagram */}
       <section id="instagram" className={sectionClass}>
