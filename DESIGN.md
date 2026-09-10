@@ -46,6 +46,10 @@ Because taupe fails AA at body size, links do **not** use accent as their text
 colour. `.link` renders ink text (full contrast) with a 1px hairline underline
 that warms to taupe on hover. The accent only ever tints decoration.
 
+`.link-quiet` is the exception for links that wrap a whole heading (the offer
+titles): plain text, hairline underline on hover / focus only, so the heading
+never reads as a control.
+
 ---
 
 ## Typography
@@ -115,6 +119,12 @@ same move `.link` makes on its underline; nothing translates or lifts. The
 small-caps label and the trailing arrow are scoped to this component — they are
 not licence to reintroduce tracked-out eyebrow labels or `→`-suffixed links
 elsewhere.
+
+`.link-chip-inline` — compact variant (`icon + label`, no small-caps eyebrow,
+no arrow, sized to content) so a pair sits side by side. Used for the
+`View gallery` / `Book` actions on the Featured offer and every standard offer
+row, where the stacked full-width chip would outweigh the row. Same border,
+radius and hover as `.link-chip`.
 
 ---
 

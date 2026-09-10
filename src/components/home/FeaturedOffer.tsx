@@ -1,12 +1,14 @@
 import Link from "next/link";
 import FeatureList from "@/components/home/FeatureList";
+import OfferActions from "@/components/home/OfferActions";
 import { featuredOffer } from "@/lib/site-content";
 
 // Hot offer section (#hot-offer). The one offer to notice first, so it is
 // built bigger than the rows in #offers: title at page scale, a full mini-
-// gallery, the inclusions shown in full (no toggle), and a solid button CTA
-// instead of a text link. The emphasis is all scale / weight / whitespace —
-// no background fill, no border box, no shadow (DESIGN.md → flat surfaces).
+// gallery and the inclusions shown in full (no toggle). Emphasis is all
+// scale / weight / whitespace — no background fill, no border box, no shadow
+// (DESIGN.md → flat surfaces). The action pills are the same compact pair as
+// the standard rows (OfferActions), so the two sections read consistently.
 
 export default function FeaturedOffer() {
   const offer = featuredOffer;
@@ -17,7 +19,14 @@ export default function FeaturedOffer() {
         <h2 className="font-display text-heading text-ink">Popular right now</h2>
 
         <div className="mt-8 flex flex-wrap items-baseline gap-x-5 gap-y-1">
-          <h3 className="font-display text-page text-ink">{offer.title}</h3>
+          <h3 className="font-display text-page text-ink">
+            <Link
+              href={`/portfolio/${offer.categorySlug}`}
+              className="link-quiet"
+            >
+              {offer.title}
+            </Link>
+          </h3>
           <p className="text-title text-muted tabular-nums">{offer.price}</p>
         </div>
         <p className="mt-2 text-caption text-muted">{offer.category}</p>
@@ -37,17 +46,11 @@ export default function FeaturedOffer() {
 
         <FeatureList items={offer.features} className="mt-8 max-w-measure" />
 
-        <div className="mt-10 flex flex-wrap items-center gap-x-6 gap-y-3">
-          <Link href={`/booking?offer=${offer.id}`} className="btn">
-            Book this package
-          </Link>
-          <Link
-            href={`/portfolio/${offer.categorySlug}`}
-            className="link text-body text-ink"
-          >
-            View {offer.category.toLowerCase()} work
-          </Link>
-        </div>
+        <OfferActions
+          categorySlug={offer.categorySlug}
+          id={offer.id}
+          className="mt-8"
+        />
       </div>
     </section>
   );

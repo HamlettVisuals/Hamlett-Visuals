@@ -3,14 +3,16 @@
 import { useState } from "react";
 import Link from "next/link";
 import FeatureList from "@/components/home/FeatureList";
+import OfferActions from "@/components/home/OfferActions";
 import { standardOffers, type Offer } from "@/lib/site-content";
 
 // Offers & pricing section (#offers). One row per non-featured offer, split by
-// a hairline. Each row shows title, price and a mini-gallery up front; the
-// inclusions sit behind a "Show details" toggle, collapsed by default. The
-// reveal is a plain CSS height/opacity transition (.offer-disclosure in
-// globals.css) — no animation library, and it stays still under
-// prefers-reduced-motion.
+// a hairline. Each row shows a linked title, price and a mini-gallery up
+// front; the inclusions sit behind a "Show details" toggle, collapsed by
+// default. The reveal is a plain CSS height/opacity transition
+// (.offer-disclosure in globals.css) — no animation library, and it stays
+// still under prefers-reduced-motion. The action pills (OfferActions) sit
+// below the row, the same pair the Featured offer uses.
 
 function OfferRow({ offer }: { offer: Offer }) {
   const [open, setOpen] = useState(false);
@@ -21,7 +23,14 @@ function OfferRow({ offer }: { offer: Offer }) {
       <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between sm:gap-10">
         <div className="min-w-0 sm:flex-1">
           <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
-            <h3 className="font-display text-title text-ink">{offer.title}</h3>
+            <h3 className="font-display text-title text-ink">
+              <Link
+                href={`/portfolio/${offer.categorySlug}`}
+                className="link-quiet"
+              >
+                {offer.title}
+              </Link>
+            </h3>
             <p className="text-body text-muted tabular-nums">{offer.price}</p>
           </div>
           <p className="mt-1 text-caption text-muted">{offer.category}</p>
@@ -52,27 +61,23 @@ function OfferRow({ offer }: { offer: Offer }) {
           </div>
         </div>
 
-        <div className="shrink-0">
-          <ul className="flex gap-2">
-            {offer.gallery.map((label) => (
-              <li
-                key={label}
-                className="flex aspect-square w-20 items-center justify-center border border-hairline px-1.5 text-center text-caption leading-tight text-muted sm:w-24"
-              >
-                {label}
-              </li>
-            ))}
-          </ul>
-          <p className="mt-3">
-            <Link
-              href={`/booking?offer=${offer.id}`}
-              className="link text-body text-ink"
+        <ul className="flex shrink-0 gap-2">
+          {offer.gallery.map((label) => (
+            <li
+              key={label}
+              className="flex aspect-square w-20 items-center justify-center border border-hairline px-1.5 text-center text-caption leading-tight text-muted sm:w-24"
             >
-              Book
-            </Link>
-          </p>
-        </div>
+              {label}
+            </li>
+          ))}
+        </ul>
       </div>
+
+      <OfferActions
+        categorySlug={offer.categorySlug}
+        id={offer.id}
+        className="mt-6"
+      />
     </li>
   );
 }

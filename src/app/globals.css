@@ -205,6 +205,23 @@
   }
   .link:hover { text-decoration-color: var(--color-accent); }
 
+  /* Quiet link: renders as plain text, with a hairline underline appearing
+     only on hover / focus. For links that wrap a whole heading (the offer
+     titles) so the heading never reads as a control. .link — always
+     underlined — stays the default for inline links. */
+  .link-quiet {
+    text-decoration-color: var(--color-hairline);
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.16em;
+  }
+  .link-quiet:hover,
+  .link-quiet:focus-visible {
+    text-decoration-line: underline;
+  }
+  .link-quiet:focus-visible {
+    text-decoration-color: var(--color-accent);
+  }
+
   /* Link chip: the pill links stacked under the About bio (Backstage,
      Testimonials). A deliberate exception to the no-radius rule — the fully
      rounded pill matches the reference layout — but flat in every other
@@ -250,6 +267,18 @@
   .link-chip-arrow {
     color: var(--color-muted);
     font-size: 1rem;
+  }
+
+  /* Inline layout variant of .link-chip — a compact "icon + label" pill with
+     no small-caps eyebrow and no trailing arrow, sized to its content so a
+     pair can sit side by side. Used for the "View gallery" / "Book" actions
+     on the offers, where About's stacked full-width chips would be too heavy.
+     Keeps the pill border, radius and hover from .link-chip. */
+  .link-chip-inline {
+    display: inline-grid;
+    grid-template-columns: auto auto;
+    gap: 0.5rem;
+    padding: 0.5rem 0.9375rem;
   }
 
   /* Offers & pricing row disclosure — the one user-triggered reveal on the
