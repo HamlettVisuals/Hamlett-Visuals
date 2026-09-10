@@ -8,10 +8,11 @@ import { categories } from "@/lib/site-content";
 // proportion at every breakpoint. Six categories divide evenly into both 2 and
 // 3, so every row stays full — a 4-wide layout would leave a ragged 4 + 2.
 //
-// Each tile is the photograph. Flat, no shadow, no radius (DESIGN.md → flat
-// surfaces); the only motion is the site-wide hover-zoom via <HoverZoomImage>.
-// Name + one-line descriptor sit over the foot of the image on a scrim that
-// covers only the lower band, so the top of every photo stays true.
+// Each tile is a photo above a caption: the image keeps the 9:16 crop and the
+// site-wide hover-zoom (<HoverZoomImage>), then a small gap, the category name
+// in --font-display, and the one-line descriptor below it. Caption text sits on
+// the page ground in --color-ink / --color-muted — no scrim, nothing overlaid
+// on the photo. Flat, no shadow, no radius (DESIGN.md → flat surfaces).
 //
 // Copy and image path live on each `categories` entry in
 // src/lib/site-content.ts, so this grid, the portfolio routes and the hero
@@ -21,15 +22,14 @@ export default function Categories() {
   return (
     <section id="categories" className="border-t border-hairline">
       <div className="mx-auto max-w-5xl px-gutter py-section">
-        <h2 className="font-display text-heading text-ink">Browse by category</h2>
+        <h2 className="text-center font-display text-heading text-ink">
+          Browse by category
+        </h2>
 
         <ul className="mt-8 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 lg:gap-4">
           {categories.map((category) => (
             <li key={category.slug}>
-              <Link
-                href={`/portfolio/${category.slug}`}
-                className="relative block"
-              >
+              <Link href={`/portfolio/${category.slug}`} className="block">
                 <HoverZoomImage
                   src={category.image}
                   alt={`${category.name} photography`}
@@ -37,30 +37,11 @@ export default function Categories() {
                   className="aspect-[9/16] w-full"
                 />
 
-                {/* Scrim — lower band only, fading out well before the midline
-                    so it sits behind the text without washing the photo. */}
-                <div
-                  aria-hidden
-                  className="pointer-events-none absolute inset-x-0 bottom-0 h-[45%]"
-                  style={{
-                    background:
-                      "linear-gradient(to top, rgba(23,22,20,0.76) 0%, rgba(23,22,20,0.32) 46%, rgba(23,22,20,0) 100%)",
-                  }}
-                />
-
-                <div className="pointer-events-none absolute inset-x-0 bottom-0 p-4">
-                  <h3
-                    className="font-display text-title font-medium text-canvas"
-                    style={{ textShadow: "0 1px 16px rgba(23,22,20,0.5)" }}
-                  >
+                <div className="mt-3">
+                  <h3 className="font-display text-title font-medium text-ink">
                     {category.name}
                   </h3>
-                  <p
-                    className="mt-1 text-body text-canvas/85"
-                    style={{ textShadow: "0 1px 12px rgba(23,22,20,0.55)" }}
-                  >
-                    {category.blurb}
-                  </p>
+                  <p className="mt-1 text-body text-muted">{category.blurb}</p>
                 </div>
               </Link>
             </li>
