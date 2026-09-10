@@ -5,7 +5,8 @@ import About from "@/components/home/About";
 import FeaturedOffer from "@/components/home/FeaturedOffer";
 import Offers from "@/components/home/Offers";
 import BookingCta from "@/components/home/BookingCta";
-import { instagramPosts, testimonialsTeaser } from "@/lib/site-content";
+import Instagram from "@/components/home/Instagram";
+import { testimonialsTeaser } from "@/lib/site-content";
 
 // Single flowing homepage. Sections render in this exact order:
 //  1. Hero            (<Hero />)
@@ -47,22 +48,7 @@ export default function Home() {
       <BookingCta />
 
       {/* 7. Recent Instagram */}
-      <section id="instagram" className={sectionClass}>
-        <h2 className={headingClass}>Recent Instagram</h2>
-        <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3">
-          {instagramPosts.map((post) => (
-            <a
-              key={post.id}
-              href={post.href}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex aspect-square items-center justify-center rounded-md bg-zinc-200 text-xs text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400"
-            >
-              {post.caption}
-            </a>
-          ))}
-        </div>
-      </section>
+      <Instagram />
 
       {/* 8. Testimonials teaser */}
       <section id="testimonials" className={sectionClass}>

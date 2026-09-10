@@ -201,17 +201,26 @@ export const standardOffers: Offer[] = offers;
 
 export type InstagramPost = {
   id: string;
+  // Permalink to the individual post. Placeholder points at the profile for
+  // now; becomes a real per-post permalink once the feed is wired up.
   href: string;
+  // Square (1:1) thumbnail for the homepage strip.
+  // TODO: replace the /instagram/*.svg placeholders with the six real post
+  // images — either hand-picked here, or populated from an Instagram API sync
+  // if that integration gets built.
+  image: string;
+  // Alt text for the tile. No caption is shown on the page, so this only
+  // needs to describe the image once real photos land.
   caption: string;
 };
 
 export const instagramPosts: InstagramPost[] = [
-  { id: "1", href: "https://www.instagram.com/", caption: "Placeholder post 1" },
-  { id: "2", href: "https://www.instagram.com/", caption: "Placeholder post 2" },
-  { id: "3", href: "https://www.instagram.com/", caption: "Placeholder post 3" },
-  { id: "4", href: "https://www.instagram.com/", caption: "Placeholder post 4" },
-  { id: "5", href: "https://www.instagram.com/", caption: "Placeholder post 5" },
-  { id: "6", href: "https://www.instagram.com/", caption: "Placeholder post 6" },
+  { id: "1", href: "https://www.instagram.com/", image: "/instagram/post-1.svg", caption: "Placeholder Instagram post 1" },
+  { id: "2", href: "https://www.instagram.com/", image: "/instagram/post-2.svg", caption: "Placeholder Instagram post 2" },
+  { id: "3", href: "https://www.instagram.com/", image: "/instagram/post-3.svg", caption: "Placeholder Instagram post 3" },
+  { id: "4", href: "https://www.instagram.com/", image: "/instagram/post-4.svg", caption: "Placeholder Instagram post 4" },
+  { id: "5", href: "https://www.instagram.com/", image: "/instagram/post-5.svg", caption: "Placeholder Instagram post 5" },
+  { id: "6", href: "https://www.instagram.com/", image: "/instagram/post-6.svg", caption: "Placeholder Instagram post 6" },
 ];
 
 export type Testimonial = {
