@@ -37,7 +37,7 @@ export default function Categories() {
                   className="aspect-[9/16] w-full"
                 />
 
-                <div className="mt-3">
+                <div className="mt-3 text-center">
                   <h3 className="font-display text-title font-medium text-ink">
                     {category.name}
                   </h3>
