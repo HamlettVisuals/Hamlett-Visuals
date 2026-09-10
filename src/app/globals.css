@@ -140,10 +140,15 @@
     color: var(--color-ink);
   }
 
+  /* Keep anchor targets clear of the sticky header (src/components/Nav.tsx).
+     Unconditional — the offset is needed whether or not the jump animates. */
+  html {
+    scroll-padding-top: 5rem;
+  }
+
   @media (prefers-reduced-motion: no-preference) {
     html {
       scroll-behavior: smooth;
-      scroll-padding-top: 2rem;
     }
   }
 }
