@@ -42,7 +42,7 @@ function relatedHref(post: InstagramPost): string | null {
 export default function Instagram() {
   return (
     <section id="instagram" className="border-t border-hairline">
-      <div className="mx-auto max-w-5xl px-gutter py-section">
+      <div className="mx-auto max-w-7xl px-gutter py-section">
         <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
           <h2 className="font-display text-heading text-ink">
             Recent on Instagram

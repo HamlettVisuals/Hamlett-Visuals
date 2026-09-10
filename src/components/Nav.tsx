@@ -60,7 +60,7 @@ export default function Nav() {
         scrolled ? "border-hairline" : "border-transparent"
       }`}
     >
-      <nav className="mx-auto flex max-w-4xl items-center justify-between px-6 py-4">
+      <nav className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
         <Link
           href="/"
           onClick={() => setMenuOpen(false)}

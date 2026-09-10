@@ -18,7 +18,7 @@ export default function FeaturedOffer() {
 
   return (
     <section id="hot-offer" className="border-t border-hairline">
-      <div className="mx-auto max-w-5xl px-gutter py-section">
+      <div className="mx-auto max-w-7xl px-gutter py-section">
         <h2 className="font-display text-heading text-ink">Popular right now</h2>
 
         <div className="mt-8 flex items-start justify-between gap-4">

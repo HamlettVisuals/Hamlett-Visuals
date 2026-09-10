@@ -20,7 +20,7 @@ export default function Footer() {
       id="footer"
       className="border-t border-zinc-200 dark:border-zinc-800"
     >
-      <div className="mx-auto flex max-w-4xl flex-col gap-8 px-6 py-12 text-sm text-zinc-600 dark:text-zinc-400">
+      <div className="mx-auto flex max-w-7xl flex-col gap-8 px-6 py-12 text-sm text-zinc-600 dark:text-zinc-400">
         <div className="flex flex-col gap-3">
           <div className="flex h-12 w-32 items-center justify-center rounded bg-zinc-200 text-xs text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400">
             Logo

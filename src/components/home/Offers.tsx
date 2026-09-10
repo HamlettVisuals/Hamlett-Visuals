@@ -113,7 +113,7 @@ function OfferRow({ offer }: { offer: Offer }) {
 export default function Offers() {
   return (
     <section id="offers" className="border-t border-hairline">
-      <div className="mx-auto max-w-5xl px-gutter py-section">
+      <div className="mx-auto max-w-7xl px-gutter py-section">
         <h2 className="font-display text-heading text-ink">
           Offers &amp; pricing
         </h2>

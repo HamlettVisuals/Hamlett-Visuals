@@ -117,6 +117,14 @@ so iOS doesn't zoom on focus. Don't set real content below 14px.
   `--spacing-gutter` = `clamp(1.25rem, …, 2.5rem)`.
 - Opt-in helpers: `.section` (adds `padding-block: var(--spacing-section)`) and
   `.section + .section` (adds the top hairline).
+- **Content column.** Every top-level section — plus the header and footer —
+  caps its content at `max-w-7xl` (80rem / 1280px), `mx-auto`, so the whole
+  page shares one left/right edge on a wide monitor and there are no oversized
+  dead margins at ~1920px. Sections use the `px-gutter` side gutter; the header
+  and footer keep their fixed `px-6`. Running text inside still narrows to
+  `--spacing-measure` (68ch). The Booking CTA is the one deliberately narrower
+  band (`max-w-2xl`): it reads as the quiet centred break between the
+  full-width sections, and its centred fine print wants the shorter measure.
 
 ### Buttons
 

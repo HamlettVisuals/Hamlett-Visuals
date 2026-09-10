@@ -99,7 +99,7 @@ export default function Hero() {
 
       {/* Text block — lower-left. text-shadow is the belt-and-braces contrast
           guard for bright shots where the scrim alone might not be enough. */}
-      <div className="relative mx-auto w-full max-w-5xl px-gutter pb-14 sm:pb-20">
+      <div className="relative mx-auto w-full max-w-7xl px-gutter pb-14 sm:pb-20">
         <div className="max-w-2xl">
           <h1
             className="font-display text-hero font-normal text-canvas"

@@ -68,7 +68,7 @@ const chips = [
 export default function About() {
   return (
     <section id="about" className="border-t border-hairline">
-      <div className="mx-auto max-w-5xl px-gutter py-section">
+      <div className="mx-auto max-w-7xl px-gutter py-section">
         <h2 className="font-display text-heading text-ink">About</h2>
 
         <div className="mt-8 grid gap-8 md:grid-cols-[2fr_3fr] md:gap-12">
