@@ -26,6 +26,7 @@
   --color-ink: #171614;       /* warm near-black — cast matched to the canvas, not #000 */
   --color-muted: #5f5b52;     /* secondary / caption text — 6.3:1 on canvas */
   --color-accent: #8a8378;    /* taupe — decoration & large type ONLY, never small text (3.5:1) */
+  --color-accent-text: #71654f; /* same hue as --color-accent, pulled dark enough to clear AA (5.4:1) — for accent-coloured text below large-type size */
   --color-hairline: #d8d5cc;  /* 1px section dividers — the only structural line on the site */
 
   /* Buttons are inverted, not accent-coloured. */

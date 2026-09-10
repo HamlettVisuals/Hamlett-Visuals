@@ -31,6 +31,7 @@ Spend the boldness in exactly one place — **Fraunces at hero scale**.
 | `--color-ink` | `#171614` | Primary text | Warm near-black. The warm cast is matched to the canvas on purpose — pure `#000` reads as detached here. ~17:1 on canvas. |
 | `--color-muted` | `#5F5B52` | Secondary / caption text | 6.3:1 on canvas — AA for all sizes. |
 | `--color-accent` | `#8A8378` | Taupe accent | **3.5:1 on canvas — fails AA for body text.** Use for decoration and large display type only: underline tint on hover, active-state marks, selection highlight. Never as the colour of small text or a small-text link. |
+| `--color-accent-text` | `#71654F` | Accent, as text | Same hue as `--color-accent`, pulled darker to **5.4:1 on canvas — AA for all sizes.** For accent-coloured *text* below large-display size (the featured offer's price figure and list-row title). |
 | `--color-hairline` | `#D8D5CC` | 1px dividers | The only structural line on the site. Between top-level sections only. |
 | `--color-btn` / `--color-btn-ink` | `#171614` / `#FAF9F6` | Button fill / label | Inverted, not accent-coloured. |
 
@@ -144,17 +145,17 @@ tiny and used only on the one featured offer ("Hot offer" on its section, "Hot
 deal" on its list row). The label text carries the meaning — colour only
 reinforces it.
 
-**Featured price / title accent (contrast note).** The featured offer renders
-its title and price figure in `--color-accent` in both places. Accent is
-~3.5:1 on canvas: fine for the standalone title at `text-page`, but the price
-figure (`text-title`, ~20px) and the list-row title sit below AA for normal
-text. Deliberate, to match the reference — revisit with a dedicated darker
-`accent-text` token if it stays once real copy lands. The small "From" caption
-stays `--color-muted` (AA) regardless.
+**Featured accent text.** The featured offer's title and price render in an
+accent colour in both places (standalone section and list row). Two tokens:
+`--color-accent` (~3.5:1) is used only for the standalone title at `text-page`
+size, where 3:1 large-text AA applies. Everything smaller — the price figure
+(`text-title`) and the list-row title — uses `--color-accent-text` (`#71654f`,
+same hue pulled darker to ~5.4:1), which clears AA for normal text. The small
+"From" caption stays `--color-muted`.
 
-**Fine-print italic.** `OfferTerms` renders the placeholder deposit /
-cancellation line in italic caption text — a scoped fine-print convention, not
-a general licence for italic (Inter italic is faux; acceptable at this size).
+`OfferTerms` — the placeholder deposit / cancellation fine print renders as
+plain muted caption text. No italic (Inter italic isn't loaded; nothing else
+on the site is italic either).
 
 ---
 

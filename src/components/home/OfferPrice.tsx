@@ -1,8 +1,9 @@
 // Price block for an offer — a small "From" caption above a larger figure,
 // sitting top-right of the row header. Tabular figures so digits line up
-// across rows. `accent` tints the figure with --color-accent for the featured
-// offer (in both its standalone section and its list row); every other row
-// leaves it ink. The "From" caption always stays muted.
+// across rows. `accent` tints the figure with --color-accent-text (the
+// AA-safe darker accent) for the featured offer, in both its standalone
+// section and its list row; every other row leaves it ink. The "From"
+// caption always stays muted.
 
 type OfferPriceProps = {
   lead: string;
@@ -22,7 +23,7 @@ export default function OfferPrice({
       <span className="block text-caption text-muted">{lead}</span>
       <span
         className={`block text-title tabular-nums ${
-          accent ? "text-accent" : "text-ink"
+          accent ? "text-accent-text" : "text-ink"
         }`}
       >
         {amount}

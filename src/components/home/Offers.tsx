@@ -38,7 +38,7 @@ function OfferRow({ offer }: { offer: Offer }) {
         <div className="min-w-0">
           <h3
             className={`font-display text-title ${
-              isFeatured ? "text-accent" : "text-ink"
+              isFeatured ? "text-accent-text" : "text-ink"
             }`}
           >
             <Link
