@@ -1,46 +1,78 @@
 import Link from "next/link";
+import { categories, testimonials } from "@/lib/site-content";
 
-// Testimonials page — placeholder content only.
+// Full testimonials page. The teaser (src/components/home/Testimonials.tsx)
+// shows two featured quotes as compact blocks; this page is the whole set,
+// grouped by the kind of shoot. Quotes lead at text-title so they read as the
+// page's main content; the client name and context sit under each as quiet
+// attribution. Flat throughout — hairline rules between entries, the same
+// device the Offers list uses for real item boundaries. No cards, no shadow.
 
 export const metadata = {
   title: "Testimonials — Hamlet Visuals",
 };
 
-const testimonials = [
-  { quote: "Placeholder testimonial quote one.", author: "Client A" },
-  { quote: "Placeholder testimonial quote two.", author: "Client B" },
-  { quote: "Placeholder testimonial quote three.", author: "Client C" },
-  { quote: "Placeholder testimonial quote four.", author: "Client D" },
-];
+// Walk `categories` (canonical order: Weddings → Portraits → Pets → Brands →
+// Motorsports → Real Estate) and drop any group with no testimonials.
+const groups = categories
+  .map((category) => ({
+    category,
+    items: testimonials.filter((t) => t.categorySlug === category.slug),
+  }))
+  .filter((group) => group.items.length > 0);
 
 export default function TestimonialsPage() {
   return (
-    <div className="mx-auto flex max-w-4xl flex-1 flex-col gap-8 px-6 py-16">
-      <div>
-        <h1 className="text-3xl font-semibold tracking-tight text-zinc-950 dark:text-zinc-50">
-          Testimonials
-        </h1>
-        <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
-          Placeholder testimonials page.
+    <div className="mx-auto flex w-full max-w-4xl flex-1 flex-col px-gutter py-section">
+      <header>
+        <h1 className="font-display text-page text-ink">Testimonials</h1>
+        <p className="mt-3 max-w-measure text-body text-muted">
+          A few words from people I&rsquo;ve worked with, sorted by the kind of
+          shoot they came for.
         </p>
-      </div>
+      </header>
 
-      <div className="flex flex-col gap-6">
-        {testimonials.map((testimonial) => (
-          <blockquote
-            key={testimonial.author}
-            className="border-l-2 border-zinc-300 pl-4 text-zinc-600 dark:border-zinc-700 dark:text-zinc-400"
-          >
-            <p>&ldquo;{testimonial.quote}&rdquo;</p>
-            <footer className="mt-1 text-sm text-zinc-500 dark:text-zinc-500">
-              — {testimonial.author}
-            </footer>
-          </blockquote>
-        ))}
-      </div>
+      {groups.length === 0 ? (
+        <p className="mt-12 text-body text-muted">No testimonials yet.</p>
+      ) : (
+        <div className="mt-14 flex flex-col gap-16">
+          {groups.map(({ category, items }) => (
+            <section key={category.slug}>
+              <h2 className="font-display text-heading text-ink">
+                {category.name}
+              </h2>
 
-      <p>
-        <Link href="/" className="underline">
+              <ul className="mt-6 flex flex-col">
+                {items.map((testimonial) => (
+                  <li
+                    key={testimonial.clientName}
+                    className="border-t border-hairline py-8 first:border-t-0 first:pt-0"
+                  >
+                    <figure>
+                      <blockquote className="max-w-measure text-title text-ink">
+                        &ldquo;{testimonial.quote}&rdquo;
+                      </blockquote>
+                      <figcaption className="mt-4 text-caption">
+                        <span className="text-ink">
+                          {testimonial.clientName}
+                        </span>
+                        {testimonial.context && (
+                          <span className="mt-0.5 block text-muted">
+                            {testimonial.context}
+                          </span>
+                        )}
+                      </figcaption>
+                    </figure>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ))}
+        </div>
+      )}
+
+      <p className="mt-16">
+        <Link href="/" className="link text-ink">
           Back to home
         </Link>
       </p>

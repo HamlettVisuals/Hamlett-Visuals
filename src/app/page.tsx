@@ -1,4 +1,3 @@
-import Link from "next/link";
 import Hero from "@/components/home/Hero";
 import Categories from "@/components/home/Categories";
 import About from "@/components/home/About";
@@ -6,7 +5,7 @@ import FeaturedOffer from "@/components/home/FeaturedOffer";
 import Offers from "@/components/home/Offers";
 import BookingCta from "@/components/home/BookingCta";
 import Instagram from "@/components/home/Instagram";
-import { testimonialsTeaser } from "@/lib/site-content";
+import Testimonials from "@/components/home/Testimonials";
 
 // Single flowing homepage. Sections render in this exact order:
 //  1. Hero            (<Hero />)
@@ -51,27 +50,7 @@ export default function Home() {
       <Instagram />
 
       {/* 8. Testimonials teaser */}
-      <section id="testimonials" className={sectionClass}>
-        <h2 className={headingClass}>Testimonials</h2>
-        <div className="mt-6 flex flex-col gap-4">
-          {testimonialsTeaser.map((testimonial) => (
-            <blockquote
-              key={testimonial.author}
-              className="border-l-2 border-zinc-300 pl-4 text-sm text-zinc-600 dark:border-zinc-700 dark:text-zinc-400"
-            >
-              <p>&ldquo;{testimonial.quote}&rdquo;</p>
-              <footer className="mt-1 text-zinc-500 dark:text-zinc-500">
-                — {testimonial.author}
-              </footer>
-            </blockquote>
-          ))}
-        </div>
-        <p className="mt-6">
-          <Link href="/testimonials" className="underline">
-            Read all testimonials
-          </Link>
-        </p>
-      </section>
+      <Testimonials />
 
       {/* 9. Terms — anchor placeholder only, no copy yet */}
       <section id="terms" className={sectionClass}>

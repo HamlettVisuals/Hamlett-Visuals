@@ -313,13 +313,100 @@ export const instagramPosts: InstagramPost[] = [
 
 export type Testimonial = {
   quote: string;
-  author: string;
+  clientName: string;
+  // Which of the six categories this testimonial relates to — must match a
+  // `categories` slug so the homepage tag and the /testimonials grouping stay
+  // in step with the portfolio.
+  categorySlug: string;
+  // Optional short context line, e.g. "Wedding, June 2025". Placeholder.
+  context?: string;
+  // The homepage teaser shows exactly the entries flagged here — flip the flag
+  // rather than hardcoding names in the component (same pattern as `offers`).
+  featured?: boolean;
 };
 
-export const testimonialsTeaser: Testimonial[] = [
-  { quote: "Placeholder testimonial quote one.", author: "Client A" },
-  { quote: "Placeholder testimonial quote two.", author: "Client B" },
+// TODO: every quote below is placeholder, written to set tone and length —
+// swap in her real client testimonials before launch. Keep each `categorySlug`
+// pointing at a real category, and keep exactly two entries `featured` for the
+// homepage teaser.
+export const testimonials: Testimonial[] = [
+  {
+    quote:
+      "We keep going back to the photos from the quiet parts of the day — my grandmother laughing, my husband's face just before the ceremony. She gave us the day we actually had, not a tidied-up version of it.",
+    clientName: "Priya & Daniel",
+    categorySlug: "weddings",
+    context: "Wedding, June 2025",
+    featured: true,
+  },
+  {
+    quote:
+      "She was somehow everywhere and nowhere all day. We barely noticed the camera, and then the gallery came back and every face that mattered to us was in it.",
+    clientName: "The Alvarez family",
+    categorySlug: "weddings",
+    context: "Wedding, September 2024",
+  },
+  {
+    quote:
+      "I told her up front that I hate having my picture taken. An hour later I had thirty photos I actually liked and a headshot I still use everywhere.",
+    clientName: "Marcus Bell",
+    categorySlug: "portraits",
+    context: "Personal branding session",
+  },
+  {
+    quote:
+      "Our first proper family portraits since the kids were born. Nobody is looking at the camera in my favourite one, and that is exactly why I love it.",
+    clientName: "Hannah Okafor",
+    categorySlug: "portraits",
+    context: "Family session, Spring 2025",
+  },
+  {
+    quote:
+      "Apparently a good photo of a black dog is hard to get. You would not know it from our gallery — you can see every bit of his face.",
+    clientName: "Sam Reyes",
+    categorySlug: "pets",
+    context: "Pet session, at home",
+  },
+  {
+    quote:
+      "She sat on our kitchen floor for twenty minutes waiting for the cat to do something worth photographing. The wait was worth it.",
+    clientName: "Deborah Lin",
+    categorySlug: "pets",
+  },
+  {
+    quote:
+      "We handed over a rough shot list and got back images already cropped for every place we needed them. The launch went out a week early because the photos were ready first.",
+    clientName: "Off-Grid Coffee Roasters",
+    categorySlug: "brands",
+    context: "Product shoot",
+  },
+  {
+    quote:
+      "Clean, consistent, and on brand. We have run the same set across the site and three seasons of ads without it ever looking tired.",
+    clientName: "Lena Fischer, Marketing Lead",
+    categorySlug: "brands",
+    context: "Brand shoot, 2024",
+  },
+  {
+    quote:
+      "Trackside all weekend, and the full set was in our inbox the next morning. Half of them ran in the team recap before we had left the paddock.",
+    clientName: "Redline Racing",
+    categorySlug: "motorsports",
+    context: "Race weekend coverage",
+    featured: true,
+  },
+  {
+    quote:
+      "The twilight exterior sold the listing before the open house. Buyers kept bringing up the photos.",
+    clientName: "Compass & Key Realty",
+    categorySlug: "real-estate",
+    context: "Listing shoot",
+  },
 ];
+
+// The homepage teaser set. Two entries, flagged in `testimonials` above.
+export const featuredTestimonials: Testimonial[] = testimonials.filter(
+  (testimonial) => testimonial.featured,
+);
 
 // --- Hero filmstrip ------------------------------------------------------------
 // The homepage hero is a cross-category filmstrip: it shows exactly ONE
