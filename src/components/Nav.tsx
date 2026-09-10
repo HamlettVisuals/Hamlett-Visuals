@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import Wordmark from "@/components/Wordmark";
 
 // Single-page site: most nav items are anchors into the homepage sections;
 // Testimonials and Book are their own routed pages.
@@ -13,9 +14,7 @@ import Link from "next/link";
 // always present at 1px (transparent -> hairline) so toggling it never shifts
 // layout. This scroll/border behaviour is unchanged from the previous pass.
 //
-// TODO: "Hamlet Visuals" is a typographic wordmark — Fraunces, tightened
-// tracking — standing in for a real logo. Swap in an SVG lockup here if she
-// wants a drawn mark later.
+// The logo is the shared <Wordmark> (also used in the footer).
 
 // Destinations are unchanged. Book is split out below: it renders as the one
 // solid button, not a quiet link.
@@ -61,13 +60,7 @@ export default function Nav() {
       }`}
     >
       <nav className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-        <Link
-          href="/"
-          onClick={() => setMenuOpen(false)}
-          className="font-display text-title font-medium leading-none tracking-[-0.02em] text-ink"
-        >
-          Hamlet Visuals
-        </Link>
+        <Wordmark onClick={() => setMenuOpen(false)} />
 
         {/* Desktop: quiet .link items, then the one solid Book button. */}
         <div className="hidden items-center gap-8 md:flex">
