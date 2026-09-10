@@ -6,7 +6,7 @@ import Link from "next/link";
 import { heroSlides } from "@/lib/site-content";
 
 // Cross-category filmstrip hero. One representative image per category
-// (Weddings → Races → Portraits → Real Estate / Construction → repeat),
+// (Weddings → Portraits → Pets → Brands → Motorsports → Real Estate → repeat),
 // crossfading on the --hero-fade-duration token. The photo carries the section;
 // the scrim is kept to a soft patch behind the text only, so the image stays
 // bright and true everywhere else.
@@ -111,7 +111,7 @@ export default function Hero() {
             className="mt-4 max-w-md text-lead text-canvas/85"
             style={{ textShadow: "0 1px 16px rgba(23,22,20,0.45)" }}
           >
-            Weddings, races, portraits, and more — captured as they happen.
+            Weddings, portraits, pets, and more — captured as they happen.
           </p>
           <div className="mt-8">
             <Link href="#booking-cta" className="btn">

@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" role="img" aria-label="Placeholder for the Pets hero image">
+  <rect width="1600" height="900" fill="#4f746a"/>
+  <rect x="60" y="60" width="1480" height="780" fill="none" stroke="#eaf1ee" stroke-opacity="0.5" stroke-width="2"/>
+  <text x="800" y="430" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="120" fill="#faf9f6">Pets</text>
+  <text x="800" y="510" text-anchor="middle" font-family="system-ui, sans-serif" font-size="34" letter-spacing="6" fill="#faf9f6" fill-opacity="0.75">PLACEHOLDER HERO IMAGE</text>
+</svg>

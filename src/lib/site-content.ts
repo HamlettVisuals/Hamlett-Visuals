@@ -25,22 +25,34 @@ export const categories: Category[] = [
     image: "/categories/weddings.svg",
   },
   {
-    slug: "races",
-    name: "Races",
-    blurb: "From the start gun to the finish-line sprint",
-    image: "/categories/races.svg",
-  },
-  {
     slug: "portraits",
     name: "Portraits",
     blurb: "Honest expressions in natural light",
     image: "/categories/portraits.svg",
   },
   {
-    slug: "real-estate-construction",
-    name: "Real Estate / Construction",
+    slug: "pets",
+    name: "Pets",
+    blurb: "Fur, feathers, and full personality",
+    image: "/categories/pets.svg",
+  },
+  {
+    slug: "brands",
+    name: "Brands",
+    blurb: "Product and brand photography, shot to sell",
+    image: "/categories/brands.svg",
+  },
+  {
+    slug: "motorsports",
+    name: "Motorsports",
+    blurb: "From the formation lap to the checkered flag",
+    image: "/categories/motorsports.svg",
+  },
+  {
+    slug: "real-estate",
+    name: "Real Estate",
     blurb: "Finished spaces and work in progress",
-    image: "/categories/real-estate-construction.svg",
+    image: "/categories/real-estate.svg",
   },
 ];
 
@@ -75,7 +87,7 @@ export const offers: Offer[] = [
   },
   {
     id: "race-day",
-    category: "Races",
+    category: "Motorsports",
     name: "Race Day Coverage",
     details:
       "Placeholder details for race day coverage. Session length, number of edits, and pricing go here.",
@@ -93,10 +105,10 @@ export const offers: Offer[] = [
   },
   {
     id: "property-shoot",
-    category: "Real Estate / Construction",
+    category: "Real Estate",
     name: "Property / Site Shoot",
     details:
-      "Placeholder details for a real estate or construction shoot. Square footage, drone add-ons, and pricing go here.",
+      "Placeholder details for a real estate shoot. Square footage, drone add-ons, and pricing go here.",
     gallery: ["Image 1", "Image 2", "Image 3"],
     bookHref: "/booking?offer=property-shoot",
   },
@@ -145,10 +157,11 @@ export const testimonialsTeaser: Testimonial[] = [
 // --- Hero filmstrip ------------------------------------------------------------
 // The homepage hero is a cross-category filmstrip: it shows exactly ONE
 // representative image per category and crossfades between them in the order the
-// `categories` array declares (Weddings → Races → Portraits → Real Estate /
-// Construction → repeat). Slug, display name and order come straight from
-// `categories` so the hero can never drift out of sync with the portfolio; only
-// the image path and its alt text are hero-specific and live here.
+// `categories` array declares (Weddings → Portraits → Pets → Brands →
+// Motorsports → Real Estate → repeat). Slug, display name and order come
+// straight from `categories` so the hero can never drift out of sync with the
+// portfolio; only the image path and its alt text are hero-specific and live
+// here.
 //
 // TODO: swap each placeholder in `/public/hero/*.svg` for a real representative
 // photo per category (e.g. `/hero/weddings.jpg`). Keep it to ONE image per
@@ -166,16 +179,24 @@ const heroImageByCategory: Record<string, { src: string; alt: string }> = {
     src: "/hero/weddings.svg",
     alt: "A newly married couple sharing their first dance as guests look on.",
   },
-  races: {
-    src: "/hero/races.svg",
-    alt: "Runners rounding the final bend of a road race at full effort.",
-  },
   portraits: {
     src: "/hero/portraits.svg",
     alt: "A person in soft window light, caught mid-laugh during a portrait session.",
   },
-  "real-estate-construction": {
-    src: "/hero/real-estate-construction.svg",
+  pets: {
+    src: "/hero/pets.svg",
+    alt: "A dog mid-stride across an open field, ears up and tongue out.",
+  },
+  brands: {
+    src: "/hero/brands.svg",
+    alt: "A product styled on a clean set under controlled studio lighting.",
+  },
+  motorsports: {
+    src: "/hero/motorsports.svg",
+    alt: "A race car rounding the final corner of the circuit at full throttle.",
+  },
+  "real-estate": {
+    src: "/hero/real-estate.svg",
     alt: "A modern house exterior photographed at dusk with the interior lights on.",
   },
 };

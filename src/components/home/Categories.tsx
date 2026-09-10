@@ -3,9 +3,10 @@ import HoverZoomImage from "@/components/HoverZoomImage";
 import { categories } from "@/lib/site-content";
 
 // Categories section (#categories). A uniform grid of tall tiles — one per
-// category — that reads as a gallery hang: four columns on desktop, 2×2 on
-// tablet, a single column on mobile, every tile the same 9:16 portrait
-// proportion at every breakpoint.
+// category — that reads as a gallery hang: three columns on desktop (3×2), two
+// on tablet (2×3), a single column on mobile, every tile the same 9:16 portrait
+// proportion at every breakpoint. Six categories divide evenly into both 2 and
+// 3, so every row stays full — a 4-wide layout would leave a ragged 4 + 2.
 //
 // Each tile is the photograph. Flat, no shadow, no radius (DESIGN.md → flat
 // surfaces); the only motion is the site-wide hover-zoom via <HoverZoomImage>.
@@ -22,7 +23,7 @@ export default function Categories() {
       <div className="mx-auto max-w-5xl px-gutter py-section">
         <h2 className="font-display text-heading text-ink">Browse by category</h2>
 
-        <ul className="mt-8 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4 lg:gap-4">
+        <ul className="mt-8 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 lg:gap-4">
           {categories.map((category) => (
             <li key={category.slug}>
               <Link
@@ -32,7 +33,7 @@ export default function Categories() {
                 <HoverZoomImage
                   src={category.image}
                   alt={`${category.name} photography`}
-                  sizes="(min-width: 1024px) 244px, (min-width: 640px) 50vw, 100vw"
+                  sizes="(min-width: 1024px) 336px, (min-width: 640px) 50vw, 100vw"
                   className="aspect-[9/16] w-full"
                 />
 
