@@ -117,12 +117,13 @@ so iOS doesn't zoom on focus. Don't set real content below 14px.
   full inclusions list and fine print are NOT duplicated here — they live only
   in this offer's repeat row in the Offers list, behind its Show details
   toggle. The card has a `--color-canvas-tint` fill that contrasts against the
-  plain-canvas section behind it, a 1px `--color-accent-text` border (the
-  darker accent — it stays crisp on the tint), 8px radius, and a soft blurred
+  plain-canvas section behind it, an 8px radius, and a soft blurred
   accent-tinted halo — two low-opacity `color-mix` `box-shadow` layers, no
-  grey, no motion. A **deliberate, explicitly scoped exception to the
-  no-shadow rule**: this one card only. It does not license shadows anywhere
-  else.
+  grey, no motion. **No border** — per the reference, the tint plus the halo
+  alone read as the card edge, deliberately softer than the repeated "Hot
+  deal" row's own solid `--color-accent-text` border (unchanged). A
+  **deliberate, explicitly scoped exception to the no-shadow rule**: this one
+  card only. It does not license shadows anywhere else.
 - **The "Hot deal" row hover-lift — a second scoped exception, motion + shadow.**
   `.offer-row-featured` — the repeat of the featured offer inside the Offers &
   pricing list, and *only* that row (not the standalone `.hot-offer-card`, not

@@ -411,15 +411,14 @@
   /* Standalone Hot offer card (#hot-offer) — the ONE place a shadow is allowed
      on this site. A deliberate, explicitly scoped exception to the flat /
      no-shadow rule (DESIGN.md → Layout & surfaces): the whole Hot offer
-     content sits in this single box with a --color-canvas-tint fill (same as
-     its section, so the border and halo do the lifting), a 1px --color-accent
-     border, an 8px radius, and a soft blurred accent-tinted halo — two
-     low-opacity color-mix box-shadow layers, no grey. Not licensed anywhere
-     else; the smaller .offer-row-featured repeat in the list keeps its plain
-     border with no glow. */
+     content sits in this single box with a --color-canvas-tint fill and an
+     8px radius. No border — the tint plus a soft blurred accent-tinted halo
+     (two low-opacity color-mix box-shadow layers, no grey) alone define the
+     edge, per the reference. This is deliberately softer than the repeated
+     "Hot deal" row (.offer-row-featured) in the Offers list, which keeps its
+     own solid --color-accent-text border unchanged. */
   .hot-offer-card {
     padding: 1.5rem;
-    border: 1px solid var(--color-accent-text);
     border-radius: 8px;
     background: var(--color-canvas-tint);
     box-shadow:
