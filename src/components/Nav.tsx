@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Wordmark from "@/components/Wordmark";
 
@@ -32,9 +32,35 @@ const BOOK_HREF = "/booking";
 // sub-pixel scroll jitter or elastic overscroll.
 const SCROLL_THRESHOLD = 4;
 
+// Three bars that resolve into an X — a plain CSS transform, no icon library.
+// Used for both the header toggle and the panel's own close button.
+function MenuIcon({ open }: { open: boolean }) {
+  return (
+    <span aria-hidden="true" className="relative block h-4 w-[22px]">
+      <span
+        className={`absolute left-0 top-0 h-[1.5px] w-full bg-current transition-transform duration-200 ease-standard ${
+          open ? "translate-y-[7px] rotate-45" : ""
+        }`}
+      />
+      <span
+        className={`absolute left-0 top-1/2 h-[1.5px] w-full -translate-y-1/2 bg-current transition-opacity duration-200 ease-standard ${
+          open ? "opacity-0" : "opacity-100"
+        }`}
+      />
+      <span
+        className={`absolute bottom-0 left-0 h-[1.5px] w-full bg-current transition-transform duration-200 ease-standard ${
+          open ? "-translate-y-[7px] -rotate-45" : ""
+        }`}
+      />
+    </span>
+  );
+}
+
 export default function Nav() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const toggleButtonRef = useRef<HTMLButtonElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const update = () => setScrolled(window.scrollY > SCROLL_THRESHOLD);
@@ -43,14 +69,71 @@ export default function Nav() {
     return () => window.removeEventListener("scroll", update);
   }, []);
 
-  // Esc closes the mobile menu.
+  // Closing always hands focus back to the button that opened the panel.
+  const closeMenu = () => {
+    setMenuOpen(false);
+    toggleButtonRef.current?.focus();
+  };
+
+  // Esc closes the panel.
   useEffect(() => {
     if (!menuOpen) return;
     const onKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setMenuOpen(false);
+      if (event.key === "Escape") closeMenu();
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
+  }, [menuOpen]);
+
+  // Body-scroll lock while the panel is open — same pattern as
+  // CategoryLightbox (src/components/Gallery/CategoryLightbox.tsx).
+  useEffect(() => {
+    if (!menuOpen) return;
+    document.body.classList.add("overflow-hidden");
+    return () => document.body.classList.remove("overflow-hidden");
+  }, [menuOpen]);
+
+  // Take the rest of the page out of the tab order and a11y tree while the
+  // panel is open — everything except the header (Nav) itself lives under
+  // <main> and <Footer> in layout.tsx.
+  useEffect(() => {
+    const main = document.querySelector("main");
+    const footer = document.querySelector("footer");
+    if (menuOpen) {
+      main?.setAttribute("inert", "");
+      footer?.setAttribute("inert", "");
+    }
+    return () => {
+      main?.removeAttribute("inert");
+      footer?.removeAttribute("inert");
+    };
+  }, [menuOpen]);
+
+  // Focus the panel on open and trap Tab/Shift+Tab inside it while open.
+  useEffect(() => {
+    if (!menuOpen) return;
+    const panel = panelRef.current;
+    if (!panel) return;
+
+    const focusable = panel.querySelectorAll<HTMLElement>(
+      "a[href], button:not([disabled])",
+    );
+    focusable[0]?.focus();
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== "Tab" || focusable.length === 0) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
   }, [menuOpen]);
 
   return (
@@ -63,7 +146,7 @@ export default function Nav() {
         <Wordmark onClick={() => setMenuOpen(false)} />
 
         {/* Desktop: quiet .link items, then the one solid Book button. */}
-        <div className="hidden items-center gap-8 md:flex">
+        <div className="hidden items-center gap-8 header:flex">
           <ul className="flex items-center gap-6">
             {navLinks.map((link) => (
               <li key={link.href}>
@@ -78,69 +161,75 @@ export default function Nav() {
           </Link>
         </div>
 
-        {/* Mobile: hamburger toggling the panel below. */}
+        {/* Collapsed: hamburger toggling the slide-in panel below. */}
         <button
           type="button"
+          ref={toggleButtonRef}
           onClick={() => setMenuOpen((open) => !open)}
           aria-label={menuOpen ? "Close menu" : "Open menu"}
           aria-expanded={menuOpen}
-          aria-controls="mobile-nav"
-          className="-mr-2 flex h-11 w-11 items-center justify-center text-ink md:hidden"
+          aria-controls="mobile-nav-panel"
+          className="-mr-2 flex h-11 w-11 items-center justify-center text-ink header:hidden"
         >
-          <svg width="22" height="22" viewBox="0 0 22 22" fill="none" aria-hidden="true">
-            {menuOpen ? (
-              <path
-                d="M5 5l12 12M17 5 5 17"
-                stroke="currentColor"
-                strokeWidth="1.6"
-                strokeLinecap="round"
-              />
-            ) : (
-              <path
-                d="M3 6h16M3 11h16M3 16h16"
-                stroke="currentColor"
-                strokeWidth="1.6"
-                strokeLinecap="round"
-              />
-            )}
-          </svg>
+          <MenuIcon open={menuOpen} />
         </button>
       </nav>
 
-      {/* Mobile panel. Height animates via grid-template-rows 0fr -> 1fr (no
-          magic max-height); still under prefers-reduced-motion (the global
-          safety net in globals.css plus motion-reduce here). `inert` keeps the
-          collapsed links out of tab order and the accessibility tree. */}
+      {/* Backdrop — dims the page and closes the panel on click. Stays
+          mounted (not conditionally rendered) so the opacity transition can
+          run in both directions; pointer-events are dropped while closed so
+          it never intercepts clicks. */}
       <div
-        id="mobile-nav"
+        aria-hidden="true"
+        onClick={closeMenu}
+        className={`nav-panel-backdrop fixed inset-0 z-40 bg-ink/40 header:hidden ${
+          menuOpen ? "opacity-100" : "pointer-events-none opacity-0"
+        }`}
+      />
+
+      {/* Slide-in panel. Capped width so it reads as a panel, not a
+          full-screen takeover; a hairline left border (not a shadow) plus
+          the dimmed backdrop mark its edge, per the site's flat surfaces. */}
+      <div
+        id="mobile-nav-panel"
+        ref={panelRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Site menu"
         inert={!menuOpen}
-        className={`grid overflow-hidden transition-[grid-template-rows] duration-200 ease-standard motion-reduce:transition-none md:hidden ${
-          menuOpen ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
+        className={`nav-panel fixed inset-y-0 right-0 z-50 flex w-[85%] max-w-[340px] flex-col border-l border-hairline bg-canvas header:hidden ${
+          menuOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >
-        <div className="overflow-hidden">
-          <ul className="flex flex-col border-t border-hairline px-6 py-2">
-            {navLinks.map((link) => (
-              <li key={link.href}>
-                <Link
-                  href={link.href}
-                  onClick={() => setMenuOpen(false)}
-                  className="link block py-3 text-body text-ink"
-                >
-                  {link.label}
-                </Link>
-              </li>
-            ))}
-            <li className="mt-2 mb-1">
+        <div className="flex justify-end px-5 py-5">
+          <button
+            type="button"
+            onClick={closeMenu}
+            aria-label="Close menu"
+            className="-mr-2 flex h-11 w-11 -scale-x-100 items-center justify-center text-ink"
+          >
+            <MenuIcon open={true} />
+          </button>
+        </div>
+
+        <ul className="flex flex-col border-t border-hairline px-6 pt-2">
+          {navLinks.map((link) => (
+            <li key={link.href}>
               <Link
-                href={BOOK_HREF}
-                onClick={() => setMenuOpen(false)}
-                className="btn w-full"
+                href={link.href}
+                onClick={closeMenu}
+                className="link block py-4 text-lead text-ink"
               >
-                Book
+                {link.label}
               </Link>
             </li>
-          </ul>
+          ))}
+        </ul>
+
+        <div className="mt-auto px-6 pb-8 pt-6">
+          <Link href={BOOK_HREF} onClick={closeMenu} className="btn w-full">
+            Book
+          </Link>
         </div>
       </div>
     </header>

@@ -220,8 +220,8 @@ on the site is italic either).
 
 ## Motion
 
-**Two ambient/hover movements, plus two user-triggered ones (a reveal and one
-scoped hover-lift). Nothing else animates.**
+**Two ambient/hover movements, plus three user-triggered ones (a reveal, one
+scoped hover-lift, and the mobile nav panel). Nothing else animates.**
 
 1. **Hero image crossfade** — ambient, non-interactive. Token
    `--hero-fade-duration` (1200ms) + `--ease-standard`. (Hero section still to
@@ -248,6 +248,13 @@ scoped hover-lift). Nothing else animates.**
    no transform, no transition (the glow may still snap on hover). This is the
    single sanctioned hover-lift on the site — it does not license per-card
    hover transitions anywhere else, including the standalone `.hot-offer-card`.
+5. **Mobile nav panel** — user-triggered, below `--breakpoint-header` (720px).
+   Opening the header's hamburger slides `.nav-panel` in from the right and
+   fades in `.nav-panel-backdrop` (300ms `--panel-duration`, `--ease-standard`);
+   the hamburger's three bars resolve into an X over the same `--ease-standard`
+   curve (200ms). Collapsed by default; still under `prefers-reduced-motion`.
+   Flat surface — the panel's left edge is a `--color-hairline` border, not a
+   shadow, with the dimmed backdrop supplying the separation instead.
 
 No scroll-triggered entrances. No per-section fade-up. `scroll-behavior: smooth`
 only when motion is not reduced.

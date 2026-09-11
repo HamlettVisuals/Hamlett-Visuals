@@ -73,6 +73,16 @@
      Exactly two sanctioned movements on the site: the hero image crossfade
      (ambient) and the photo hover-zoom (interactive). Nothing else animates. */
   --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* ---- Breakpoints -------------------------------------------------------
+     Header nav (src/components/Nav.tsx): the desktop link row + Book button
+     needs ~669px of natural width (measured: Wordmark ~144px + link row/Book
+     group ~476px + 48px of header padding, with no room in either to shrink
+     since every label is a single word that can't soft-wrap). `header:`
+     collapses to the hamburger just above that hard limit, at 720px, so the
+     row still has breathing room next to the Wordmark rather than
+     bottoming out right at the overflow point. */
+  --breakpoint-header: 45rem; /* 720px */
 }
 
 :root {
@@ -84,6 +94,11 @@
 
   /* Hero image crossfade — the only ambient, non-interactive motion. */
   --hero-fade-duration: 1200ms;
+
+  /* Mobile nav slide-in panel (Nav.tsx) — a touch quicker than
+     --zoom-duration (350ms), which reads sluggish once it's moving a whole
+     panel rather than a thumbnail. */
+  --panel-duration: 300ms;
 }
 
 /* ---- Base ----------------------------------------------------------------
@@ -480,6 +495,54 @@
   /* Section rhythm: opt-in helpers for the design pass. */
   .section { padding-block: var(--spacing-section); }
   .section + .section { border-top: 1px solid var(--color-hairline); }
+
+  /* Hides a scrollable element's scrollbar cross-browser while keeping it
+     scrollable — EventRow's photo strip (which renders its own custom
+     scrollbar UI below the row) and the category lightbox's thumbnail
+     filmstrip. */
+  .no-scrollbar {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Category lightbox (src/components/Gallery/CategoryLightbox.tsx) — a
+     user-triggered fade/scale-in on the stage image whenever navigation
+     changes it. Covered by the global prefers-reduced-motion safety net
+     below. */
+  @keyframes lightbox-image-in {
+    from {
+      opacity: 0;
+      transform: scale(0.98);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+  .lightbox-image-enter {
+    animation: lightbox-image-in 250ms var(--ease-standard);
+  }
+
+  /* Mobile nav slide-in panel (src/components/Nav.tsx) — the collapsed
+     header's menu, below `--breakpoint-header`. Backdrop fades, panel slides
+     in from the right; both timed off --panel-duration. The panel itself
+     keeps the site's flat surfaces: a hairline left border stands in for a
+     box-shadow, with the dimmed backdrop supplying the separation instead. */
+  .nav-panel-backdrop {
+    transition: opacity var(--panel-duration) var(--ease-standard);
+  }
+  .nav-panel {
+    transition: transform var(--panel-duration) var(--ease-standard);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .nav-panel-backdrop,
+    .nav-panel {
+      transition: none;
+    }
+  }
 }
 
 /* Safety net: honour reduced-motion everywhere, including any motion added
