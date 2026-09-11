@@ -1,7 +1,8 @@
-// Fine-print booking terms shown with an offer's inclusions — always visible
-// in the standalone Hot offer block, and inside the disclosure (below the
-// feature list) on the list rows. Plain muted caption text (no italic — Inter
-// italic isn't loaded, and nothing else on the site is italic).
+// Fine-print booking terms shown with an offer's inclusions — inside the
+// disclosure (below the feature list) on the Offers list rows. The standalone
+// Hot offer card is kept compact and shows neither this nor the feature list.
+// Plain muted caption text (no italic — Inter italic isn't loaded, and nothing
+// else on the site is italic).
 //
 // TODO: placeholder policy, pending her real deposit / cancellation /
 // reschedule terms. Once the site's Terms section (#terms) is written this

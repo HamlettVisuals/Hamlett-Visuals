@@ -111,14 +111,18 @@ so iOS doesn't zoom on focus. Don't set real content below 14px.
   and a scoped hover-lift (next bullet). Do not generalise it to other rows or
   sections.
 - **The Hot offer card — a scoped static shadow.** The standalone `#hot-offer`
-  section wraps its whole content (badge, title, price, description,
-  mini-gallery, inclusions, fine print, action pills) in one `.hot-offer-card`:
-  a `--color-canvas-tint` fill that contrasts against the plain-canvas section
-  behind it, a 1px `--color-accent-text` border (the darker accent — it stays
-  crisp on the tint), 8px radius, and a soft blurred accent-tinted halo — two
-  low-opacity `color-mix` `box-shadow` layers, no grey, no motion. A
-  **deliberate, explicitly scoped exception to the no-shadow rule**: this one
-  card only. It does not license shadows anywhere else.
+  section holds one `.hot-offer-card`, kept deliberately compact: badge, title,
+  price, a one-line summary and the two action pills in a narrow left column,
+  with a wide gallery-thumbnail row filling the card to the right edge. The
+  full inclusions list and fine print are NOT duplicated here — they live only
+  in this offer's repeat row in the Offers list, behind its Show details
+  toggle. The card has a `--color-canvas-tint` fill that contrasts against the
+  plain-canvas section behind it, a 1px `--color-accent-text` border (the
+  darker accent — it stays crisp on the tint), 8px radius, and a soft blurred
+  accent-tinted halo — two low-opacity `color-mix` `box-shadow` layers, no
+  grey, no motion. A **deliberate, explicitly scoped exception to the
+  no-shadow rule**: this one card only. It does not license shadows anywhere
+  else.
 - **The "Hot deal" row hover-lift — a second scoped exception, motion + shadow.**
   `.offer-row-featured` — the repeat of the featured offer inside the Offers &
   pricing list, and *only* that row (not the standalone `.hot-offer-card`, not
