@@ -215,11 +215,11 @@ export default function EventRow({
   return (
     <div>
       <div
-        className={`flex items-baseline justify-between ${
+        className={`flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1 ${
           isFirst ? "" : "border-t border-hairline pt-6"
         }`}
       >
-        <h2 className="font-display text-[19px] font-medium text-ink">
+        <h2 className="min-w-0 font-display text-[19px] font-medium text-ink">
           {name}
         </h2>
         <span className="text-caption text-muted">
@@ -263,7 +263,7 @@ export default function EventRow({
           <div
             ref={trackRef}
             onClick={handleTrackClick}
-            className="relative mt-3 h-1 w-full cursor-pointer rounded-sm bg-hairline"
+            className="relative mt-3 h-1.5 w-full cursor-pointer rounded-sm bg-hairline"
           >
             <div
               onMouseDown={handleThumbMouseDown}

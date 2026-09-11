@@ -91,7 +91,7 @@ export const offers: Offer[] = [
     id: "brands",
     category: "Brands",
     categorySlug: "brands",
-    title: "Brand & Product Shoot",
+    title: "Brand & Product Shoot",
     price: { lead: "From", amount: "$600 / half day" },
     summary:
       "Product and lifestyle images shot to an agreed shot list, cropped for web and social.",
