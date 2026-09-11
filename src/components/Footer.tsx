@@ -32,7 +32,7 @@ export default async function Footer() {
   const qrSvg = await getInstagramQrSvg();
 
   return (
-    <footer id="footer" className="border-t border-hairline">
+    <footer id="footer" className="border-t border-hairline bg-canvas-tint">
       <div className="mx-auto flex max-w-md flex-col items-center px-gutter pt-section pb-16 text-center">
         <Wordmark />
 

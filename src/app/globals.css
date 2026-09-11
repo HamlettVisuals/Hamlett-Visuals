@@ -23,6 +23,7 @@
      A deliberately recessive gallery-wall neutral. The photography supplies
      all the colour; the UI never competes with it. */
   --color-canvas: #faf9f6;    /* warm off-white page ground */
+  --color-canvas-tint: color-mix(in srgb, var(--color-accent) 9%, var(--color-canvas)); /* canvas with a 9% wash of --color-accent — derived, never a standalone hex. The faint warm ground behind About, the Hot offer section and the footer. */
   --color-ink: #171614;       /* warm near-black — cast matched to the canvas, not #000 */
   --color-muted: #5f5b52;     /* secondary / caption text — 6.3:1 on canvas */
   --color-accent: #8a8378;    /* taupe — decoration & large type ONLY, never small text (3.5:1) */
@@ -368,6 +369,30 @@
     font-variant-caps: all-small-caps;
     letter-spacing: 0.05em;
     color: var(--color-muted);
+  }
+
+  /* Standalone Hot offer card (#hot-offer) — the ONE place a shadow is allowed
+     on this site. A deliberate, explicitly scoped exception to the flat /
+     no-shadow rule (DESIGN.md → Layout & surfaces): the whole Hot offer
+     content sits in this single box with a --color-canvas-tint fill (same as
+     its section, so the border and halo do the lifting), a 1px --color-accent
+     border, an 8px radius, and a soft blurred accent-tinted halo — two
+     low-opacity color-mix box-shadow layers, no grey. Not licensed anywhere
+     else; the smaller .offer-row-featured repeat in the list keeps its plain
+     border with no glow. */
+  .hot-offer-card {
+    padding: 1.5rem;
+    border: 1px solid var(--color-accent-text);
+    border-radius: 8px;
+    background: var(--color-canvas-tint);
+    box-shadow:
+      0 2px 10px color-mix(in srgb, var(--color-accent) 22%, transparent),
+      0 22px 64px -8px color-mix(in srgb, var(--color-accent) 45%, transparent);
+  }
+  @media (min-width: 40rem) {
+    .hot-offer-card {
+      padding: 2.5rem;
+    }
   }
 
   /* Featured row inside the Offers & pricing list — a soft accent-bordered box

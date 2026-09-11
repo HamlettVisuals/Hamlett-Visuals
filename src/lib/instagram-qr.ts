@@ -8,9 +8,10 @@ import { instagram } from "@/lib/site-content";
 // since every page that renders the footer is static it is effectively baked
 // in at build time.
 //
-// The colours are spelled out because QRCode can't read CSS custom properties;
-// they mirror --color-ink (#171614) on --color-canvas (#faf9f6), the same
-// hardcode-with-a-note approach the Hero scrim uses.
+// The colours are spelled out because QRCode can't read CSS custom properties
+// (same hardcode-with-a-note approach the Hero scrim uses): --color-ink
+// (#171614) for the modules, and --color-canvas-tint (#f0eeeb) for the quiet
+// zone so the code blends into the tinted footer it sits in.
 let cached: Promise<string> | undefined;
 
 export function getInstagramQrSvg(): Promise<string> {
@@ -20,7 +21,7 @@ export function getInstagramQrSvg(): Promise<string> {
     // still reads as filling its hairline frame in the footer.
     margin: 1,
     width: 128,
-    color: { dark: "#171614", light: "#faf9f6" },
+    color: { dark: "#171614", light: "#f0eeeb" },
     errorCorrectionLevel: "M",
   });
   return cached;

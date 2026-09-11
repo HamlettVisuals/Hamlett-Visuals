@@ -28,6 +28,7 @@ Spend the boldness in exactly one place — **Fraunces at hero scale**.
 | Token | Value | Role | Notes |
 |---|---|---|---|
 | `--color-canvas` | `#FAF9F6` | Page ground | Warm off-white. Near-white, *not* a saturated cream. |
+| `--color-canvas-tint` | `color-mix(in srgb, --color-accent 9%, --color-canvas)` | Tinted ground | Derived, **never a standalone hex** — canvas with a 9% wash of the taupe accent. A barely-there warm shift used as the background on exactly three sections: About, the Hot offer section, and the footer. Every other section stays on plain `--color-canvas`. |
 | `--color-ink` | `#171614` | Primary text | Warm near-black. The warm cast is matched to the canvas on purpose — pure `#000` reads as detached here. ~17:1 on canvas. |
 | `--color-muted` | `#5F5B52` | Secondary / caption text | 6.3:1 on canvas — AA for all sizes. |
 | `--color-accent` | `#8A8378` | Taupe accent | **3.5:1 on canvas — fails AA for body text.** Use for decoration and large display type only: underline tint on hover, active-state marks, selection highlight. Never as the colour of small text or a small-text link. |
@@ -95,13 +96,30 @@ so iOS doesn't zoom on focus. Don't set real content below 14px.
   surfaces. Rounded exceptions, all deliberate: the button (`--radius-btn:
   7px`), the link chips (`.link-chip`, full pill radius), the offer badge
   (`.offer-badge`, full pill), the featured offer row (`.offer-row-featured`,
-  3px) and the Instagram tiles (`--radius-media`, 4px — see below). All stay
-  flat otherwise — solid or hairline border, no shadow, no gradient.
+  3px), the Instagram tiles (`--radius-media`, 4px) and the Hot offer card
+  (`.hot-offer-card`, 8px — see below). All stay flat otherwise — solid or
+  hairline border, no shadow, no gradient.
+- **Tinted ground, three sections.** About, the Hot offer section and the
+  footer sit on `--color-canvas-tint` instead of plain `--color-canvas` — a
+  faint warm wash (9% accent) that quietly groups the "about her / her offer /
+  reach her" bands. Every other section stays on plain canvas.
 - **One card-like surface, scoped.** `.offer-row-featured` is the single
-  bordered box on the site: a soft accent border (`color-mix` of
-  `--color-accent`) around the one featured offer inside the Offers & pricing
-  list, to lift it out of the plain hairline-divided rows. Border only — no
-  fill, no shadow. Do not generalise it to other rows or sections.
+  bordered box in the Offers & pricing list: a soft accent border (`color-mix`
+  of `--color-accent`) around the one featured offer, to lift it out of the
+  plain hairline-divided rows. Border only — no fill, no shadow. Do not
+  generalise it to other rows or sections.
+- **The Hot offer card — the one shadow on the site.** The standalone
+  `#hot-offer` section wraps its whole content (badge, title, price,
+  description, mini-gallery, inclusions, fine print, action pills) in one
+  `.hot-offer-card`: `--color-canvas-tint` background (same as its section, so
+  the border and halo do the lifting, not a fill contrast), a 1px
+  `--color-accent-text` border (the darker accent — it stays crisp on the
+  tint), 8px radius, and a soft blurred accent-tinted halo — two low-opacity
+  `color-mix` `box-shadow` layers, no grey. This is a
+  **deliberate, explicitly scoped exception to the no-shadow rule**: it applies
+  to this one card only. It does not license shadows anywhere else, and the
+  smaller `.offer-row-featured` repeat of the same offer in the Offers list
+  keeps its plain border with no glow.
 - **Softened photo corners, scoped.** The `#instagram` grid — and only that
   grid — rounds its tiles by `--radius-media` (4px), a small nod to the
   Instagram app's own rounded thumbnails. It stays flat in every other respect:
@@ -228,7 +246,9 @@ and hard bans:
 - `→` appended to link or button text.
 - Numbered markers (01 / 02 / 03) unless the content is genuinely a sequence.
 - Rounded card + soft grey shadow; one border-radius on everything; gradient
-  washes as decoration.
+  washes as decoration. (The **one** sanctioned shadow is the Hot offer card's
+  accent-tinted halo — see Layout & surfaces. Grey card-shadows stay banned,
+  and it is not a licence for shadows elsewhere.)
 - Fade-and-slide-up entrance on every section; hover transitions on every card.
 
 ---
