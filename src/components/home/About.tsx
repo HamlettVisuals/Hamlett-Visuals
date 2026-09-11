@@ -77,7 +77,7 @@ export default function About() {
               (keep it portrait-oriented, roughly 4:5). */}
           <Image
             src="/about/portrait.svg"
-            alt="Placeholder portrait of the photographer behind Hamlet Visuals"
+            alt="Placeholder portrait of the photographer behind Hamlett Visuals"
             width={800}
             height={1000}
             sizes="(min-width: 768px) 40vw, 100vw"
@@ -87,7 +87,7 @@ export default function About() {
           <div>
             <div className="flex max-w-measure flex-col gap-4 text-body text-muted">
               <p>
-                I&rsquo;m the photographer behind Hamlet Visuals, and I&rsquo;ve
+                I&rsquo;m the photographer behind Hamlett Visuals, and I&rsquo;ve
                 spent the last several years learning that a good picture is
                 mostly about paying attention. I shoot across all six of the
                 things this studio is built on &mdash; weddings, portraits, pets,

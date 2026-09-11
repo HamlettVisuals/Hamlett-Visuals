@@ -23,8 +23,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Hamlet Visuals",
-  description: "Photography portfolio of Hamlet Visuals.",
+  title: "Hamlett Visuals",
+  description: "Photography portfolio of Hamlett Visuals.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

@@ -16,8 +16,10 @@ let cached: Promise<string> | undefined;
 export function getInstagramQrSvg(): Promise<string> {
   cached ??= QRCode.toString(instagram.url, {
     type: "svg",
-    margin: 2,
-    width: 112,
+    // One module of quiet zone — just enough to stay scannable while the code
+    // still reads as filling its hairline frame in the footer.
+    margin: 1,
+    width: 128,
     color: { dark: "#171614", light: "#faf9f6" },
     errorCorrectionLevel: "M",
   });

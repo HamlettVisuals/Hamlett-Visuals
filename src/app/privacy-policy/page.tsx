@@ -3,7 +3,7 @@ import Link from "next/link";
 // Privacy policy page — placeholder content only. Real policy copy comes later.
 
 export const metadata = {
-  title: "Privacy Policy — Hamlet Visuals",
+  title: "Privacy Policy — Hamlett Visuals",
 };
 
 export default function PrivacyPolicyPage() {

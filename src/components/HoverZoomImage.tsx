@@ -23,7 +23,7 @@ type HoverZoomImageProps = {
  * The site-wide photo treatment: a fixed-size, overflow-hidden frame with the
  * image cropped to fill it. On a fine pointer, hovering the frame scales the
  * image to --zoom-scale over --zoom-duration with --ease-standard. This is the
- * ONE deliberate hover effect on Hamlet Visuals — never pair it with a lift,
+ * ONE deliberate hover effect on Hamlett Visuals — never pair it with a lift,
  * shadow, or colour shift. It is disabled under prefers-reduced-motion and on
  * touch devices (see the .hover-zoom rules in globals.css).
  *

@@ -1,4 +1,4 @@
-# Hamlet Visuals — Design System
+# Hamlett Visuals — Design System
 
 The token layer that every section is built on. Source of truth lives in
 `src/app/globals.css` (`@theme` + `@layer base/components`); fonts are wired in
@@ -117,14 +117,15 @@ so iOS doesn't zoom on focus. Don't set real content below 14px.
   `--spacing-gutter` = `clamp(1.25rem, …, 2.5rem)`.
 - Opt-in helpers: `.section` (adds `padding-block: var(--spacing-section)`) and
   `.section + .section` (adds the top hairline).
-- **Content column.** Every top-level section — plus the header and footer —
-  caps its content at `max-w-7xl` (80rem / 1280px), `mx-auto`, so the whole
-  page shares one left/right edge on a wide monitor and there are no oversized
-  dead margins at ~1920px. Sections use the `px-gutter` side gutter; the header
-  and footer keep their fixed `px-6`. Running text inside still narrows to
-  `--spacing-measure` (68ch). The Booking CTA is the one deliberately narrower
-  band (`max-w-2xl`): it reads as the quiet centred break between the
-  full-width sections, and its centred fine print wants the shorter measure.
+- **Content column.** Every top-level section — plus the header — caps its
+  content at `max-w-7xl` (80rem / 1280px), `mx-auto`, so the whole page shares
+  one left/right edge on a wide monitor and there are no oversized dead margins
+  at ~1920px. Sections use the `px-gutter` side gutter; the header keeps its
+  fixed `px-6`. Running text inside still narrows to `--spacing-measure`
+  (68ch). Two deliberate narrower columns: the Booking CTA (`max-w-2xl`) reads
+  as the quiet centred break between the full-width sections, and the footer
+  (`max-w-md`, centred) is a single stacked closing column rather than a
+  full-width band.
 
 ### Buttons
 

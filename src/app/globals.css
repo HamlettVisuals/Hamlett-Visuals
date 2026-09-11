@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 /* ---------------------------------------------------------------------------
-   Hamlet Visuals — global design system (token layer)
+   Hamlett Visuals — global design system (token layer)
 
    This file is the single source of truth for colour, type, spacing, radius
    and motion. Every component built afterwards pulls from these tokens (either

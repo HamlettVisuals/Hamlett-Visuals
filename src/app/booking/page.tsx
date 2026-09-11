@@ -4,7 +4,7 @@ import Link from "next/link";
 // or calendar integration yet; that comes later.
 
 export const metadata = {
-  title: "Book a session — Hamlet Visuals",
+  title: "Book a session — Hamlett Visuals",
 };
 
 export default function BookingPage() {

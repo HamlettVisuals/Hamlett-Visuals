@@ -5,7 +5,7 @@ import Link from "next/link";
 // (/booking, /testimonials, /privacy-policy).
 
 export const metadata = {
-  title: "Backstage — Hamlet Visuals",
+  title: "Backstage — Hamlett Visuals",
 };
 
 export default function BackstagePage() {

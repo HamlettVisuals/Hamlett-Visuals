@@ -9,7 +9,7 @@ import { categories, testimonials } from "@/lib/site-content";
 // device the Offers list uses for real item boundaries. No cards, no shadow.
 
 export const metadata = {
-  title: "Testimonials — Hamlet Visuals",
+  title: "Testimonials — Hamlett Visuals",
 };
 
 // Walk `categories` (canonical order: Weddings → Portraits → Pets → Brands →
