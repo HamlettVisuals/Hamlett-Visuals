@@ -1,10 +1,14 @@
 import Link from "next/link";
 
 // The pair of action pills under every offer — the same in the Featured block
-// and in each standard row, so the two sections stay consistent. Reuses the
-// About section's .link-chip pill via its inline layout variant
-// (.link-chip-inline): compact, icon + label, no trailing arrow, hairline
-// border only — a pair of them stays lighter than the row it sits under.
+// and in each standard row, so the two sections stay consistent. Both reuse
+// the About section's .link-chip pill via its inline layout variant
+// (.link-chip-inline): compact, icon + label, no trailing arrow.
+//
+// The two read as inverses: "View gallery" keeps the light outline treatment
+// (no fill, hairline border, dark text); "Book" adds .link-chip-solid — a
+// solid --color-accent-text fill with canvas text/icon — so the primary
+// action carries the weight.
 //
 //  - "View gallery" → /portfolio/<categorySlug> (same target as the title link)
 //  - "Book"         → /booking?offer=<id>       (the ?offer= convention)
@@ -50,7 +54,10 @@ export default function OfferActions({
         <span className="link-chip-title">View gallery</span>
       </Link>
 
-      <Link href={`/booking?offer=${id}`} className="link-chip link-chip-inline">
+      <Link
+        href={`/booking?offer=${id}`}
+        className="link-chip link-chip-inline link-chip-solid"
+      >
         <span className="link-chip-icon">
           <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
             <rect

@@ -14,7 +14,7 @@ import { instagram } from "@/lib/site-content";
 
 export default function BookingCta() {
   return (
-    <section id="booking-cta" className="border-y border-hairline">
+    <section id="booking-cta" className="border-y border-hairline bg-canvas-tint">
       <div className="mx-auto max-w-2xl px-gutter py-section text-center">
         <h2 className="font-display text-heading text-ink">
           Ready when you are

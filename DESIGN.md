@@ -99,27 +99,36 @@ so iOS doesn't zoom on focus. Don't set real content below 14px.
   3px), the Instagram tiles (`--radius-media`, 4px) and the Hot offer card
   (`.hot-offer-card`, 8px — see below). All stay flat otherwise — solid or
   hairline border, no shadow, no gradient.
-- **Tinted ground, three sections.** About, the Hot offer section and the
-  footer sit on `--color-canvas-tint` instead of plain `--color-canvas` — a
-  faint warm wash (9% accent) that quietly groups the "about her / her offer /
-  reach her" bands. Every other section stays on plain canvas.
+- **Tinted ground, three sections.** About, the Booking CTA and the footer sit
+  on `--color-canvas-tint` instead of plain `--color-canvas` — a faint warm
+  wash (9% accent). Every other section, the `#hot-offer` section included,
+  stays on plain canvas (the Hot offer *card* is tinted, but its section is
+  not — that white-behind-tinted-card contrast is the point).
 - **One card-like surface, scoped.** `.offer-row-featured` is the single
   bordered box in the Offers & pricing list: a soft accent border (`color-mix`
   of `--color-accent`) around the one featured offer, to lift it out of the
-  plain hairline-divided rows. Border only — no fill, no shadow. Do not
-  generalise it to other rows or sections.
-- **The Hot offer card — the one shadow on the site.** The standalone
-  `#hot-offer` section wraps its whole content (badge, title, price,
-  description, mini-gallery, inclusions, fine print, action pills) in one
-  `.hot-offer-card`: `--color-canvas-tint` background (same as its section, so
-  the border and halo do the lifting, not a fill contrast), a 1px
-  `--color-accent-text` border (the darker accent — it stays crisp on the
-  tint), 8px radius, and a soft blurred accent-tinted halo — two low-opacity
-  `color-mix` `box-shadow` layers, no grey. This is a
-  **deliberate, explicitly scoped exception to the no-shadow rule**: it applies
-  to this one card only. It does not license shadows anywhere else, and the
-  smaller `.offer-row-featured` repeat of the same offer in the Offers list
-  keeps its plain border with no glow.
+  plain hairline-divided rows. No fill. It carries a faint accent glow at rest
+  and a scoped hover-lift (next bullet). Do not generalise it to other rows or
+  sections.
+- **The Hot offer card — a scoped static shadow.** The standalone `#hot-offer`
+  section wraps its whole content (badge, title, price, description,
+  mini-gallery, inclusions, fine print, action pills) in one `.hot-offer-card`:
+  a `--color-canvas-tint` fill that contrasts against the plain-canvas section
+  behind it, a 1px `--color-accent-text` border (the darker accent — it stays
+  crisp on the tint), 8px radius, and a soft blurred accent-tinted halo — two
+  low-opacity `color-mix` `box-shadow` layers, no grey, no motion. A
+  **deliberate, explicitly scoped exception to the no-shadow rule**: this one
+  card only. It does not license shadows anywhere else.
+- **The "Hot deal" row hover-lift — a second scoped exception, motion + shadow.**
+  `.offer-row-featured` — the repeat of the featured offer inside the Offers &
+  pricing list, and *only* that row (not the standalone `.hot-offer-card`, not
+  the Terms box) — carries a faint accent glow at rest and, on a fine pointer,
+  lifts `translateY(-3px)` with the glow growing wider and stronger on hover
+  (180ms `--ease-standard`) — the card rising off the page. Distinct from the
+  Hot offer card's *static* halo. Under `prefers-reduced-motion` the transform
+  and transition are dropped; the glow may still change on hover, just with no
+  lift and no ease. Scoped to this one row — not a licence for hover-lift or
+  shadows elsewhere.
 - **Softened photo corners, scoped.** The `#instagram` grid — and only that
   grid — rounds its tiles by `--radius-media` (4px), a small nod to the
   Instagram app's own rounded thumbnails. It stays flat in every other respect:
@@ -194,8 +203,8 @@ on the site is italic either).
 
 ## Motion
 
-**Two ambient/hover movements, plus one user-triggered reveal. Nothing else
-animates.**
+**Two ambient/hover movements, plus two user-triggered ones (a reveal and one
+scoped hover-lift). Nothing else animates.**
 
 1. **Hero image crossfade** — ambient, non-interactive. Token
    `--hero-fade-duration` (1200ms) + `--ease-standard`. (Hero section still to
@@ -215,6 +224,13 @@ animates.**
    short inner fade). Collapsed by default; still under `prefers-reduced-motion`.
    This is the only reveal animation on the site — it does not license
    fade-up-on-scroll or per-card hover transitions elsewhere.
+4. **"Hot deal" row hover-lift** — user-triggered, fine-pointer only, scoped to
+   `.offer-row-featured` (the featured offer's repeat in the Offers list). On
+   hover the row lifts `translateY(-3px)` and its accent glow expands (180ms
+   `--ease-standard`) — see Layout & surfaces. Under `prefers-reduced-motion`:
+   no transform, no transition (the glow may still snap on hover). This is the
+   single sanctioned hover-lift on the site — it does not license per-card
+   hover transitions anywhere else, including the standalone `.hot-offer-card`.
 
 No scroll-triggered entrances. No per-section fade-up. `scroll-behavior: smooth`
 only when motion is not reduced.
@@ -246,10 +262,16 @@ and hard bans:
 - `→` appended to link or button text.
 - Numbered markers (01 / 02 / 03) unless the content is genuinely a sequence.
 - Rounded card + soft grey shadow; one border-radius on everything; gradient
-  washes as decoration. (The **one** sanctioned shadow is the Hot offer card's
-  accent-tinted halo — see Layout & surfaces. Grey card-shadows stay banned,
-  and it is not a licence for shadows elsewhere.)
+  washes as decoration.
 - Fade-and-slide-up entrance on every section; hover transitions on every card.
+
+**Two sanctioned exceptions, both scoped and named in Layout & surfaces /
+Motion — neither is a licence for shadows or hover-lifts elsewhere:**
+- the Hot offer card's *static* accent-tinted halo (`.hot-offer-card`);
+- the "Hot deal" row's hover-lift + growing accent glow (`.offer-row-featured`).
+
+Both use an accent-tinted `color-mix` shadow, never grey. Grey card-shadows
+and any other hover-lift stay banned.
 
 ---
 

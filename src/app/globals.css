@@ -300,6 +300,32 @@
     text-align: left;
   }
 
+  /* Solid-fill variant of .link-chip-inline — the "Book" action, styled as the
+     inverse of the light-outline "View gallery" pill beside it: a solid
+     --color-accent-text fill with --color-canvas text and icon (5.4:1 — AA for
+     normal text). Applied via OfferActions, so it reads the same in the Hot
+     offer card and in every Offers & pricing row. Hover is a bare opacity
+     nudge, like .btn — the border stays the fill colour rather than warming to
+     the accent the way the outline chips do. */
+  .link-chip-solid {
+    background: var(--color-accent-text);
+    border-color: var(--color-accent-text);
+    color: var(--color-canvas);
+    transition: opacity 150ms var(--ease-standard);
+  }
+  .link-chip-solid .link-chip-icon,
+  .link-chip-solid .link-chip-title {
+    color: var(--color-canvas);
+  }
+  .link-chip-solid:hover,
+  .link-chip-solid:focus-visible {
+    border-color: var(--color-accent-text);
+    opacity: 0.88;
+  }
+  .link-chip-solid:active {
+    opacity: 0.78;
+  }
+
   /* Offers & pricing row disclosure — the one user-triggered reveal on the
      site, kept separate from the two ambient/hover motions in DESIGN.md.
      Height animates via grid-template-rows 0fr → 1fr (no magic max-height),
@@ -398,17 +424,43 @@
   /* Featured row inside the Offers & pricing list — a soft accent-bordered box
      that lifts the one promoted offer out of the plain hairline-divided rows.
      A deliberate, single-use exception to the flat / no-card / no-radius rule
-     (DESIGN.md → Anti-cliché guardrails): border only, no fill, no shadow, and
-     a barely-there 3px radius. Scoped to this one row. */
+     (DESIGN.md → Anti-cliché guardrails): border, a barely-there 3px radius,
+     and a faint accent glow at rest.
+
+     Second scoped shadow/motion exception (DESIGN.md → Layout & surfaces,
+     "Hot deal row hover-lift"), separate from the Hot offer card's static
+     halo: on a fine pointer this row lifts a few px and its glow grows wider
+     and stronger — the card rising off the page. Scoped to THIS row only —
+     not the standalone .hot-offer-card, not the Terms box. */
   .offer-row-featured {
     margin-block: 0.875rem;
     padding: 1.5rem;
     border: 1px solid color-mix(in srgb, var(--color-accent) 60%, transparent);
     border-radius: 3px;
+    box-shadow: 0 1px 6px color-mix(in srgb, var(--color-accent) 12%, transparent);
+    transition:
+      transform 180ms var(--ease-standard),
+      box-shadow 180ms var(--ease-standard);
   }
   @media (min-width: 40rem) {
     .offer-row-featured {
       padding: 2rem;
+    }
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .offer-row-featured:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 34px color-mix(in srgb, var(--color-accent) 32%, transparent);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    /* Kill the motion; the glow may still change on hover, just without the
+       lift or the eased transition. */
+    .offer-row-featured {
+      transition: none;
+    }
+    .offer-row-featured:hover {
+      transform: none;
     }
   }
 
