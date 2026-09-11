@@ -1,6 +1,6 @@
 import Link from "next/link";
 import HoverZoomImage from "@/components/HoverZoomImage";
-import { categories } from "@/lib/site-content";
+import { getCategories } from "@/lib/categories";
 
 // Categories section (#categories). A uniform grid of tall tiles — one per
 // category — that reads as a gallery hang: three columns on desktop (3×2), two
@@ -19,6 +19,8 @@ import { categories } from "@/lib/site-content";
 // filmstrip all draw from one list.
 
 export default function Categories() {
+  const categories = getCategories();
+
   return (
     <section id="categories" className="border-t border-hairline">
       <div className="mx-auto max-w-7xl px-gutter py-section">

@@ -1,24 +1,28 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getAlbums, getAlbumBySlug } from "@/lib/albums";
+import { getCategories, getCategoryBySlug } from "@/lib/categories";
+import { getEventsForCategoryFolder } from "@/lib/albums";
+import CategoryGallery from "@/components/Gallery/CategoryGallery";
 
 // Category landing page. Wired to the existing folder-scan logic in
 // `@/lib/albums` — `[category]` maps to a top-level folder under public/photos.
 // Structure/routing only; the design pass handles layout.
 
 export function generateStaticParams() {
-  return getAlbums().map((album) => ({ category: album.slug }));
+  return getCategories().map((category) => ({ category: category.slug }));
 }
 
 export default async function CategoryPage({
   params,
 }: PageProps<"/portfolio/[category]">) {
   const { category: slug } = await params;
-  const album = getAlbumBySlug(slug);
+  const category = getCategoryBySlug(slug);
 
-  if (!album) {
+  if (!category) {
     notFound();
   }
+
+  const events = getEventsForCategoryFolder(category.folderName);
 
   return (
     <div className="mx-auto flex max-w-4xl flex-1 flex-col gap-8 px-6 py-16">
@@ -27,41 +31,26 @@ export default async function CategoryPage({
           <Link href="/#categories" className="hover:text-zinc-950 dark:hover:text-zinc-50">
             Portfolio
           </Link>{" "}
-          <span aria-hidden="true">›</span> {album.name}
+          <span aria-hidden="true">›</span> {category.name}
         </nav>
         <h1 className="text-3xl font-semibold tracking-tight text-zinc-950 dark:text-zinc-50">
-          {album.name}
+          {category.name}
         </h1>
         <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
           Placeholder category description.
         </p>
       </div>
 
-      {album.events.length === 0 ? (
+      {events.length === 0 ? (
         <p className="text-sm text-zinc-500 dark:text-zinc-400">
           No events yet in this category. Add folders under{" "}
           <code className="rounded bg-zinc-100 px-1 py-0.5 font-mono text-xs dark:bg-zinc-800">
-            public/photos/{album.folderName}
+            public/photos/{category.folderName}
           </code>
           .
         </p>
       ) : (
-        <ul className="flex flex-col gap-3">
-          {album.events.map((event) => (
-            <li key={event.slug}>
-              <Link
-                href={`/portfolio/${album.slug}/${event.slug}`}
-                className="underline"
-              >
-                {event.name}
-              </Link>{" "}
-              <span className="text-sm text-zinc-500 dark:text-zinc-400">
-                ({event.photos.length}{" "}
-                {event.photos.length === 1 ? "photo" : "photos"})
-              </span>
-            </li>
-          ))}
-        </ul>
+        <CategoryGallery category={category} events={events} />
       )}
     </div>
   );

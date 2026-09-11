@@ -68,45 +68,34 @@ function urlFor(...segments: string[]): string {
   return "/" + segments.join("/");
 }
 
-export function getAlbums(): Album[] {
-  return listSubdirectories(PHOTOS_DIR).map((albumFolder) => {
-    const albumDir = path.join(PHOTOS_DIR, albumFolder);
+export function getEventsForCategoryFolder(folderName: string): Event[] {
+  const albumDir = path.join(PHOTOS_DIR, folderName);
 
-    const events: Event[] = listSubdirectories(albumDir).map(
-      (eventFolder) => {
-        const eventDir = path.join(albumDir, eventFolder);
-        const photos: Photo[] = listImageFiles(eventDir).map((filename) => ({
-          filename,
-          url: urlFor("photos", albumFolder, eventFolder, filename),
-        }));
-
-        return {
-          slug: slugify(eventFolder),
-          name: toDisplayName(eventFolder),
-          folderName: eventFolder,
-          photos,
-        };
-      },
-    );
+  return listSubdirectories(albumDir).map((eventFolder) => {
+    const eventDir = path.join(albumDir, eventFolder);
+    const photos: Photo[] = listImageFiles(eventDir).map((filename) => ({
+      filename,
+      url: urlFor("photos", folderName, eventFolder, filename),
+    }));
 
     return {
-      slug: slugify(albumFolder),
-      name: toDisplayName(albumFolder),
-      folderName: albumFolder,
-      events,
+      slug: slugify(eventFolder),
+      name: toDisplayName(eventFolder),
+      folderName: eventFolder,
+      photos,
     };
   });
 }
 
-export function getAlbumBySlug(slug: string): Album | undefined {
-  return getAlbums().find((album) => album.slug === slug);
+export function getAlbums(): Album[] {
+  return listSubdirectories(PHOTOS_DIR).map((albumFolder) => ({
+    slug: slugify(albumFolder),
+    name: toDisplayName(albumFolder),
+    folderName: albumFolder,
+    events: getEventsForCategoryFolder(albumFolder),
+  }));
 }
 
-export function getEventBySlug(
-  albumSlug: string,
-  eventSlug: string,
-): Event | undefined {
-  return getAlbumBySlug(albumSlug)?.events.find(
-    (event) => event.slug === eventSlug,
-  );
+export function getAlbumBySlug(slug: string): Album | undefined {
+  return getAlbums().find((album) => album.slug === slug);
 }

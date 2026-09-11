@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { categories, testimonials } from "@/lib/site-content";
+import { testimonials } from "@/lib/site-content";
+import { getCategories } from "@/lib/categories";
 
 // Full testimonials page. The teaser (src/components/home/Testimonials.tsx)
 // shows two featured quotes as compact blocks; this page is the whole set,
@@ -14,7 +15,7 @@ export const metadata = {
 
 // Walk `categories` (canonical order: Weddings → Portraits → Pets → Brands →
 // Motorsports → Real Estate) and drop any group with no testimonials.
-const groups = categories
+const groups = getCategories()
   .map((category) => ({
     category,
     items: testimonials.filter((t) => t.categorySlug === category.slug),

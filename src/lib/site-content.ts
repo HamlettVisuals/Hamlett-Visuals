@@ -4,57 +4,7 @@
 // produced by `slugify()` in `@/lib/albums` so the tiles link to real
 // `/portfolio/[category]` pages.
 
-export type Category = {
-  slug: string;
-  name: string;
-  // One-line descriptor shown under the name on the homepage category tile.
-  // Purposeful placeholder copy — the real lines come later.
-  blurb: string;
-  // Representative image for the homepage category tile. Portrait-oriented so
-  // it fills the tall tile without heavy cropping.
-  // TODO: replace the /categories/*.svg placeholders with one real photo per
-  // category once shots are chosen (keep them portrait, e.g. 3:4 – 9:16).
-  image: string;
-};
-
-export const categories: Category[] = [
-  {
-    slug: "weddings",
-    name: "Weddings",
-    blurb: "The whole day, from first look to last dance",
-    image: "/categories/weddings.svg",
-  },
-  {
-    slug: "portraits",
-    name: "Portraits",
-    blurb: "Honest expressions in natural light",
-    image: "/categories/portraits.svg",
-  },
-  {
-    slug: "pets",
-    name: "Pets",
-    blurb: "Fur, feathers, and full personality",
-    image: "/categories/pets.svg",
-  },
-  {
-    slug: "brands",
-    name: "Brands",
-    blurb: "Product and brand photography, shot to sell",
-    image: "/categories/brands.svg",
-  },
-  {
-    slug: "motorsports",
-    name: "Motorsports",
-    blurb: "From the formation lap to the checkered flag",
-    image: "/categories/motorsports.svg",
-  },
-  {
-    slug: "real-estate",
-    name: "Real Estate",
-    blurb: "Finished spaces and work in progress",
-    image: "/categories/real-estate.svg",
-  },
-];
+import { getCategories } from "@/lib/categories";
 
 export type Offer = {
   id: string;
@@ -410,16 +360,10 @@ export const featuredTestimonials: Testimonial[] = testimonials.filter(
 
 // --- Hero filmstrip ------------------------------------------------------------
 // The homepage hero is a cross-category filmstrip: it shows exactly ONE
-// representative image per category and crossfades between them in the order the
-// `categories` array declares (Weddings → Portraits → Pets → Brands →
-// Motorsports → Real Estate → repeat). Slug, display name and order come
-// straight from `categories` so the hero can never drift out of sync with the
-// portfolio; only the image path and its alt text are hero-specific and live
-// here.
-//
-// TODO: swap each placeholder in `/public/hero/*.svg` for a real representative
-// photo per category (e.g. `/hero/weddings.jpg`). Keep it to ONE image per
-// category, and rewrite each `alt` to describe what that specific photo shows.
+// representative image per category and crossfades between them in category
+// `order`. Slug, display name, order, and the hero image/alt all come from
+// `@/lib/categories` so the hero can never drift out of sync with the
+// portfolio.
 
 export type HeroSlide = {
   categorySlug: string;
@@ -428,45 +372,11 @@ export type HeroSlide = {
   alt: string;
 };
 
-const heroImageByCategory: Record<string, { src: string; alt: string }> = {
-  weddings: {
-    src: "/hero/weddings.svg",
-    alt: "A newly married couple sharing their first dance as guests look on.",
-  },
-  portraits: {
-    src: "/hero/portraits.svg",
-    alt: "A person in soft window light, caught mid-laugh during a portrait session.",
-  },
-  pets: {
-    src: "/hero/pets.svg",
-    alt: "A dog mid-stride across an open field, ears up and tongue out.",
-  },
-  brands: {
-    src: "/hero/brands.svg",
-    alt: "A product styled on a clean set under controlled studio lighting.",
-  },
-  motorsports: {
-    src: "/hero/motorsports.svg",
-    alt: "A race car rounding the final corner of the circuit at full throttle.",
-  },
-  "real-estate": {
-    src: "/hero/real-estate.svg",
-    alt: "A modern house exterior photographed at dusk with the interior lights on.",
-  },
-};
-
-export const heroSlides: HeroSlide[] = categories.map((category) => {
-  const image = heroImageByCategory[category.slug];
-  if (!image) {
-    throw new Error(
-      `No hero image configured for category "${category.slug}". ` +
-        "Add an entry to heroImageByCategory in src/lib/site-content.ts.",
-    );
-  }
-  return {
+export function getHeroSlides(): HeroSlide[] {
+  return getCategories().map((category) => ({
     categorySlug: category.slug,
     category: category.name,
-    src: image.src,
-    alt: image.alt,
-  };
-});
+    src: category.heroImage,
+    alt: category.heroAlt,
+  }));
+}

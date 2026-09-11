@@ -1,0 +1,68 @@
+[
+  {
+    "slug": "weddings",
+    "folderName": "Weddings",
+    "name": "Weddings",
+    "blurb": "The whole day, from first look to last dance",
+    "image": "/categories/weddings.svg",
+    "heroImage": "/hero/weddings.svg",
+    "heroAlt": "A newly married couple sharing their first dance as guests look on.",
+    "order": 1,
+    "published": true
+  },
+  {
+    "slug": "portraits",
+    "folderName": "Portraits",
+    "name": "Portraits",
+    "blurb": "Honest expressions in natural light",
+    "image": "/categories/portraits.svg",
+    "heroImage": "/hero/portraits.svg",
+    "heroAlt": "A person in soft window light, caught mid-laugh during a portrait session.",
+    "order": 2,
+    "published": true
+  },
+  {
+    "slug": "pets",
+    "folderName": "Pets",
+    "name": "Pets",
+    "blurb": "Fur, feathers, and full personality",
+    "image": "/categories/pets.svg",
+    "heroImage": "/hero/pets.svg",
+    "heroAlt": "A dog mid-stride across an open field, ears up and tongue out.",
+    "order": 3,
+    "published": true
+  },
+  {
+    "slug": "brands",
+    "folderName": "Brands",
+    "name": "Brands",
+    "blurb": "Product and brand photography, shot to sell",
+    "image": "/categories/brands.svg",
+    "heroImage": "/hero/brands.svg",
+    "heroAlt": "A product styled on a clean set under controlled studio lighting.",
+    "order": 4,
+    "published": true
+  },
+  {
+    "slug": "motorsports",
+    "folderName": "Motorsports",
+    "name": "Motorsports",
+    "blurb": "From the formation lap to the checkered flag",
+    "image": "/categories/motorsports.svg",
+    "heroImage": "/hero/motorsports.svg",
+    "heroAlt": "A race car rounding the final corner of the circuit at full throttle.",
+    "order": 5,
+    "published": true
+  },
+  {
+    "slug": "real-estate",
+    "folderName": "Real Estate",
+    "name": "Real Estate",
+    "blurb": "Finished spaces and work in progress",
+    "image": "/categories/real-estate.svg",
+    "heroImage": "/hero/real-estate.svg",
+    "heroAlt": "A modern house exterior photographed at dusk with the interior lights on.",
+    "order": 6,
+    "published": true
+  }
+]

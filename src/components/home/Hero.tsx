@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { heroSlides } from "@/lib/site-content";
+import { getHeroSlides } from "@/lib/site-content";
 
 // Cross-category filmstrip hero. One representative image per category
 // (Weddings → Portraits → Pets → Brands → Motorsports → Real Estate → repeat),
@@ -21,6 +21,7 @@ import { heroSlides } from "@/lib/site-content";
 const HOLD_MS = 4500;
 
 export default function Hero() {
+  const heroSlides = getHeroSlides();
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);

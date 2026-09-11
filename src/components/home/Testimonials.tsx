@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { categories, featuredTestimonials } from "@/lib/site-content";
+import { featuredTestimonials } from "@/lib/site-content";
+import { getCategories } from "@/lib/categories";
 
 // Testimonials teaser (#testimonials), between the Instagram grid and the Terms
 // anchor. Shows only the entries flagged `featured` in `testimonials`
@@ -13,7 +14,7 @@ import { categories, featuredTestimonials } from "@/lib/site-content";
 // section links its handle.
 
 const categoryName = (slug: string) =>
-  categories.find((category) => category.slug === slug)?.name ?? "";
+  getCategories().find((category) => category.slug === slug)?.name ?? "";
 
 export default function Testimonials() {
   return (
