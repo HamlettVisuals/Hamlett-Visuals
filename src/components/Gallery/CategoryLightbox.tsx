@@ -139,27 +139,20 @@ export default function CategoryLightbox({
         <button
           type="button"
           onClick={onClose}
-          className="cursor-pointer text-body text-canvas/70 transition-opacity hover:opacity-100"
+          className="-mr-2 -my-3 flex min-h-11 cursor-pointer items-center px-2 py-3 text-body text-canvas/70 transition-opacity hover:opacity-100"
         >
           Close
         </button>
       </div>
 
+      {/* The image wrapper renders before both chevrons so it never sits on
+          top of them in paint order: it's a fixed-size stage box (up to
+          max-w-5xl) regardless of the photo's own aspect ratio — object-contain
+          only affects the <img> inside it — so below ~1110px viewport width
+          there's no side gutter outside that box and it would otherwise cover
+          the chevrons (all three are position:absolute/relative siblings with
+          z-index:auto, so DOM order alone decides who's on top). */}
       <div className="relative flex flex-1 items-center justify-center px-4">
-        {flat.length > 1 && (
-          <button
-            type="button"
-            onClick={(event) => {
-              event.stopPropagation();
-              goPrev();
-            }}
-            aria-label="Previous photo"
-            className="absolute left-5 top-1/2 flex h-11 w-11 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border border-canvas/16 bg-canvas/8 text-canvas opacity-70 transition duration-150 ease-standard hover:scale-105 hover:opacity-100"
-          >
-            <ChevronIcon direction="left" />
-          </button>
-        )}
-
         <div
           key={current.photo.url}
           className="lightbox-image-enter relative h-full max-h-[calc(100vh-150px)] w-full max-w-5xl"
@@ -175,6 +168,20 @@ export default function CategoryLightbox({
             priority
           />
         </div>
+
+        {flat.length > 1 && (
+          <button
+            type="button"
+            onClick={(event) => {
+              event.stopPropagation();
+              goPrev();
+            }}
+            aria-label="Previous photo"
+            className="absolute left-5 top-1/2 flex h-11 w-11 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border border-canvas/16 bg-canvas/8 text-canvas opacity-70 transition duration-150 ease-standard hover:scale-105 hover:opacity-100"
+          >
+            <ChevronIcon direction="left" />
+          </button>
+        )}
 
         {flat.length > 1 && (
           <button

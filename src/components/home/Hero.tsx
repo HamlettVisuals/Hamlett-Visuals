@@ -131,7 +131,7 @@ export default function Hero() {
           aria-label={
             paused ? "Resume the hero slideshow" : "Pause the hero slideshow"
           }
-          className="absolute bottom-5 right-gutter z-10 inline-flex h-9 w-9 items-center justify-center rounded-full border border-canvas/40 bg-ink/50 text-canvas backdrop-blur-sm transition-opacity hover:opacity-80"
+          className="absolute bottom-5 right-gutter z-10 inline-flex h-11 w-11 items-center justify-center rounded-full border border-canvas/40 bg-ink/50 text-canvas backdrop-blur-sm transition-opacity hover:opacity-80"
         >
           {paused ? (
             <svg

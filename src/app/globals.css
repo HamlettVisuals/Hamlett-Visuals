@@ -301,7 +301,11 @@
     display: inline-grid;
     grid-template-columns: auto auto;
     gap: 0.5rem;
-    padding: 0.5rem 0.9375rem;
+    /* Vertical padding matches .link-chip's so the rendered height clears the
+       ~44px touch-target minimum (was 0.5rem, ~37px) — width/layout stay
+       compact and single-line, so the two chip styles still read as distinct
+       weights rather than becoming visually identical. */
+    padding: 0.8125rem 0.9375rem;
   }
 
   /* .link-chip on a <button> (the Show / Hide details toggle) — strip the UA
