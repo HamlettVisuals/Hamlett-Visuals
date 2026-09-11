@@ -105,11 +105,11 @@ so iOS doesn't zoom on focus. Don't set real content below 14px.
   stays on plain canvas (the Hot offer *card* is tinted, but its section is
   not — that white-behind-tinted-card contrast is the point).
 - **One card-like surface, scoped.** `.offer-row-featured` is the single
-  bordered box in the Offers & pricing list: a soft accent border (`color-mix`
-  of `--color-accent`) around the one featured offer, to lift it out of the
-  plain hairline-divided rows. No fill. It carries a faint accent glow at rest
-  and a scoped hover-lift (next bullet). Do not generalise it to other rows or
-  sections.
+  bordered box in the Offers & pricing list: a 1px `--color-accent-text`
+  border (the same darker accent that fills the solid Book pill) around the one
+  featured offer, to lift it out of the plain hairline-divided rows. No fill.
+  It carries a faint accent glow at rest and a scoped hover-lift (next bullet).
+  Do not generalise it to other rows or sections.
 - **The Hot offer card — a scoped static shadow.** The standalone `#hot-offer`
   section holds one `.hot-offer-card`, kept deliberately compact: badge, title,
   price, a one-line summary and the two action pills in a narrow left column,

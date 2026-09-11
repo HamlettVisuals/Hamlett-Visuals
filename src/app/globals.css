@@ -435,7 +435,9 @@
   .offer-row-featured {
     margin-block: 0.875rem;
     padding: 1.5rem;
-    border: 1px solid color-mix(in srgb, var(--color-accent) 60%, transparent);
+    /* Same darker accent that fills the solid Book pill (--color-accent-text),
+       so the featured treatments read as one family. */
+    border: 1px solid var(--color-accent-text);
     border-radius: 3px;
     box-shadow: 0 1px 6px color-mix(in srgb, var(--color-accent) 12%, transparent);
     transition:
