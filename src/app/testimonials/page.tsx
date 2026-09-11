@@ -1,13 +1,23 @@
 import Link from "next/link";
+import HoverZoomImage from "@/components/HoverZoomImage";
 import { testimonials } from "@/lib/site-content";
 import { getCategories } from "@/lib/categories";
 
 // Full testimonials page. The teaser (src/components/home/Testimonials.tsx)
-// shows two featured quotes as compact blocks; this page is the whole set,
-// grouped by the kind of shoot. Quotes lead at text-title so they read as the
-// page's main content; the client name and context sit under each as quiet
-// attribution. Flat throughout — hairline rules between entries, the same
-// device the Offers list uses for real item boundaries. No cards, no shadow.
+// stays text-only and untouched by design; this page is the whole set,
+// grouped by the kind of shoot, each entry now paired with a photo and a
+// deep link back to the actual session (/portfolio/[category]#[eventSlug],
+// landing on the matching EventRow — see src/components/Gallery/EventRow.tsx
+// and the scroll-padding-top rule in globals.css that keeps it clear of the
+// sticky header on both a same-page jump and a fresh page load with the hash
+// already in the URL).
+//
+// Quotes lead at text-title so they read as the page's main content; the
+// client name, context, photo and gallery link sit under/beside each as
+// quiet attribution. Flat throughout — hairline rules between entries (the
+// same device the Offers list uses for real item boundaries) and the
+// existing .link-chip-inline pill (reused from OfferActions) for the gallery
+// link. No cards, no shadow.
 
 export const metadata = {
   title: "Testimonials — Hamlett Visuals",
@@ -49,21 +59,60 @@ export default function TestimonialsPage() {
                     key={testimonial.clientName}
                     className="border-t border-hairline py-8 first:border-t-0 first:pt-0"
                   >
-                    <figure>
-                      <blockquote className="max-w-measure text-title text-ink">
-                        &ldquo;{testimonial.quote}&rdquo;
-                      </blockquote>
-                      <figcaption className="mt-4 text-caption">
-                        <span className="text-ink">
-                          {testimonial.clientName}
-                        </span>
-                        {testimonial.context && (
-                          <span className="mt-0.5 block text-muted">
-                            {testimonial.context}
+                    <div className="grid grid-cols-[96px_1fr] gap-4 sm:grid-cols-[160px_1fr] sm:gap-6">
+                      <HoverZoomImage
+                        src={testimonial.photo}
+                        alt={`Placeholder photo from ${testimonial.clientName}'s session`}
+                        sizes="(min-width: 640px) 160px, 96px"
+                        className="aspect-[4/5] w-full"
+                      />
+
+                      <figure className="min-w-0">
+                        <blockquote className="max-w-measure text-title text-ink">
+                          &ldquo;{testimonial.quote}&rdquo;
+                        </blockquote>
+                        <figcaption className="mt-4 text-caption">
+                          <span className="text-ink">
+                            {testimonial.clientName}
                           </span>
-                        )}
-                      </figcaption>
-                    </figure>
+                          {testimonial.context && (
+                            <span className="mt-0.5 block text-muted">
+                              {testimonial.context}
+                            </span>
+                          )}
+                        </figcaption>
+
+                        <Link
+                          href={`/portfolio/${testimonial.categorySlug}#${testimonial.eventSlug}`}
+                          className="link-chip link-chip-inline mt-4"
+                        >
+                          <span className="link-chip-icon">
+                            <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                              <rect
+                                x="1.75"
+                                y="3.25"
+                                width="12.5"
+                                height="9.5"
+                                rx="1.5"
+                                stroke="currentColor"
+                                strokeWidth="1.3"
+                              />
+                              <circle cx="5.5" cy="6.5" r="1.15" fill="currentColor" />
+                              <path
+                                d="m2.5 12 3.35-3.35a1 1 0 0 1 1.4 0L9.5 11m0-1.5 1.6-1.6a1 1 0 0 1 1.4 0l1.75 1.75"
+                                stroke="currentColor"
+                                strokeWidth="1.3"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              />
+                            </svg>
+                          </span>
+                          <span className="link-chip-title">
+                            View the {category.name} gallery
+                          </span>
+                        </Link>
+                      </figure>
+                    </div>
                   </li>
                 ))}
               </ul>

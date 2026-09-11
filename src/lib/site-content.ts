@@ -268,6 +268,15 @@ export type Testimonial = {
   // `categories` slug so the homepage tag and the /testimonials grouping stay
   // in step with the portfolio.
   categorySlug: string;
+  // Which event within that category this testimonial's session is. Must
+  // match a real event slug produced by `slugify()` in `@/lib/albums` (i.e. a
+  // folder under public/photos/<categoryFolder>/) so the /testimonials card
+  // can deep-link straight to /portfolio/<categorySlug>#<eventSlug> and land
+  // on the right `EventRow`.
+  eventSlug: string;
+  // Photo shown on the testimonial card. Placeholder image for now (mirrors
+  // `InstagramPost.image` above) — swaps to a real session photo later.
+  photo: string;
   // Optional short context line, e.g. "Wedding, June 2025". Placeholder.
   context?: string;
   // The homepage teaser shows exactly the entries flagged here — flip the flag
@@ -277,14 +286,16 @@ export type Testimonial = {
 
 // TODO: every quote below is placeholder, written to set tone and length —
 // swap in her real client testimonials before launch. Keep each `categorySlug`
-// pointing at a real category, and keep exactly two entries `featured` for the
-// homepage teaser.
+// pointing at a real category and each `eventSlug` pointing at a real event
+// folder, and keep exactly two entries `featured` for the homepage teaser.
 export const testimonials: Testimonial[] = [
   {
     quote:
       "We keep going back to the photos from the quiet parts of the day — my grandmother laughing, my husband's face just before the ceremony. She gave us the day we actually had, not a tidied-up version of it.",
     clientName: "Priya & Daniel",
     categorySlug: "weddings",
+    eventSlug: "priya-and-daniel",
+    photo: "/testimonials/priya-and-daniel.svg",
     context: "Wedding, June 2025",
     featured: true,
   },
@@ -293,6 +304,8 @@ export const testimonials: Testimonial[] = [
       "She was somehow everywhere and nowhere all day. We barely noticed the camera, and then the gallery came back and every face that mattered to us was in it.",
     clientName: "The Alvarez family",
     categorySlug: "weddings",
+    eventSlug: "the-alvarez-wedding",
+    photo: "/testimonials/the-alvarez-family.svg",
     context: "Wedding, September 2024",
   },
   {
@@ -300,6 +313,8 @@ export const testimonials: Testimonial[] = [
       "I told her up front that I hate having my picture taken. An hour later I had thirty photos I actually liked and a headshot I still use everywhere.",
     clientName: "Marcus Bell",
     categorySlug: "portraits",
+    eventSlug: "marcus-bell-session",
+    photo: "/testimonials/marcus-bell.svg",
     context: "Personal branding session",
   },
   {
@@ -307,6 +322,8 @@ export const testimonials: Testimonial[] = [
       "Our first proper family portraits since the kids were born. Nobody is looking at the camera in my favourite one, and that is exactly why I love it.",
     clientName: "Hannah Okafor",
     categorySlug: "portraits",
+    eventSlug: "hannah-okafor-family",
+    photo: "/testimonials/hannah-okafor.svg",
     context: "Family session, Spring 2025",
   },
   {
@@ -314,6 +331,8 @@ export const testimonials: Testimonial[] = [
       "Apparently a good photo of a black dog is hard to get. You would not know it from our gallery — you can see every bit of his face.",
     clientName: "Sam Reyes",
     categorySlug: "pets",
+    eventSlug: "sam-reyes-pet-session",
+    photo: "/testimonials/sam-reyes.svg",
     context: "Pet session, at home",
   },
   {
@@ -321,12 +340,16 @@ export const testimonials: Testimonial[] = [
       "She sat on our kitchen floor for twenty minutes waiting for the cat to do something worth photographing. The wait was worth it.",
     clientName: "Deborah Lin",
     categorySlug: "pets",
+    eventSlug: "deborah-lin-session",
+    photo: "/testimonials/deborah-lin.svg",
   },
   {
     quote:
       "We handed over a rough shot list and got back images already cropped for every place we needed them. The launch went out a week early because the photos were ready first.",
     clientName: "Off-Grid Coffee Roasters",
     categorySlug: "brands",
+    eventSlug: "off-grid-coffee-roasters",
+    photo: "/testimonials/off-grid-coffee-roasters.svg",
     context: "Product shoot",
   },
   {
@@ -334,6 +357,8 @@ export const testimonials: Testimonial[] = [
       "Clean, consistent, and on brand. We have run the same set across the site and three seasons of ads without it ever looking tired.",
     clientName: "Lena Fischer, Marketing Lead",
     categorySlug: "brands",
+    eventSlug: "lena-fischer-brand-shoot",
+    photo: "/testimonials/lena-fischer.svg",
     context: "Brand shoot, 2024",
   },
   {
@@ -341,6 +366,8 @@ export const testimonials: Testimonial[] = [
       "Trackside all weekend, and the full set was in our inbox the next morning. Half of them ran in the team recap before we had left the paddock.",
     clientName: "Redline Racing",
     categorySlug: "motorsports",
+    eventSlug: "redline-racing-race-weekend",
+    photo: "/testimonials/redline-racing.svg",
     context: "Race weekend coverage",
     featured: true,
   },
@@ -349,6 +376,8 @@ export const testimonials: Testimonial[] = [
       "The twilight exterior sold the listing before the open house. Buyers kept bringing up the photos.",
     clientName: "Compass & Key Realty",
     categorySlug: "real-estate",
+    eventSlug: "compass-and-key-listing",
+    photo: "/testimonials/compass-and-key-realty.svg",
     context: "Listing shoot",
   },
 ];

@@ -37,6 +37,7 @@ export default function CategoryGallery({
           <EventRow
             key={event.slug}
             name={event.name}
+            slug={event.slug}
             photos={event.photos}
             isFirst={eventIndex === 0}
             onPhotoClick={(photoIndex) =>

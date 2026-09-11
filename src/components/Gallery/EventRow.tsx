@@ -6,6 +6,14 @@ import HoverZoomImage from "@/components/HoverZoomImage";
 
 type EventRowProps = {
   name: string;
+  /**
+   * Stable slug (from `slugify()` in `@/lib/albums`), set as this row's `id`
+   * so it can be deep-linked as /portfolio/[category]#[slug] — from
+   * /testimonials, for one. `scroll-padding-top` on `html` (globals.css)
+   * keeps the sticky header clear of the target on both same-page jumps and a
+   * fresh page load with the hash already in the URL.
+   */
+  slug: string;
   photos: Photo[];
   /** Suppresses the hairline top border for the first row on the page. */
   isFirst?: boolean;
@@ -26,6 +34,7 @@ type ThumbMetrics = {
 
 export default function EventRow({
   name,
+  slug,
   photos,
   isFirst = false,
   onPhotoClick,
@@ -213,7 +222,7 @@ export default function EventRow({
   }
 
   return (
-    <div>
+    <div id={slug}>
       <div
         className={`flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1 ${
           isFirst ? "" : "border-t border-hairline pt-6"
