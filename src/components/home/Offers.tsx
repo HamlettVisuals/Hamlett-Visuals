@@ -11,14 +11,22 @@ import { standardOffers, type Offer } from "@/lib/site-content";
 
 // Offers & pricing section (#offers). Every offer, in category order — the
 // featured one included. Plain rows are hairline-divided; the featured row is
-// an accent-bordered box (.offer-row-featured) carrying the same "Hot deal"
-// badge and accent title + price as the standalone Hot offer section, so it
-// reads as the same offer wherever you meet it.
+// an accent-bordered box (.offer-row-featured) carrying the same accent title
+// + price as the standalone Hot offer section, so it reads as the same offer
+// wherever you meet it.
 //
-// Row order: title + price → summary → badge (featured only) → Show / Hide
-// details pill → [inclusions + terms, only when expanded] → View gallery /
-// Book pills (always shown). The reveal is a plain CSS height/opacity
-// transition (.offer-disclosure) — no animation library, still under
+// The "Hot deal" badge sits on the row's own border rather than inside its
+// padding: absolutely positioned (.offer-row-featured is the positioned
+// ancestor), left-aligned with the row's padding, `top-0 -translate-y-1/2` so
+// it straddles the border line. It carries its own small neutral drop shadow
+// (.offer-badge-on-border) — separate from, and not grown by, the row's
+// accent glow/hover-lift; it just travels with the row when that lifts.
+// Scoped to this repeated row only, not the standalone Hot offer card.
+//
+// Row order: title + price → summary → Show / Hide details pill →
+// [inclusions + terms, only when expanded] → View gallery / Book pills
+// (always shown). The reveal is a plain CSS height/opacity transition
+// (.offer-disclosure) — no animation library, still under
 // prefers-reduced-motion.
 
 function OfferRow({ offer }: { offer: Offer }) {
@@ -57,13 +65,13 @@ function OfferRow({ offer }: { offer: Offer }) {
         />
       </div>
 
-      <p className="mt-3 max-w-measure text-body text-muted">{offer.summary}</p>
-
       {isFeatured && (
-        <div className="mt-4">
-          <OfferBadge label="Hot deal" />
+        <div className="absolute left-6 top-0 -translate-y-1/2 sm:left-8">
+          <OfferBadge label="Hot deal" className="offer-badge-on-border" />
         </div>
       )}
+
+      <p className="mt-3 max-w-measure text-body text-muted">{offer.summary}</p>
 
       <button
         type="button"

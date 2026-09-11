@@ -397,6 +397,17 @@
     color: var(--color-muted);
   }
 
+  /* Third scoped exception, distinct from the other two: the "Hot deal" badge
+     on .offer-row-featured straddles the row's top border (see Offers.tsx),
+     so it needs to lift off both the card and the page behind it. A small,
+     standard neutral drop shadow (--color-ink tinted, not accent) — static,
+     and never grown or moved by the row's own hover-lift/glow. Scoped to this
+     one badge; does not license shadows on .offer-badge generally, and does
+     not touch the standalone Hot offer card's badge. */
+  .offer-badge-on-border {
+    box-shadow: 0 2px 6px color-mix(in srgb, var(--color-ink) 20%, transparent);
+  }
+
   /* Standalone Hot offer card (#hot-offer) — the ONE place a shadow is allowed
      on this site. A deliberate, explicitly scoped exception to the flat /
      no-shadow rule (DESIGN.md → Layout & surfaces): the whole Hot offer
@@ -433,6 +444,7 @@
      and stronger — the card rising off the page. Scoped to THIS row only —
      not the standalone .hot-offer-card, not the Terms box. */
   .offer-row-featured {
+    position: relative; /* positioning context for .offer-badge-on-border */
     margin-block: 0.875rem;
     padding: 1.5rem;
     /* Same darker accent that fills the solid Book pill (--color-accent-text),

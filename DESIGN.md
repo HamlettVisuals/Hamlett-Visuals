@@ -133,6 +133,18 @@ so iOS doesn't zoom on focus. Don't set real content below 14px.
   and transition are dropped; the glow may still change on hover, just with no
   lift and no ease. Scoped to this one row — not a licence for hover-lift or
   shadows elsewhere.
+- **The "Hot deal" badge-on-border — a third scoped exception, a plain neutral
+  shadow.** On `.offer-row-featured` only, the "Hot deal" `<OfferBadge>` is
+  absolutely positioned (the row is its positioned ancestor) so it straddles
+  the row's top border instead of sitting in its padding — `top-0
+  -translate-y-1/2`, left-aligned with the row's own padding. It carries its
+  own small `--color-ink`-tinted drop shadow (`.offer-badge-on-border`, ~20%
+  opacity) — a **plain neutral shadow, not accent-coloured**, unlike the other
+  two exceptions above. It is static: the badge does not grow or animate on
+  its own, and is not grown by the row's hover-lift — it only travels with the
+  row because it's positioned relative to it. Badge fill/colours are
+  unchanged. Scoped to this one badge; does not touch the standalone Hot offer
+  card's badge, and is not a licence for shadows on `.offer-badge` generally.
 - **Softened photo corners, scoped.** The `#instagram` grid — and only that
   grid — rounds its tiles by `--radius-media` (4px), a small nod to the
   Instagram app's own rounded thumbnails. It stays flat in every other respect:
@@ -269,13 +281,17 @@ and hard bans:
   washes as decoration.
 - Fade-and-slide-up entrance on every section; hover transitions on every card.
 
-**Two sanctioned exceptions, both scoped and named in Layout & surfaces /
-Motion — neither is a licence for shadows or hover-lifts elsewhere:**
+**Three sanctioned exceptions, all scoped and named in Layout & surfaces —
+none is a licence for shadows or hover-lifts elsewhere:**
 - the Hot offer card's *static* accent-tinted halo (`.hot-offer-card`);
-- the "Hot deal" row's hover-lift + growing accent glow (`.offer-row-featured`).
+- the "Hot deal" row's hover-lift + growing accent glow (`.offer-row-featured`);
+- the "Hot deal" badge's small *static*, `--color-ink`-tinted drop shadow
+  (`.offer-badge-on-border`) — the one place a plain neutral (not accent)
+  shadow is allowed, because it needs to read against both the card and the
+  page it straddles.
 
-Both use an accent-tinted `color-mix` shadow, never grey. Grey card-shadows
-and any other hover-lift stay banned.
+Grey card-shadows on any *surface* (cards, rows, sections) stay banned; any
+other hover-lift stays banned too.
 
 ---
 
