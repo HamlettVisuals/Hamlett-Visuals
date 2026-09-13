@@ -10,18 +10,17 @@ import Link from "next/link";
 // solid --color-accent-text fill with canvas text/icon — so the primary
 // action carries the weight.
 //
-//  - "View gallery" → /portfolio/<categorySlug> (same target as the title link)
-//  - "Book"         → /booking?offer=<id>       (the ?offer= convention)
+//  - "View gallery" → /portfolio/<categorySlug>   (same target as the title link)
+//  - "Book"         → /booking?type=<categorySlug> (pre-fills the booking
+//    form's session-type field — see src/components/booking/BookingForm.tsx)
 
 type OfferActionsProps = {
   categorySlug: string;
-  id: string;
   className?: string;
 };
 
 export default function OfferActions({
   categorySlug,
-  id,
   className = "",
 }: OfferActionsProps) {
   return (
@@ -55,7 +54,7 @@ export default function OfferActions({
       </Link>
 
       <Link
-        href={`/booking?offer=${id}`}
+        href={`/booking?type=${categorySlug}`}
         className="link-chip link-chip-inline link-chip-solid"
       >
         <span className="link-chip-icon">

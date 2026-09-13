@@ -109,11 +109,7 @@ function OfferRow({ offer }: { offer: Offer }) {
         </div>
       </div>
 
-      <OfferActions
-        categorySlug={offer.categorySlug}
-        id={offer.id}
-        className="mt-6"
-      />
+      <OfferActions categorySlug={offer.categorySlug} className="mt-6" />
     </li>
   );
 }

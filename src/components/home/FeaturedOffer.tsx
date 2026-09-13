@@ -48,11 +48,7 @@ export default function FeaturedOffer() {
 
             <p className="mt-4 text-lead text-muted">{offer.summary}</p>
 
-            <OfferActions
-              categorySlug={offer.categorySlug}
-              id={offer.id}
-              className="mt-6"
-            />
+            <OfferActions categorySlug={offer.categorySlug} className="mt-6" />
           </div>
 
           <ul className="grid grid-cols-3 gap-3 sm:gap-4 lg:min-w-0 lg:flex-1">

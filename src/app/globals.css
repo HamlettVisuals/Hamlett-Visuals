@@ -530,6 +530,70 @@
     animation: lightbox-image-in 250ms var(--ease-standard);
   }
 
+  /* Booking form controls (src/components/booking/BookingForm.tsx) — flat,
+     hairline-bordered fields so the form reads as the same system as the rest
+     of the site rather than a browser-default form dropped onto the page. No
+     radius, per the no-radius-on-surfaces rule; focus relies on the global
+     :focus-visible outline above. */
+  .field-label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-size: var(--text-caption);
+    color: var(--color-muted);
+  }
+  .field-input {
+    display: block;
+    width: 100%;
+    padding: 0.75rem 0.875rem;
+    border: 1px solid var(--color-hairline);
+    background: var(--color-canvas);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    transition: border-color 150ms var(--ease-standard);
+  }
+  .field-input::placeholder {
+    color: var(--color-muted);
+  }
+  .field-input:hover {
+    border-color: var(--color-accent);
+  }
+  .field-input:focus-visible {
+    border-color: var(--color-ink);
+  }
+  textarea.field-input {
+    resize: vertical;
+    min-height: 7rem;
+  }
+
+  /* Strips button chrome so a <button> can render as an inline .link — used
+     by the booking form's "Change" action that clears a pre-filled session
+     type. Same idea as button.link-chip above, for plain (non-chip) links. */
+  .link-button {
+    appearance: none;
+    background: transparent;
+    border: 0;
+    padding: 0;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+  }
+
+  /* Off-screen, not display:none — keeps an element in the DOM and tab order
+     while making it invisible to sighted users. Used for the booking form's
+     honeypot field, which needs to stay reachable/fillable by simple bots
+     that skip display:none fields. */
+  .visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
   /* Mobile nav slide-in panel (src/components/Nav.tsx) — the collapsed
      header's menu, below `--breakpoint-header`. Backdrop fades, panel slides
      in from the right; both timed off --panel-duration. The panel itself
