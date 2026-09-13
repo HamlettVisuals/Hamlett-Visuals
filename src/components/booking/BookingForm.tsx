@@ -8,8 +8,13 @@ import DatePicker from "./DatePicker";
 // The booking form itself, plus the success state it swaps to in place after
 // submit. Client component: it reads the `?type=` query param to pre-fill
 // the session-type field (see the entry points in
-// src/components/home/OfferActions.tsx), and owns the (purely local, for
-// now) submit → success-state swap.
+// src/components/home/OfferActions.tsx).
+//
+// `submitted` / `firstName` are owned by the parent (BookingFlow), not this
+// component — the "How it works" card above needs the same flag to turn
+// into a progress tracker, so it lives one level up instead of being local
+// state here. This component just calls `onSubmitted` once a submission is
+// valid.
 //
 // No backend wiring yet — submitting just reads the name off the form and
 // flips to the success state. A future API route is the next step; the
@@ -61,8 +66,14 @@ function validate(fields: {
 
 export default function BookingForm({
   categories,
+  submitted,
+  firstName,
+  onSubmitted,
 }: {
   categories: Category[];
+  submitted: boolean;
+  firstName: string;
+  onSubmitted: (firstName: string) => void;
 }) {
   const searchParams = useSearchParams();
   const typeParam = searchParams.get("type");
@@ -75,8 +86,6 @@ export default function BookingForm({
   );
   const [prefilled, setPrefilled] = useState(Boolean(matchedCategory));
   const [date, setDate] = useState("");
-  const [submitted, setSubmitted] = useState(false);
-  const [firstName, setFirstName] = useState("");
   const [errors, setErrors] = useState<FormErrors>({});
 
   const formSectionRef = useRef<HTMLDivElement>(null);
@@ -118,12 +127,16 @@ export default function BookingForm({
       return;
     }
 
-    setFirstName(name.trim().split(/\s+/)[0] ?? "");
-    setSubmitted(true);
+    onSubmitted(name.trim().split(/\s+/)[0] ?? "");
   };
 
   return (
-    <div ref={formSectionRef} id="booking-form" className="mt-16">
+    <div
+      ref={formSectionRef}
+      id="booking-form"
+      className="mt-16"
+      style={{ overflowAnchor: "none" }}
+    >
       {submitted ? (
         <section>
           <h2 className="font-display text-heading text-ink">
@@ -133,16 +146,6 @@ export default function BookingForm({
             Your request has been sent. She reads every one herself and
             usually replies within a day or two.
           </p>
-
-          <ul className="mt-8 flex flex-col gap-3 text-body text-muted">
-            <li className="border-t border-hairline pt-3">
-              She&rsquo;ll look over the details you shared.
-            </li>
-            <li className="border-t border-hairline pt-3">
-              She&rsquo;ll follow up to confirm availability and lock in the
-              date.
-            </li>
-          </ul>
         </section>
       ) : (
         <form

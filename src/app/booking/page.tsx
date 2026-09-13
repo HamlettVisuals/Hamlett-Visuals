@@ -1,12 +1,14 @@
 import Link from "next/link";
 import { Suspense } from "react";
-import BookingForm from "@/components/booking/BookingForm";
+import BookingFlow from "@/components/booking/BookingFlow";
 import { getCategories } from "@/lib/categories";
 
-// Booking page. Intro + a 3-step "how it works" overview, then the booking
-// form itself (client component — see src/components/booking/BookingForm.tsx
-// for the pre-fill / success-state behaviour). UI only: submitting shows the
-// success state locally: no Supabase, no email delivery, no API route yet.
+// Booking page. Intro, then BookingFlow — a client component wrapping the
+// 3-step "how it works" card and the booking form together, since the card
+// turns into a progress tracker once the form is submitted and needs to
+// share that state with it (see src/components/booking/BookingFlow.tsx).
+// UI only: submitting shows the success state locally: no Supabase, no
+// email delivery, no API route yet.
 
 export const metadata = {
   title: "Book a session — Hamlett Visuals",
@@ -45,37 +47,8 @@ export default function BookingPage() {
         </p>
       </header>
 
-      {/* .accent-frame is the Offers section's accent-bordered visual
-          treatment for the Featured/Hot offer (see src/app/globals.css) —
-          reused here, without .offer-row-featured's hover-lift, since this
-          card isn't clickable — as this page's one deliberate accent
-          moment. */}
-      <section className="mt-16 accent-frame">
-        <h2 className="font-display text-heading text-ink">How it works</h2>
-        <ol className="mt-8 grid sm:grid-cols-3">
-          {steps.map((step, index) => (
-            <li
-              key={step.title}
-              className={`border-t border-hairline pt-8 first:border-t-0 first:pt-0 sm:border-t-0 sm:pt-0 ${
-                index > 0 ? "sm:border-l sm:pl-8" : ""
-              } ${index < steps.length - 1 ? "sm:pr-8" : ""}`}
-            >
-              <span className="font-display text-title text-accent-text">
-                {index + 1}
-              </span>
-              <h3 className="mt-2 text-body font-medium text-ink">
-                {step.title}
-              </h3>
-              <p className="mt-1 text-caption text-muted">
-                {step.description}
-              </p>
-            </li>
-          ))}
-        </ol>
-      </section>
-
       <Suspense fallback={null}>
-        <BookingForm categories={categories} />
+        <BookingFlow categories={categories} steps={steps} />
       </Suspense>
 
       <p className="mt-16">
