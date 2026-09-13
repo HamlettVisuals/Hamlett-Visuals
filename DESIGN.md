@@ -104,12 +104,14 @@ so iOS doesn't zoom on focus. Don't set real content below 14px.
   wash (9% accent). Every other section, the `#hot-offer` section included,
   stays on plain canvas (the Hot offer *card* is tinted, but its section is
   not — that white-behind-tinted-card contrast is the point).
-- **One card-like surface, scoped.** `.offer-row-featured` is the single
-  bordered box in the Offers & pricing list: a 1px `--color-accent-text`
-  border (the same darker accent that fills the solid Book pill) around the one
-  featured offer, to lift it out of the plain hairline-divided rows. No fill.
-  It carries a faint accent glow at rest and a scoped hover-lift (next bullet).
-  Do not generalise it to other rows or sections.
+- **One card-like surface, scoped.** `.offer-row-featured` is the bordered box
+  in the Offers & pricing list: a 1px `--color-accent-text` border (the same
+  darker accent that fills the solid Book pill) around the one featured offer,
+  to lift it out of the plain hairline-divided rows. No fill. It carries a
+  faint accent glow at rest and a scoped hover-lift (next bullet). Reused,
+  unchanged, as the wrapper for the `/booking` page's "How it works" section
+  (`src/app/booking/page.tsx`) — that page's one deliberate accent moment. Do
+  not generalise it beyond these two uses.
 - **The Hot offer card — a scoped static shadow.** The standalone `#hot-offer`
   section holds one `.hot-offer-card`, kept deliberately compact: badge, title,
   price, a one-line summary and the two action pills in a narrow left column,
@@ -126,14 +128,14 @@ so iOS doesn't zoom on focus. Don't set real content below 14px.
   card only. It does not license shadows anywhere else.
 - **The "Hot deal" row hover-lift — a second scoped exception, motion + shadow.**
   `.offer-row-featured` — the repeat of the featured offer inside the Offers &
-  pricing list, and *only* that row (not the standalone `.hot-offer-card`, not
-  the Terms box) — carries a faint accent glow at rest and, on a fine pointer,
-  lifts `translateY(-3px)` with the glow growing wider and stronger on hover
-  (180ms `--ease-standard`) — the card rising off the page. Distinct from the
-  Hot offer card's *static* halo. Under `prefers-reduced-motion` the transform
-  and transition are dropped; the glow may still change on hover, just with no
-  lift and no ease. Scoped to this one row — not a licence for hover-lift or
-  shadows elsewhere.
+  pricing list, and the `/booking` page's "How it works" wrapper (not the
+  standalone `.hot-offer-card`, not the Terms box) — carries a faint accent
+  glow at rest and, on a fine pointer, lifts `translateY(-3px)` with the glow
+  growing wider and stronger on hover (180ms `--ease-standard`) — the card
+  rising off the page. Distinct from the Hot offer card's *static* halo. Under
+  `prefers-reduced-motion` the transform and transition are dropped; the glow
+  may still change on hover, just with no lift and no ease. Scoped to these
+  two uses — not a licence for hover-lift or shadows elsewhere.
 - **The "Hot deal" badge-on-border — a third scoped exception, a plain neutral
   shadow.** On `.offer-row-featured` only, the "Hot deal" `<OfferBadge>` is
   absolutely positioned (the row is its positioned ancestor) so it straddles
@@ -242,8 +244,9 @@ scoped hover-lift, and the mobile nav panel). Nothing else animates.**
    This is the only reveal animation on the site — it does not license
    fade-up-on-scroll or per-card hover transitions elsewhere.
 4. **"Hot deal" row hover-lift** — user-triggered, fine-pointer only, scoped to
-   `.offer-row-featured` (the featured offer's repeat in the Offers list). On
-   hover the row lifts `translateY(-3px)` and its accent glow expands (180ms
+   `.offer-row-featured` (the featured offer's repeat in the Offers list, and
+   the `/booking` page's "How it works" wrapper). On hover the row lifts
+   `translateY(-3px)` and its accent glow expands (180ms
    `--ease-standard`) — see Layout & surfaces. Under `prefers-reduced-motion`:
    no transform, no transition (the glow may still snap on hover). This is the
    single sanctioned hover-lift on the site — it does not license per-card
@@ -292,7 +295,8 @@ and hard bans:
 **Three sanctioned exceptions, all scoped and named in Layout & surfaces —
 none is a licence for shadows or hover-lifts elsewhere:**
 - the Hot offer card's *static* accent-tinted halo (`.hot-offer-card`);
-- the "Hot deal" row's hover-lift + growing accent glow (`.offer-row-featured`);
+- the "Hot deal" row's hover-lift + growing accent glow (`.offer-row-featured`,
+  also reused unchanged on the `/booking` page's "How it works" wrapper);
 - the "Hot deal" badge's small *static*, `--color-ink`-tinted drop shadow
   (`.offer-badge-on-border`) — the one place a plain neutral (not accent)
   shadow is allowed, because it needs to read against both the card and the

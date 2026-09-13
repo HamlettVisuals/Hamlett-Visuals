@@ -37,13 +37,7 @@ export default function BookingPage() {
 
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col px-gutter py-section">
-      <p>
-        <Link href="/" className="link text-ink">
-          Back to home
-        </Link>
-      </p>
-
-      <header className="mt-8">
+      <header>
         <h1 className="font-display text-page text-ink">Book a session</h1>
         <p className="mt-3 max-w-measure text-body text-muted">
           Tell her a little about what you have in mind and she&rsquo;ll
@@ -51,7 +45,10 @@ export default function BookingPage() {
         </p>
       </header>
 
-      <section className="mt-16">
+      {/* .offer-row-featured is the Offers section's accent-bordered treatment
+          for the Featured/Hot offer (see src/app/globals.css) — reused as-is
+          here as this page's one deliberate accent moment. */}
+      <section className="mt-16 offer-row-featured">
         <h2 className="font-display text-heading text-ink">How it works</h2>
         <ol className="mt-8 grid gap-8 sm:grid-cols-3">
           {steps.map((step, index) => (
@@ -73,6 +70,12 @@ export default function BookingPage() {
       <Suspense fallback={null}>
         <BookingForm categories={categories} />
       </Suspense>
+
+      <p className="mt-16">
+        <Link href="/" className="link text-ink">
+          Back to home
+        </Link>
+      </p>
     </div>
   );
 }
