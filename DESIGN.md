@@ -95,7 +95,7 @@ so iOS doesn't zoom on focus. Don't set real content below 14px.
 - **Flat only.** No cards, no shadows, no gradients, no border-radius on
   surfaces. Rounded exceptions, all deliberate: the button (`--radius-btn:
   7px`), the link chips (`.link-chip`, full pill radius), the offer badge
-  (`.offer-badge`, full pill), the featured offer row (`.offer-row-featured`,
+  (`.offer-badge`, full pill), the shared accent frame (`.accent-frame`,
   3px), the Instagram tiles (`--radius-media`, 4px) and the Hot offer card
   (`.hot-offer-card`, 8px — see below). All stay flat otherwise — solid or
   hairline border, no shadow, no gradient.
@@ -104,14 +104,18 @@ so iOS doesn't zoom on focus. Don't set real content below 14px.
   wash (9% accent). Every other section, the `#hot-offer` section included,
   stays on plain canvas (the Hot offer *card* is tinted, but its section is
   not — that white-behind-tinted-card contrast is the point).
-- **One card-like surface, scoped.** `.offer-row-featured` is the bordered box
-  in the Offers & pricing list: a 1px `--color-accent-text` border (the same
-  darker accent that fills the solid Book pill) around the one featured offer,
-  to lift it out of the plain hairline-divided rows. No fill. It carries a
-  faint accent glow at rest and a scoped hover-lift (next bullet). Reused,
-  unchanged, as the wrapper for the `/booking` page's "How it works" section
-  (`src/app/booking/page.tsx`) — that page's one deliberate accent moment. Do
-  not generalise it beyond these two uses.
+- **One card-like surface, scoped, split into a static frame and an
+  interactive layer.** `.accent-frame` is the pure visual look — a 1px
+  `--color-accent-text` border (the same darker accent that fills the solid
+  Book pill), a barely-there 3px radius, and a faint accent glow at rest — no
+  hover behaviour. It's used two places: the featured row in the Offers &
+  pricing list, layered with `.offer-row-featured` (next bullet) for the
+  hover-lift, since that row is clickable; and, alone, as the wrapper for the
+  `/booking` page's "How it works" section (`src/app/booking/page.tsx`) — that
+  page's one deliberate accent moment, deliberately *without* the hover-lift
+  since it isn't interactive. Do not generalise `.accent-frame` beyond these
+  two uses, and don't add `.offer-row-featured`'s hover motion to a
+  non-interactive surface.
 - **The Hot offer card — a scoped static shadow.** The standalone `#hot-offer`
   section holds one `.hot-offer-card`, kept deliberately compact: badge, title,
   price, a one-line summary and the two action pills in a narrow left column,
@@ -127,15 +131,16 @@ so iOS doesn't zoom on focus. Don't set real content below 14px.
   **deliberate, explicitly scoped exception to the no-shadow rule**: this one
   card only. It does not license shadows anywhere else.
 - **The "Hot deal" row hover-lift — a second scoped exception, motion + shadow.**
-  `.offer-row-featured` — the repeat of the featured offer inside the Offers &
-  pricing list, and the `/booking` page's "How it works" wrapper (not the
-  standalone `.hot-offer-card`, not the Terms box) — carries a faint accent
-  glow at rest and, on a fine pointer, lifts `translateY(-3px)` with the glow
-  growing wider and stronger on hover (180ms `--ease-standard`) — the card
-  rising off the page. Distinct from the Hot offer card's *static* halo. Under
-  `prefers-reduced-motion` the transform and transition are dropped; the glow
-  may still change on hover, just with no lift and no ease. Scoped to these
-  two uses — not a licence for hover-lift or shadows elsewhere.
+  `.offer-row-featured`, layered on top of `.accent-frame`, is scoped to the
+  repeat of the featured offer inside the Offers & pricing list *only* — not
+  the standalone `.hot-offer-card`, not the Terms box, and not the `/booking`
+  page's "How it works" wrapper (which uses `.accent-frame` alone, since it
+  isn't clickable). On a fine pointer this row lifts `translateY(-3px)` with
+  its glow growing wider and stronger on hover (180ms `--ease-standard`) — the
+  card rising off the page. Distinct from the Hot offer card's *static* halo.
+  Under `prefers-reduced-motion` the transform and transition are dropped; the
+  glow may still change on hover, just with no lift and no ease. Not a licence
+  for hover-lift or shadows elsewhere.
 - **The "Hot deal" badge-on-border — a third scoped exception, a plain neutral
   shadow.** On `.offer-row-featured` only, the "Hot deal" `<OfferBadge>` is
   absolutely positioned (the row is its positioned ancestor) so it straddles
@@ -244,8 +249,9 @@ scoped hover-lift, and the mobile nav panel). Nothing else animates.**
    This is the only reveal animation on the site — it does not license
    fade-up-on-scroll or per-card hover transitions elsewhere.
 4. **"Hot deal" row hover-lift** — user-triggered, fine-pointer only, scoped to
-   `.offer-row-featured` (the featured offer's repeat in the Offers list, and
-   the `/booking` page's "How it works" wrapper). On hover the row lifts
+   `.offer-row-featured` (the featured offer's repeat in the Offers list only
+   — not the `/booking` page's "How it works" wrapper, which uses the static
+   `.accent-frame` look without it). On hover the row lifts
    `translateY(-3px)` and its accent glow expands (180ms
    `--ease-standard`) — see Layout & surfaces. Under `prefers-reduced-motion`:
    no transform, no transition (the glow may still snap on hover). This is the
@@ -296,7 +302,8 @@ and hard bans:
 none is a licence for shadows or hover-lifts elsewhere:**
 - the Hot offer card's *static* accent-tinted halo (`.hot-offer-card`);
 - the "Hot deal" row's hover-lift + growing accent glow (`.offer-row-featured`,
-  also reused unchanged on the `/booking` page's "How it works" wrapper);
+  layered on `.accent-frame` — the `/booking` page's "How it works" wrapper
+  uses `.accent-frame` alone, without the hover-lift);
 - the "Hot deal" badge's small *static*, `--color-ink`-tinted drop shadow
   (`.offer-badge-on-border`) — the one place a plain neutral (not accent)
   shadow is allowed, because it needs to read against both the card and the

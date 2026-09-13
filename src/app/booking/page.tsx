@@ -45,14 +45,19 @@ export default function BookingPage() {
         </p>
       </header>
 
-      {/* .offer-row-featured is the Offers section's accent-bordered treatment
-          for the Featured/Hot offer (see src/app/globals.css) — reused as-is
-          here as this page's one deliberate accent moment. */}
-      <section className="mt-16 offer-row-featured">
+      {/* .accent-frame is the Offers section's accent-bordered visual
+          treatment for the Featured/Hot offer (see src/app/globals.css) —
+          reused here, without .offer-row-featured's hover-lift, since this
+          card isn't clickable — as this page's one deliberate accent
+          moment. */}
+      <section className="mt-16 accent-frame">
         <h2 className="font-display text-heading text-ink">How it works</h2>
-        <ol className="mt-8 grid gap-8 sm:grid-cols-3">
+        <ol className="mt-8 grid sm:grid-cols-3">
           {steps.map((step, index) => (
-            <li key={step.title}>
+            <li
+              key={step.title}
+              className="border-t border-hairline pt-8 first:border-t-0 first:pt-0 sm:border-t-0 sm:border-l sm:pl-8 sm:pt-0 sm:first:border-l-0 sm:first:pl-0"
+            >
               <span className="font-display text-title text-accent-text">
                 {index + 1}
               </span>

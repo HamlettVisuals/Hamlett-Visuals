@@ -11,9 +11,10 @@ import { standardOffers, type Offer } from "@/lib/site-content";
 
 // Offers & pricing section (#offers). Every offer, in category order — the
 // featured one included. Plain rows are hairline-divided; the featured row is
-// an accent-bordered box (.offer-row-featured) carrying the same accent title
-// + price as the standalone Hot offer section, so it reads as the same offer
-// wherever you meet it.
+// an accent-bordered box (.accent-frame, the shared static look) plus
+// .offer-row-featured (the hover-lift layered on top, since this row is
+// clickable) carrying the same accent title + price as the standalone Hot
+// offer section, so it reads as the same offer wherever you meet it.
 //
 // The "Hot deal" badge sits on the row's own border rather than inside its
 // padding: absolutely positioned (.offer-row-featured is the positioned
@@ -38,7 +39,7 @@ function OfferRow({ offer }: { offer: Offer }) {
     <li
       className={
         isFeatured
-          ? "offer-row-featured"
+          ? "accent-frame offer-row-featured"
           : "border-t border-hairline py-8 first:pt-10"
       }
     >
