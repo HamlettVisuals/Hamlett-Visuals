@@ -583,6 +583,21 @@
     resize: vertical;
     min-height: 7rem;
   }
+  /* Browser autofill paints its own light-blue background via an internal
+     UA style that `background` can't override directly — the standard fix
+     is an inset box-shadow large enough to fully cover it, matching
+     .field-input's own resting --color-canvas fill so an autofilled field
+     looks identical to a normal one instead of clashing with
+     --color-canvas-raised behind it. The absurdly long transition delays
+     Chrome's autofill-yellow repaint on interaction. */
+  .field-input:autofill,
+  .field-input:-webkit-autofill,
+  .field-input:-webkit-autofill:hover,
+  .field-input:-webkit-autofill:focus {
+    box-shadow: 0 0 0 1000px var(--color-canvas) inset;
+    -webkit-text-fill-color: var(--color-ink);
+    transition: background-color 9999s ease-in-out 0s;
+  }
 
   /* Strips button chrome so a <button> can render as an inline .link — used
      by the booking form's "Change" action that clears a pre-filled session

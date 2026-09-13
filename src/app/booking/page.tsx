@@ -56,7 +56,9 @@ export default function BookingPage() {
           {steps.map((step, index) => (
             <li
               key={step.title}
-              className="border-t border-hairline pt-8 first:border-t-0 first:pt-0 sm:border-t-0 sm:border-l sm:pl-8 sm:pt-0 sm:first:border-l-0 sm:first:pl-0"
+              className={`border-t border-hairline pt-8 first:border-t-0 first:pt-0 sm:border-t-0 sm:pt-0 ${
+                index > 0 ? "sm:border-l sm:pl-8" : ""
+              } ${index < steps.length - 1 ? "sm:pr-8" : ""}`}
             >
               <span className="font-display text-title text-accent-text">
                 {index + 1}
