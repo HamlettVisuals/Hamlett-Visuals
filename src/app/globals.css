@@ -660,9 +660,17 @@
      which panels are mounted and measures both their heights, setting the
      container's `height` imperatively (via ref) so this transition has real
      start/end pixel values to animate between instead of jumping between two
-     `auto` heights. */
+     `auto` heights. `align-items: start` is load-bearing, not cosmetic:
+     grid items default to align-self: stretch, which would stretch the
+     (much shorter) success panel to match the container's explicitly-locked
+     height during the swap — and BookingForm measures the target height off
+     that same panel's scrollHeight, so a stretched panel reports the
+     container's current height right back, turning the height animation
+     into a no-op. Starting both panels at their natural size keeps that
+     measurement honest. */
   .booking-swap {
     display: grid;
+    align-items: start;
     transition: height var(--booking-swap-duration) var(--ease-standard);
   }
   .booking-swap > * {
