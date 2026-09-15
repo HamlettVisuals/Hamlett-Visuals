@@ -1,8 +1,15 @@
 "use client";
 
-import { useEffect, useRef, useState, type FormEvent } from "react";
+import {
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type FormEvent,
+} from "react";
 import { useSearchParams } from "next/navigation";
 import type { Category } from "@/lib/categories";
+import { usePrefersReducedMotion } from "@/lib/use-prefers-reduced-motion";
 import DatePicker from "./DatePicker";
 
 // The booking form itself, plus the success state it swaps to in place after
@@ -16,10 +23,21 @@ import DatePicker from "./DatePicker";
 // state here. This component just calls `onSubmitted` once a submission is
 // valid.
 //
-// No backend wiring yet — submitting just reads the name off the form and
-// flips to the success state. A future API route is the next step; the
-// honeypot field below is already in the DOM/form for it to check later, but
-// nothing reads it yet.
+// No backend wiring yet — a valid submit holds the button in a "Sending…"
+// state for SENDING_DELAY_MS (submitBooking below), then reads the name off
+// the form and flips to the success state. submitBooking is deliberately the
+// only thing that needs to change once there's a real API route — swap its
+// body for `await fetch(...)` and everything downstream (the pending state,
+// the crossfade) keeps working unmodified. The honeypot field below is
+// already in the DOM/form for that future route to check, but nothing reads
+// it yet.
+//
+// The form→success swap itself (once `submitted` flips true) crossfades
+// rather than snapping: both panels stay mounted for
+// --booking-swap-duration + --booking-swap-overlap (see globals.css) while
+// the container's height animates from the form's measured height to the
+// success panel's, then the form unmounts. Skipped entirely under
+// prefers-reduced-motion — see swapPhase below.
 //
 // Direct-contact details live only in the site-wide Footer (rendered right
 // below this page) — deliberately not repeated here.
@@ -32,6 +50,27 @@ import DatePicker from "./DatePicker";
 
 // Outside the real category slugs on purpose, so it can never collide with one.
 const OTHER_SESSION_TYPE = "other";
+
+// How long the submit button holds its "Sending…" state before flipping to
+// success — purely so click → sending → success reads as one deliberate
+// sequence instead of an instant flash. Stands in for a real network delay;
+// once there's a real endpoint, submitBooking's body becomes the actual
+// `await fetch(...)` and this constant goes away on its own.
+const SENDING_DELAY_MS = 500;
+
+function submitBooking(): Promise<void> {
+  return new Promise((resolve) => {
+    window.setTimeout(resolve, SENDING_DELAY_MS);
+  });
+}
+
+// Mirrors --booking-swap-duration / --booking-swap-overlap (globals.css) so
+// the cleanup timeout below waits exactly as long as the CSS animations take.
+const SWAP_DURATION_MS = 250;
+const SWAP_OVERLAP_MS = 80;
+const SWAP_TOTAL_MS = SWAP_DURATION_MS + SWAP_OVERLAP_MS;
+
+type SwapPhase = "form" | "swapping" | "success";
 
 const TIME_OPTIONS = [
   { value: "morning", label: "Morning" },
@@ -87,8 +126,15 @@ export default function BookingForm({
   const [prefilled, setPrefilled] = useState(Boolean(matchedCategory));
   const [date, setDate] = useState("");
   const [errors, setErrors] = useState<FormErrors>({});
+  const [pending, setPending] = useState(false);
+  const [swapPhase, setSwapPhase] = useState<SwapPhase>(
+    submitted ? "success" : "form",
+  );
+
+  const prefersReducedMotion = usePrefersReducedMotion();
 
   const formSectionRef = useRef<HTMLDivElement>(null);
+  const successPanelRef = useRef<HTMLElement>(null);
   const sessionTypeRef = useRef<HTMLSelectElement>(null);
   const nameRef = useRef<HTMLInputElement>(null);
   const emailRef = useRef<HTMLInputElement>(null);
@@ -103,12 +149,64 @@ export default function BookingForm({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Kicks off the crossfade the moment `submitted` flips true. Locks the
+  // container to its current (form) height in px — it was `auto` — so the
+  // height transition below has a real starting value instead of jumping.
+  // Reduced motion skips straight to the success phase, no measuring.
+  useEffect(() => {
+    if (!submitted || swapPhase !== "form") return;
+
+    const beginSwap = () => {
+      if (prefersReducedMotion) {
+        setSwapPhase("success");
+        return;
+      }
+
+      const container = formSectionRef.current;
+      if (container) {
+        container.style.height = `${container.offsetHeight}px`;
+        container.style.overflow = "hidden";
+      }
+      setSwapPhase("swapping");
+    };
+    beginSwap();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [submitted]);
+
+  // Once both panels are mounted (swapPhase "swapping"), grow the container
+  // to the success panel's natural height — triggering the CSS transition —
+  // then, once both the fade and the height animation have finished, drop
+  // the form and let the container return to `auto`.
+  useLayoutEffect(() => {
+    if (swapPhase !== "swapping") return;
+
+    const container = formSectionRef.current;
+    const successPanel = successPanelRef.current;
+    if (!container || !successPanel) return;
+
+    const targetHeight = successPanel.scrollHeight;
+    const frame = requestAnimationFrame(() => {
+      container.style.height = `${targetHeight}px`;
+    });
+
+    const timeout = window.setTimeout(() => {
+      container.style.height = "auto";
+      container.style.overflow = "";
+      setSwapPhase("success");
+    }, SWAP_TOTAL_MS);
+
+    return () => {
+      cancelAnimationFrame(frame);
+      window.clearTimeout(timeout);
+    };
+  }, [swapPhase]);
+
   const clearPrefill = () => {
     setSessionType("");
     setPrefilled(false);
   };
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
     const name = String(data.get("name") ?? "");
@@ -127,6 +225,9 @@ export default function BookingForm({
       return;
     }
 
+    setPending(true);
+    await submitBooking();
+    setPending(false);
     onSubmitted(name.trim().split(/\s+/)[0] ?? "");
   };
 
@@ -134,24 +235,16 @@ export default function BookingForm({
     <div
       ref={formSectionRef}
       id="booking-form"
-      className="mt-16"
+      className="mt-16 booking-swap"
       style={{ overflowAnchor: "none" }}
     >
-      {submitted ? (
-        <section>
-          <h2 className="font-display text-heading text-ink">
-            Thanks, {firstName || "there"}.
-          </h2>
-          <p className="mt-3 max-w-measure text-body text-muted">
-            Your request has been sent. She reads every one herself and
-            usually replies within a day or two.
-          </p>
-        </section>
-      ) : (
+      {swapPhase !== "success" && (
         <form
           onSubmit={handleSubmit}
           noValidate
-          className="flex flex-col gap-8 bg-canvas-raised p-6 sm:p-8"
+          className={`flex flex-col gap-8 bg-canvas-raised p-6 sm:p-8 ${
+            swapPhase === "swapping" ? "booking-swap-leaving" : ""
+          }`}
         >
           <p className="text-caption text-muted">
             <span className="text-accent-text">*</span> Required
@@ -331,11 +424,36 @@ export default function BookingForm({
           </div>
 
           <div>
-            <button type="submit" className="btn">
-              Send your request
+            <button type="submit" className="btn" disabled={pending} aria-busy={pending}>
+              {pending ? (
+                <>
+                  Sending
+                  <span className="btn-dots" aria-hidden="true">
+                    <span />
+                    <span />
+                    <span />
+                  </span>
+                </>
+              ) : (
+                "Send your request"
+              )}
             </button>
           </div>
         </form>
+      )}
+      {swapPhase !== "form" && (
+        <section
+          ref={successPanelRef}
+          className={swapPhase === "swapping" ? "booking-swap-entering" : undefined}
+        >
+          <h2 className="font-display text-heading text-ink">
+            Thanks, {firstName || "there"}.
+          </h2>
+          <p className="mt-3 max-w-measure text-body text-muted">
+            Your request has been sent. She reads every one herself and
+            usually replies within a day or two.
+          </p>
+        </section>
       )}
     </div>
   );

@@ -100,6 +100,15 @@
      --zoom-duration (350ms), which reads sluggish once it's moving a whole
      panel rather than a thumbnail. */
   --panel-duration: 300ms;
+
+  /* Booking form → success crossfade (BookingForm.tsx). The fade/translate
+     on each panel runs --booking-swap-duration; --booking-swap-overlap is
+     how much earlier the success panel starts fading in relative to the
+     form fading out, so the two read as one continuous motion rather than
+     a sequence. BookingForm.tsx mirrors both as JS constants to time its
+     cleanup — keep them in sync if either changes. */
+  --booking-swap-duration: 250ms;
+  --booking-swap-overlap: 80ms;
 }
 
 /* ---- Base ----------------------------------------------------------------
@@ -643,6 +652,101 @@
     .nav-panel-backdrop,
     .nav-panel {
       transition: none;
+    }
+  }
+
+  /* Booking form → success crossfade (BookingForm.tsx). The form and success
+     panels overlap in the same grid cell while swapping — BookingForm drives
+     which panels are mounted and measures both their heights, setting the
+     container's `height` imperatively (via ref) so this transition has real
+     start/end pixel values to animate between instead of jumping between two
+     `auto` heights. */
+  .booking-swap {
+    display: grid;
+    transition: height var(--booking-swap-duration) var(--ease-standard);
+  }
+  .booking-swap > * {
+    grid-area: 1 / 1;
+    min-width: 0;
+  }
+  @keyframes booking-swap-out {
+    from { opacity: 1; transform: translateY(0); }
+    to { opacity: 0; transform: translateY(10px); }
+  }
+  @keyframes booking-swap-in {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .booking-swap-leaving {
+    animation: booking-swap-out var(--booking-swap-duration) var(--ease-standard) both;
+  }
+  .booking-swap-entering {
+    animation: booking-swap-in var(--booking-swap-duration) var(--ease-standard)
+      var(--booking-swap-overlap) both;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .booking-swap {
+      transition: none;
+    }
+    .booking-swap-leaving,
+    .booking-swap-entering {
+      animation: none;
+    }
+  }
+
+  /* "Sending…" submit-button state (BookingForm.tsx) — three dots pulsing in
+     sequence, built from the button's own currentColor rather than a spinner
+     asset. Placeholder for the future API call's in-flight state. */
+  .btn-dots {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+  }
+  .btn-dots span {
+    width: 0.3125rem;
+    height: 0.3125rem;
+    border-radius: 999px;
+    background: currentColor;
+    animation: btn-dot-pulse 1000ms var(--ease-standard) infinite;
+  }
+  .btn-dots span:nth-child(2) { animation-delay: 150ms; }
+  .btn-dots span:nth-child(3) { animation-delay: 300ms; }
+  @keyframes btn-dot-pulse {
+    0%, 100% { opacity: 0.3; transform: scale(0.8); }
+    50% { opacity: 1; transform: scale(1); }
+  }
+  .btn:disabled {
+    opacity: 0.7;
+    cursor: default;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .btn-dots span {
+      animation: none;
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  /* "How it works" progress-tracker reveal (BookingFlow.tsx) — once the form
+     is submitted, each step's status change is staggered via an inline
+     animation-delay/transition-delay BookingFlow computes per step, rather
+     than having all three change at once. This class only supplies the
+     checkmark's small pop-in; step 3's accent highlight reuses the plain
+     color transition below instead of a keyframe, per the "nothing
+     elaborate" rule in DESIGN.md → Motion. */
+  @keyframes progress-check-in {
+    from { opacity: 0; transform: scale(0.6); }
+    to { opacity: 1; transform: scale(1); }
+  }
+  .progress-check-in {
+    animation: progress-check-in 200ms var(--ease-standard) both;
+  }
+  .progress-step-heading {
+    transition: color 200ms var(--ease-standard);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .progress-check-in {
+      animation: none;
     }
   }
 }

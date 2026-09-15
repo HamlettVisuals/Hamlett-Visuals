@@ -2,7 +2,14 @@
 
 import { useEffect, useState } from "react";
 import type { Category } from "@/lib/categories";
+import { usePrefersReducedMotion } from "@/lib/use-prefers-reduced-motion";
 import BookingForm from "./BookingForm";
+
+// How long after the previous step's status change the next one appears —
+// step 1's checkmark first, step 2's ~STEP_STAGGER_MS later, step 3's accent
+// highlight another STEP_STAGGER_MS after that. Zeroed under
+// prefers-reduced-motion so every step reflects the submitted state at once.
+const STEP_STAGGER_MS = 130;
 
 // Owns the one piece of state the "How it works" card and the booking form
 // need to share: whether the form has been successfully submitted. Client
@@ -22,6 +29,7 @@ export default function BookingFlow({
 }) {
   const [submitted, setSubmitted] = useState(false);
   const [firstName, setFirstName] = useState("");
+  const prefersReducedMotion = usePrefersReducedMotion();
 
   // Submitting collapses the form into a much shorter success block, and
   // the resulting reflow makes the browser jump the page to an
@@ -70,13 +78,20 @@ export default function BookingFlow({
           moment. Once the form is submitted, the same card doubles as a
           progress tracker: steps 1–2 get a checkmark and a muted heading,
           step 3 (the one still pending — her confirming) gets the accent
-          highlight. Purely a static status display, no animation. */}
+          highlight. The three status changes stagger in via
+          STEP_STAGGER_MS rather than appearing all at once (see the
+          .progress-check-in / .progress-step-heading classes in
+          globals.css); collapses to an instant final state under
+          prefers-reduced-motion. */}
       <section className="mt-16 accent-frame">
         <h2 className="font-display text-heading text-ink">How it works</h2>
         <ol className="mt-8 grid sm:grid-cols-3">
           {steps.map((step, index) => {
             const isDone = submitted && index < 2;
             const isActive = submitted && index === 2;
+            // Step 0's checkmark lands first, step 1's next, step 2's accent
+            // highlight last — each `index * STEP_STAGGER_MS` after submit.
+            const stepDelay = prefersReducedMotion ? 0 : index * STEP_STAGGER_MS;
 
             return (
               <li
@@ -89,7 +104,8 @@ export default function BookingFlow({
                   <span
                     role="img"
                     aria-label="Completed"
-                    className="flex h-5 w-5 items-center justify-center text-muted"
+                    className="progress-check-in flex h-5 w-5 items-center justify-center text-muted"
+                    style={{ animationDelay: `${stepDelay}ms` }}
                   >
                     <svg viewBox="0 0 16 16" fill="none" aria-hidden="true" className="h-full w-full">
                       <path
@@ -107,9 +123,10 @@ export default function BookingFlow({
                   </span>
                 )}
                 <h3
-                  className={`mt-2 text-body font-medium ${
+                  className={`progress-step-heading mt-2 text-body font-medium ${
                     isActive ? "text-accent-text" : isDone ? "text-ink opacity-60" : "text-ink"
                   }`}
+                  style={isActive ? { transitionDelay: `${stepDelay}ms` } : undefined}
                 >
                   {step.title}
                 </h3>
