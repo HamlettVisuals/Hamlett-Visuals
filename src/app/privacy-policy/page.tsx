@@ -1,9 +1,13 @@
 import Link from "next/link";
 
-// Privacy policy page — placeholder content only. Real policy copy comes
-// later. Structure and section headings are final; the paragraph copy under
-// each is believable placeholder text, not lorem ipsum, so the page reads
-// naturally before real copy lands.
+// Privacy Policy — standalone page. Placeholder content only; real policy
+// copy comes later. Structure and section headings are final; the paragraph
+// copy under each is believable placeholder text, not lorem ipsum, so the
+// page reads naturally before real copy lands.
+//
+// Terms & Conditions used to live here as a second #terms section; it now has
+// its own page at src/app/terms/page.tsx, which mirrors this page's shell so
+// the two documents read as siblings.
 
 export const metadata = {
   title: "Privacy Policy — Hamlett Visuals",
@@ -15,13 +19,20 @@ const EMAIL = "hello@example.com";
 const PHONE_DISPLAY = "+0 000 000 0000";
 const PHONE_HREF = "tel:+00000000000";
 
+// TODO: placeholder "last updated" date — swap for the real date whenever
+// the wording is next revised.
+const PRIVACY_LAST_UPDATED = "September 15, 2026";
+
 export default function PrivacyPolicyPage() {
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col px-gutter py-section">
       <header>
-        <h1 className="font-display text-page text-ink">Privacy Policy</h1>
+        <h1 className="font-display text-page text-ink">Privacy policy</h1>
         <p className="mt-3 text-caption text-muted">
-          Placeholder policy — final copy pending.
+          Placeholder copy — final wording pending.
+        </p>
+        <p className="mt-2 text-caption text-muted">
+          Last updated: {PRIVACY_LAST_UPDATED}
         </p>
       </header>
 
@@ -33,10 +44,10 @@ export default function PrivacyPolicyPage() {
           <p className="mt-3 max-w-measure text-body text-muted">
             When you reach out through a booking inquiry or contact form, we
             collect the details you provide, such as your name, email
-            address, phone number, and information about the shoot you&rsquo;re
-            planning. Basic usage data, like which pages are visited and how
-            long a session lasts, may also be collected automatically while
-            you browse the site.
+            address, phone number, and information about the shoot
+            you&rsquo;re planning. Basic usage data, like which pages are
+            visited and how long a session lasts, may also be collected
+            automatically while you browse the site.
           </p>
         </section>
 
@@ -62,8 +73,8 @@ export default function PrivacyPolicyPage() {
             understand which pages get visited and how people find their way
             around. These tools collect aggregate, non-identifying usage
             patterns rather than anything tied to you personally. You can
-            disable cookies in your browser settings if you&rsquo;d prefer not to
-            be included.
+            disable cookies in your browser settings if you&rsquo;d prefer not
+            to be included.
           </p>
         </section>
 

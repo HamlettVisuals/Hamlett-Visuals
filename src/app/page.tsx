@@ -6,7 +6,6 @@ import Offers from "@/components/home/Offers";
 import BookingCta from "@/components/home/BookingCta";
 import Instagram from "@/components/home/Instagram";
 import Testimonials from "@/components/home/Testimonials";
-import Terms from "@/components/home/Terms";
 
 // Single flowing homepage. Sections render in this exact order:
 //  1. Hero            (<Hero />)
@@ -17,8 +16,9 @@ import Terms from "@/components/home/Terms";
 //  6. Booking CTA     (#booking-cta)
 //  7. Recent Instagram(#instagram)
 //  8. Testimonials    (#testimonials)
-//  9. Terms           (#terms)
-// 10. Final CTA/footer -> global <Footer /> in src/app/layout.tsx
+//  9. Final CTA/footer -> global <Footer /> in src/app/layout.tsx
+//
+// Terms & conditions live on /terms, not on the homepage.
 
 export default function Home() {
   return (
@@ -46,9 +46,6 @@ export default function Home() {
 
       {/* 8. Testimonials teaser */}
       <Testimonials />
-
-      {/* 9. Terms */}
-      <Terms />
     </>
   );
 }

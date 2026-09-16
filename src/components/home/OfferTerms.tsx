@@ -5,9 +5,9 @@
 // else on the site is italic).
 //
 // TODO: placeholder policy, pending her real deposit / cancellation /
-// reschedule terms. Once the site's Terms section (#terms) is written this
-// should be sourced from there — or link to it — rather than duplicating the
-// copy here.
+// reschedule terms. Once finalised, this should be sourced from
+// /privacy-policy#terms (src/app/privacy-policy/page.tsx) — or link to it —
+// rather than duplicating the copy here.
 
 type OfferTermsProps = {
   className?: string;

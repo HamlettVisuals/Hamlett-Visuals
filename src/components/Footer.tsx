@@ -14,12 +14,13 @@ import { getInstagramQrSvg } from "@/lib/instagram-qr";
 
 // Every destination here resolves: Portfolio -> the homepage categories anchor
 // (there is no /portfolio index route), and /backstage, /testimonials,
-// /privacy-policy are all real routes.
+// /privacy-policy, /terms are all real routes.
 const footerNav = [
   { href: "/#categories", label: "Portfolio" },
   { href: "/backstage", label: "Backstage" },
   { href: "/testimonials", label: "Testimonials" },
   { href: "/privacy-policy", label: "Privacy Policy" },
+  { href: "/terms", label: "Terms & Conditions" },
 ];
 
 // TODO: placeholder details — swap the email, phone number and the sign-off
