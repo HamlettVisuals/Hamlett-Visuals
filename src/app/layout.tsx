@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Fraunces, Inter } from "next/font/google";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
+import FloatingAskButton from "@/components/AskQuestion/FloatingAskButton";
 import "./globals.css";
 
 // Display / headings. Variable font — the opsz axis is kept so
@@ -24,7 +25,8 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: "Hamlett Visuals",
-  description: "Photography portfolio of Hamlett Visuals.",
+  description:
+    "Weddings, portraits, pets, and more — captured as they happen.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
@@ -37,6 +39,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <Nav />
         <main className="flex flex-1 flex-col">{children}</main>
         <Footer />
+        <FloatingAskButton />
       </body>
     </html>
   );

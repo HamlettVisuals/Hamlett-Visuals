@@ -35,6 +35,15 @@
   --color-btn: #171614;
   --color-btn-ink: #faf9f6;
 
+  /* Ask a question widget (src/components/AskQuestion/) — a floating overlay,
+     not a page section, so it gets its own white surface + a softer,
+     translucent hairline rather than reusing --color-canvas /
+     --color-hairline. --color-hairline-soft is derived from --color-ink
+     (never a standalone hex), matching the --color-canvas-tint pattern. */
+  --color-surface: #ffffff;
+  --color-hairline-soft: color-mix(in srgb, var(--color-ink) 15%, transparent);
+  --radius-panel: 6px;
+
   /* These tokens are additive — Tailwind's default palette still resolves so
      the earlier scaffold's zinc placeholder classes keep rendering until each
      section is migrated. New work uses the tokens above (enforced by DESIGN.md,
@@ -77,13 +86,14 @@
 
   /* ---- Breakpoints -------------------------------------------------------
      Header nav (src/components/Nav.tsx): the desktop link row + Book button
-     needs ~669px of natural width (measured: Wordmark ~144px + link row/Book
-     group ~476px + 48px of header padding, with no room in either to shrink
-     since every label is a single word that can't soft-wrap). `header:`
-     collapses to the hamburger just above that hard limit, at 720px, so the
-     row still has breathing room next to the Wordmark rather than
-     bottoming out right at the overflow point. */
-  --breakpoint-header: 45rem; /* 720px */
+     needs ~757px of natural width (measured: Wordmark ~144px + link row/Book
+     group ~565px + 48px of header padding, with no room in either to shrink
+     since every label is a single word that can't soft-wrap — six links now
+     that Backstage was added). `header:` collapses to the hamburger just
+     above that hard limit, at 800px, so the row still has breathing room
+     next to the Wordmark rather than bottoming out right at the overflow
+     point. */
+  --breakpoint-header: 50rem; /* 800px */
 }
 
 :root {
@@ -109,6 +119,9 @@
      cleanup — keep them in sync if either changes. */
   --booking-swap-duration: 250ms;
   --booking-swap-overlap: 80ms;
+
+  /* Ask a question panel's scale-and-fade entrance (AskQuestionPanel.tsx). */
+  --ask-panel-duration: 180ms;
 }
 
 /* ---- Base ----------------------------------------------------------------
@@ -537,6 +550,19 @@
     display: none;
   }
 
+  /* GallerySkeleton's placeholder tile — a flat neutral fill with a slow,
+     subtle opacity pulse (restrained, per the site's two-motion budget in
+     DESIGN.md; covered by the global prefers-reduced-motion safety net). */
+  .gallery-skeleton-tile {
+    border-radius: var(--radius-media);
+    background: var(--color-canvas-raised);
+    animation: gallery-skeleton-pulse 1600ms var(--ease-standard) infinite;
+  }
+  @keyframes gallery-skeleton-pulse {
+    0%, 100% { opacity: 0.55; }
+    50% { opacity: 1; }
+  }
+
   /* Category lightbox (src/components/Gallery/CategoryLightbox.tsx) — a
      user-triggered fade/scale-in on the stage image whenever navigation
      changes it. Covered by the global prefers-reduced-motion safety net
@@ -553,6 +579,55 @@
   }
   .lightbox-image-enter {
     animation: lightbox-image-in 250ms var(--ease-standard);
+  }
+
+  /* BackstageLightbox's custom video scrub bar
+     (src/components/Backstage/BackstageLightbox.tsx) — a native
+     <input type="range">, restyled to a hairline track pinned to the video's
+     bottom edge, replacing the native <video controls> UI removed there. The
+     filled portion is a background gradient driven by --progress (0%–100%,
+     set inline per frame from currentTime/duration) rather than a second
+     stacked element; the thumb is hidden entirely so only the line shows. */
+  .video-progress {
+    appearance: none;
+    -webkit-appearance: none;
+    display: block;
+    width: 100%;
+    height: 4px;
+    margin: 0;
+    padding: 0;
+    border-radius: 999px;
+    cursor: pointer;
+    background: linear-gradient(
+      to right,
+      var(--color-canvas) var(--progress, 0%),
+      color-mix(in srgb, var(--color-canvas) 30%, transparent) var(--progress, 0%)
+    );
+  }
+  .video-progress::-webkit-slider-runnable-track {
+    height: 4px;
+    background: transparent;
+  }
+  .video-progress::-webkit-slider-thumb {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 0;
+    height: 0;
+  }
+  .video-progress::-moz-range-track {
+    height: 4px;
+    background: transparent;
+    border: none;
+  }
+  .video-progress::-moz-range-thumb {
+    width: 0;
+    height: 0;
+    border: none;
+    background: transparent;
+  }
+  .video-progress:focus-visible {
+    outline: 2px solid var(--color-canvas);
+    outline-offset: 2px;
   }
 
   /* Booking form controls (src/components/booking/BookingForm.tsx) — flat,
@@ -591,6 +666,10 @@
   textarea.field-input {
     resize: vertical;
     min-height: 7rem;
+  }
+  .field-input:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
   }
   /* Browser autofill paints its own light-blue background via an internal
      UA style that `background` can't override directly — the standard fix
@@ -754,6 +833,36 @@
   }
   @media (prefers-reduced-motion: reduce) {
     .progress-check-in {
+      animation: none;
+    }
+  }
+
+  /* Ask a question panel (src/components/AskQuestion/AskQuestionPanel.tsx) —
+     a floating white card, not a page section: a deliberate exception to the
+     flat/no-card rule in the same spirit as the mobile nav panel and the
+     category lightbox (both overlay UI rather than page content). Scale-and-
+     fades in from its bottom-right corner, where the trigger button sits. */
+  .ask-panel {
+    width: min(23rem, calc(100vw - 2.5rem));
+    padding: 1.5rem;
+    border: 0.5px solid var(--color-hairline-soft);
+    border-radius: var(--radius-panel);
+    background: var(--color-surface);
+    transform-origin: bottom right;
+    animation: ask-panel-in var(--ask-panel-duration) var(--ease-standard) both;
+  }
+  @keyframes ask-panel-in {
+    from {
+      opacity: 0;
+      transform: scale(0.94) translateY(6px);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .ask-panel {
       animation: none;
     }
   }
