@@ -1,45 +1,31 @@
-import Link from "next/link";
 import HoverZoomImage from "@/components/HoverZoomImage";
-import {
-  instagram,
-  instagramPosts,
-  offers,
-  type InstagramPost,
-} from "@/lib/site-content";
+import { instagram } from "@/lib/site-content";
+import { instagramPosts, selectFeaturedPosts } from "@/lib/instagram-posts";
 
 // Recent on Instagram section (#instagram), between the Booking CTA and the
 // Testimonials teaser.
 //
-// A fixed 3×3 grid of nine curated posts — 2 columns on mobile, 3 from tablet
-// up. The count is deliberately fixed at 9: this is hand-picked data, not a
-// live feed (a real "most recent posts" sync is a later backend job — see the
-// TODO on `instagramPosts` in src/lib/site-content.ts). The entry shape mirrors
-// an Instagram Graph API media object so wiring up the real feed later is a
-// data-source swap, not a redesign.
-//
-// Tiles: square, the site hover-zoom (<HoverZoomImage>), and a slight
-// `rounded-media` corner — the one place a photo frame is softened on the site
-// (DESIGN.md → Layout & surfaces). Optional caption + subcaption render as
-// plain text below the tile, never over the photo (consistent with the
-// Categories fix); no italic (Inter's italic isn't loaded, per OfferTerms).
-// When a post names a related offer or category, the caption line links there
-// quietly via .link-quiet — not a button.
-//
-// The @hamlettvisuals handle and URL come from the shared `instagram` constant,
-// the single source of truth also used by the Footer and the Booking CTA.
+// Tiles reuse the site's photo treatment — the same 3:4 crop and hover-zoom
+// as Gallery/PhotoGrid — so this reads as a natural extension of the
+// galleries rather than a third-party widget. The grid itself is its own
+// INSTAGRAM_GRID_CLASS rather than PhotoGrid's PHOTO_GRID_CLASS: this section
+// tops out at 3 columns on desktop instead of 4, deliberately independent
+// from the gallery grid so either can change column counts without affecting
+// the other. Each tile links out to the real post via `permalink` in a new
+// tab.
+const INSTAGRAM_GRID_CLASS =
+  "grid grid-cols-2 gap-3 sm:grid-cols-3 lg:gap-4";
 
-function relatedHref(post: InstagramPost): string | null {
-  if (post.relatedCategorySlug) {
-    return `/portfolio/${post.relatedCategorySlug}`;
-  }
-  if (post.relatedOfferId) {
-    const offer = offers.find((entry) => entry.id === post.relatedOfferId);
-    return offer ? `/portfolio/${offer.categorySlug}` : null;
-  }
-  return null;
-}
+// FEATURED_COUNT posts are chosen via selectFeaturedPosts() rather than a
+// plain slice — see lib/instagram-posts.ts for why that indirection exists
+// even though today's source list is fully hardcoded. Keep this a multiple
+// of 3 to match INSTAGRAM_GRID_CLASS's column count (3 from `sm` up) so the
+// grid always fills complete rows — update both together if either changes.
+const FEATURED_COUNT = 6;
 
 export default function Instagram() {
+  const posts = selectFeaturedPosts(instagramPosts, FEATURED_COUNT);
+
   return (
     <section id="instagram" className="border-t border-hairline">
       <div className="mx-auto max-w-7xl px-gutter py-section">
@@ -51,52 +37,55 @@ export default function Instagram() {
             href={instagram.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="link text-body text-ink"
+            className="link inline-flex items-center gap-1.5 text-body text-ink"
           >
-            {instagram.handle}
+            <InstagramGlyph className="h-4 w-4" />
+            Follow along
           </a>
         </div>
 
-        <ul className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:gap-4">
-          {instagramPosts.map((post) => {
-            const href = relatedHref(post);
-            return (
-              <li key={post.id}>
-                <a
-                  href={post.permalink}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="block"
-                >
-                  <HoverZoomImage
-                    src={post.image}
-                    alt={post.alt}
-                    sizes="(min-width: 640px) 33vw, 50vw"
-                    className="aspect-square w-full rounded-media"
-                  />
-                </a>
-
-                {post.caption && (
-                  <div className="mt-2">
-                    <p className="text-caption text-ink">
-                      {href ? (
-                        <Link href={href} className="link-quiet">
-                          {post.caption}
-                        </Link>
-                      ) : (
-                        post.caption
-                      )}
-                    </p>
-                    {post.subcaption && (
-                      <p className="text-caption text-muted">{post.subcaption}</p>
-                    )}
-                  </div>
-                )}
-              </li>
-            );
-          })}
-        </ul>
+        <div className={`mt-8 ${INSTAGRAM_GRID_CLASS}`}>
+          {posts.map((post) => (
+            <a
+              key={post.id}
+              href={post.permalink}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block"
+            >
+              <HoverZoomImage
+                src={post.imageUrl}
+                alt={post.caption}
+                sizes="(min-width: 1024px) 389px, (min-width: 640px) 30vw, 45vw"
+                className="aspect-[3/4] w-full"
+              />
+            </a>
+          ))}
+        </div>
       </div>
     </section>
+  );
+}
+
+function InstagramGlyph({ className = "" }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden="true"
+      className={className}
+    >
+      <rect
+        x="3"
+        y="3"
+        width="18"
+        height="18"
+        rx="5"
+        stroke="currentColor"
+        strokeWidth="1.5"
+      />
+      <circle cx="12" cy="12" r="4.2" stroke="currentColor" strokeWidth="1.5" />
+      <circle cx="17.2" cy="6.8" r="1" fill="currentColor" />
+    </svg>
   );
 }
