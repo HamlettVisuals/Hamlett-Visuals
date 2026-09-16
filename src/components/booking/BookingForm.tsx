@@ -28,9 +28,12 @@ import DatePicker from "./DatePicker";
 // the form and flips to the success state. submitBooking is deliberately the
 // only thing that needs to change once there's a real API route — swap its
 // body for `await fetch(...)` and everything downstream (the pending state,
-// the crossfade) keeps working unmodified. The honeypot field below is
-// already in the DOM/form for that future route to check, but nothing reads
-// it yet.
+// the crossfade, the error retry) keeps working unmodified. It can also
+// reject, standing in for that future request failing — forced via the
+// dev-only ?bookingResult=error query param (see devForceError below) since
+// there's no real backend yet to fail on its own. The honeypot field skips
+// the submitBooking call entirely and goes straight to success, matching
+// AskQuestionPanel's honeypot behavior.
 //
 // The form→success swap itself (once `submitted` flips true) crossfades
 // rather than snapping: both panels stay mounted for
@@ -52,15 +55,24 @@ import DatePicker from "./DatePicker";
 const OTHER_SESSION_TYPE = "other";
 
 // How long the submit button holds its "Sending…" state before flipping to
-// success — purely so click → sending → success reads as one deliberate
-// sequence instead of an instant flash. Stands in for a real network delay;
-// once there's a real endpoint, submitBooking's body becomes the actual
-// `await fetch(...)` and this constant goes away on its own.
-const SENDING_DELAY_MS = 500;
+// success (or error) — long enough to read as a real network round trip
+// rather than an instant flash, short enough not to feel slow. Stands in for
+// a real network delay; once there's a real endpoint, submitBooking's body
+// becomes the actual `await fetch(...)` and this constant goes away on its
+// own. The button's dots animate on an infinite loop (see .btn-dots in
+// globals.css), so nothing here needs to change for the indicator to still
+// read naturally at this length.
+const SENDING_DELAY_MS = 1400;
 
-function submitBooking(): Promise<void> {
-  return new Promise((resolve) => {
-    window.setTimeout(resolve, SENDING_DELAY_MS);
+function submitBooking(forceError: boolean): Promise<void> {
+  return new Promise((resolve, reject) => {
+    window.setTimeout(() => {
+      if (forceError) {
+        reject(new Error("Simulated booking failure"));
+      } else {
+        resolve();
+      }
+    }, SENDING_DELAY_MS);
   });
 }
 
@@ -80,6 +92,35 @@ const TIME_OPTIONS = [
 ];
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+const SUMMARY_DATE_FORMATTER = new Intl.DateTimeFormat("en-US", {
+  month: "short",
+  day: "numeric",
+  year: "numeric",
+});
+
+// Labels for the one-line confirmation summary on the success panel — looks
+// up the category name for a real slug, or the "Something else" copy the
+// select itself uses for OTHER_SESSION_TYPE.
+function sessionTypeLabel(slug: string, categories: Category[]): string {
+  if (slug === OTHER_SESSION_TYPE) return "Something else";
+  return categories.find((category) => category.slug === slug)?.name ?? slug;
+}
+
+// DatePicker's value is an ISO yyyy-mm-dd string; parsed with explicit
+// year/month/day (not `new Date(iso)`) so the summary can't drift a day off
+// in timezones behind UTC.
+function formatSummaryDate(iso: string): string | null {
+  if (!iso) return null;
+  const [year, month, day] = iso.split("-").map(Number);
+  if (!year || !month || !day) return null;
+  return SUMMARY_DATE_FORMATTER.format(new Date(year, month - 1, day));
+}
+
+function timeLabel(value: string): string | null {
+  const match = TIME_OPTIONS.find((option) => option.value === value);
+  return match && match.value ? match.label : null;
+}
 
 type FormErrors = {
   sessionType?: string;
@@ -120,6 +161,12 @@ export default function BookingForm({
     (category) => category.slug === typeParam,
   );
 
+  // Dev-only escape hatch to preview/verify the error state without a real
+  // backend to fail on — see submitBooking above. Never true in production.
+  const devForceError =
+    process.env.NODE_ENV === "development" &&
+    searchParams.get("bookingResult") === "error";
+
   const [sessionType, setSessionType] = useState(
     matchedCategory ? matchedCategory.slug : "",
   );
@@ -127,6 +174,12 @@ export default function BookingForm({
   const [date, setDate] = useState("");
   const [errors, setErrors] = useState<FormErrors>({});
   const [pending, setPending] = useState(false);
+  const [submitError, setSubmitError] = useState(false);
+  const [summary, setSummary] = useState<{
+    sessionType: string;
+    date: string;
+    time: string;
+  } | null>(null);
   const [swapPhase, setSwapPhase] = useState<SwapPhase>(
     submitted ? "success" : "form",
   );
@@ -211,6 +264,11 @@ export default function BookingForm({
     const data = new FormData(event.currentTarget);
     const name = String(data.get("name") ?? "");
     const email = String(data.get("email") ?? "");
+    const time = String(data.get("time") ?? "");
+
+    // Real users never fill this in — a bot that does gets a silent,
+    // convincing "success" with no real submitBooking call underneath.
+    const isSpam = Boolean(String(data.get("website") ?? "").trim());
 
     const nextErrors = validate({ sessionType, name, email });
     setErrors(nextErrors);
@@ -225,10 +283,23 @@ export default function BookingForm({
       return;
     }
 
+    setSubmitError(false);
+    setSummary({ sessionType, date, time });
+
+    if (isSpam) {
+      onSubmitted(name.trim().split(/\s+/)[0] ?? "");
+      return;
+    }
+
     setPending(true);
-    await submitBooking();
-    setPending(false);
-    onSubmitted(name.trim().split(/\s+/)[0] ?? "");
+    try {
+      await submitBooking(devForceError);
+      setPending(false);
+      onSubmitted(name.trim().split(/\s+/)[0] ?? "");
+    } catch {
+      setPending(false);
+      setSubmitError(true);
+    }
   };
 
   return (
@@ -415,13 +486,25 @@ export default function BookingForm({
           </div>
 
           {/* Honeypot — off-screen (not display:none) so it stays in the DOM
-              for simple bots to fill while real users never see it. Not wired
-              to anything yet; a future API route checks it and silently drops
-              the submission if it's non-empty. */}
+              for simple bots to fill while real users never see it.
+              tabIndex={-1} keeps it out of the keyboard tab order for
+              sighted keyboard users too. Checked in handleSubmit above. */}
           <div className="visually-hidden">
             <label htmlFor="website">Website</label>
-            <input type="text" id="website" name="website" autoComplete="off" />
+            <input
+              type="text"
+              id="website"
+              name="website"
+              tabIndex={-1}
+              autoComplete="off"
+            />
           </div>
+
+          {submitError && (
+            <p className="text-caption text-accent-text">
+              Something went wrong. Please try again.
+            </p>
+          )}
 
           <div>
             <button type="submit" className="btn" disabled={pending} aria-busy={pending}>
@@ -434,6 +517,8 @@ export default function BookingForm({
                     <span />
                   </span>
                 </>
+              ) : submitError ? (
+                "Try again"
               ) : (
                 "Send your request"
               )}
@@ -453,6 +538,18 @@ export default function BookingForm({
             Your request has been sent. She reads every one herself and
             usually replies within a day or two.
           </p>
+          {summary && (
+            <p className="mt-1 text-caption text-muted">
+              {[
+                sessionTypeLabel(summary.sessionType, categories),
+                [formatSummaryDate(summary.date), timeLabel(summary.time)]
+                  .filter(Boolean)
+                  .join(", "),
+              ]
+                .filter(Boolean)
+                .join(" — ")}
+            </p>
+          )}
         </section>
       )}
     </div>
