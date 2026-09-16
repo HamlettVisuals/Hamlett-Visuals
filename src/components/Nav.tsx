@@ -23,6 +23,7 @@ const navLinks = [
   { href: "/#about", label: "About" },
   { href: "/#offers", label: "Pricing" },
   { href: "/#instagram", label: "Instagram" },
+  { href: "/backstage", label: "Backstage" },
   { href: "/testimonials", label: "Testimonials" },
 ];
 

@@ -1,8 +1,11 @@
 import Link from "next/link";
+import { backstageItems } from "@/lib/backstage-items";
+import BackstageGallery from "@/components/Backstage/BackstageGallery";
 
-// Backstage page — structure/routing only. Reels and behind-the-scenes clips
-// come later; this is a placeholder shell matching the other sub-pages
-// (/booking, /testimonials, /privacy-policy).
+// Backstage feed — a single continuous, unbounded grid of admin-uploaded
+// photos and video, newest first, no category split. Mirrors the shell of
+// the other sub-pages (/testimonials, /terms, /privacy-policy); the grid,
+// lightbox and empty state live in src/components/Backstage/.
 
 export const metadata = {
   title: "Backstage — Hamlett Visuals",
@@ -10,30 +13,21 @@ export const metadata = {
 
 export default function BackstagePage() {
   return (
-    <div className="mx-auto flex max-w-4xl flex-1 flex-col gap-8 px-6 py-16">
-      <div>
-        <h1 className="text-3xl font-semibold tracking-tight text-zinc-950 dark:text-zinc-50">
-          Backstage
-        </h1>
-        <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
-          Placeholder backstage page. Reels and behind-the-scenes clips will
-          live here.
+    <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col px-gutter py-section">
+      <header>
+        <h1 className="font-display text-page italic text-ink">Backstage</h1>
+        <p className="mt-3 max-w-measure text-body text-accent-text">
+          A running feed from behind the camera — process shots, reels, and
+          the moments between the moments.
         </p>
+      </header>
+
+      <div className="mt-12">
+        <BackstageGallery items={backstageItems} />
       </div>
 
-      <div className="flex flex-col gap-4 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
-        <p>
-          Placeholder section — short reels from recent shoots. Real clips will
-          replace this before launch.
-        </p>
-        <p>
-          Placeholder section — behind-the-scenes stills and notes from set.
-          Real content will replace this before launch.
-        </p>
-      </div>
-
-      <p>
-        <Link href="/" className="underline">
+      <p className="mt-16">
+        <Link href="/" className="link text-ink">
           Back to home
         </Link>
       </p>
