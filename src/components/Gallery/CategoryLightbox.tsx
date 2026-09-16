@@ -3,8 +3,11 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import type { Photo } from "@/lib/albums";
+import { DEFAULT_LOCATION, generateAltText } from "@/lib/generate-alt-text";
 
 type CategoryLightboxProps = {
+  /** Display name of the category this gallery belongs to, e.g. "Weddings". */
+  category: string;
   events: { name: string; photos: Photo[] }[];
   isOpen: boolean;
   /** Index into the flattened photo list across all events. */
@@ -40,6 +43,7 @@ function ChevronIcon({ direction }: { direction: "left" | "right" }) {
 }
 
 export default function CategoryLightbox({
+  category,
   events,
   isOpen,
   startIndex,
@@ -160,7 +164,12 @@ export default function CategoryLightbox({
         >
           <Image
             src={current.photo.url}
-            alt={`${current.eventName} photo ${current.indexInEvent + 1}`}
+            alt={generateAltText({
+              kind: "event",
+              eventName: current.eventName,
+              category,
+              location: DEFAULT_LOCATION,
+            })}
             fill
             quality={95}
             sizes="90vw"
@@ -198,6 +207,12 @@ export default function CategoryLightbox({
         )}
       </div>
 
+      {/* Filmstrip intentionally spans every event in the category (the flat
+          list built above), not just the current one — it's a way to browse
+          across the whole category without leaving the lightbox. The counter
+          in the header above, by contrast, shows position within the current
+          event only (indexInEvent / totalInEvent). Seeing more thumbnails
+          here than the header count implies is expected, not a bug. */}
       {flat.length > 1 && (
         <div
           className="no-scrollbar hidden gap-2 overflow-x-auto px-5 pb-5 sm:flex"

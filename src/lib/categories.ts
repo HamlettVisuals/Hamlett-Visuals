@@ -7,7 +7,6 @@ export type Category = {
   blurb: string;
   image: string;
   heroImage: string;
-  heroAlt: string;
   order: number;
   published: boolean;
 };

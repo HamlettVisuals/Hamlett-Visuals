@@ -1,6 +1,7 @@
 import Link from "next/link";
 import HoverZoomImage from "@/components/HoverZoomImage";
 import { getCategories } from "@/lib/categories";
+import { generateAltText } from "@/lib/generate-alt-text";
 
 // Categories section (#categories). A uniform grid of tall tiles — one per
 // category — that reads as a gallery hang: three columns on desktop (3×2), two
@@ -34,7 +35,7 @@ export default function Categories() {
               <Link href={`/portfolio/${category.slug}`} className="block">
                 <HoverZoomImage
                   src={category.image}
-                  alt={`${category.name} photography`}
+                  alt={generateAltText({ kind: "category", category: category.name })}
                   sizes="(min-width: 1024px) 336px, (min-width: 640px) 50vw, 100vw"
                   className="aspect-[9/16] w-full"
                 />

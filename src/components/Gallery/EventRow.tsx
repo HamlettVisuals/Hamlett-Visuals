@@ -3,9 +3,13 @@
 import { useEffect, useRef, useState } from "react";
 import type { Photo } from "@/lib/albums";
 import HoverZoomImage from "@/components/HoverZoomImage";
+import { DEFAULT_LOCATION, generateAltText } from "@/lib/generate-alt-text";
+import GalleryEmptyState from "./GalleryEmptyState";
 
 type EventRowProps = {
   name: string;
+  /** Display name of the category this event belongs to, e.g. "Weddings". */
+  category: string;
   /**
    * Stable slug (from `slugify()` in `@/lib/albums`), set as this row's `id`
    * so it can be deep-linked as /portfolio/[category]#[slug] — from
@@ -34,6 +38,7 @@ type ThumbMetrics = {
 
 export default function EventRow({
   name,
+  category,
   slug,
   photos,
   isFirst = false,
@@ -237,36 +242,45 @@ export default function EventRow({
       </div>
 
       <div className="mt-4">
-        <div
-          ref={rowRef}
-          onMouseDown={handleMouseDown}
-          onMouseMove={handleMouseMove}
-          onMouseUp={stopDragging}
-          onMouseLeave={stopDragging}
-          onClickCapture={handleClickCapture}
-          onDragStart={(event) => event.preventDefault()}
-          className={`no-scrollbar flex gap-1 overflow-x-auto ${
-            isDragging ? "cursor-grabbing" : "cursor-grab"
-          }`}
-        >
-          {photos.map((photo, index) => (
-            <button
-              key={photo.filename}
-              type="button"
-              onClick={() => onPhotoClick(index)}
-              className={`flex-none ${
-                isDragging ? "cursor-grabbing" : "cursor-pointer"
-              }`}
-            >
-              <HoverZoomImage
-                src={photo.url}
-                alt={`${name} photo ${index + 1}`}
-                sizes="(max-width: 640px) 68vw, 280px"
-                className="aspect-[3/4] w-[68vw] sm:w-[280px]"
-              />
-            </button>
-          ))}
-        </div>
+        {photos.length === 0 ? (
+          <GalleryEmptyState />
+        ) : (
+          <div
+            ref={rowRef}
+            onMouseDown={handleMouseDown}
+            onMouseMove={handleMouseMove}
+            onMouseUp={stopDragging}
+            onMouseLeave={stopDragging}
+            onClickCapture={handleClickCapture}
+            onDragStart={(event) => event.preventDefault()}
+            className={`no-scrollbar flex gap-1 overflow-x-auto ${
+              isDragging ? "cursor-grabbing" : "cursor-grab"
+            }`}
+          >
+            {photos.map((photo, index) => (
+              <button
+                key={photo.filename}
+                type="button"
+                onClick={() => onPhotoClick(index)}
+                className={`flex-none ${
+                  isDragging ? "cursor-grabbing" : "cursor-pointer"
+                }`}
+              >
+                <HoverZoomImage
+                  src={photo.url}
+                  alt={generateAltText({
+                    kind: "event",
+                    eventName: name,
+                    category,
+                    location: DEFAULT_LOCATION,
+                  })}
+                  sizes="(max-width: 640px) 68vw, 280px"
+                  className="aspect-[3/4] w-[68vw] sm:w-[280px]"
+                />
+              </button>
+            ))}
+          </div>
+        )}
 
         {thumb.scrollable && (
           <div

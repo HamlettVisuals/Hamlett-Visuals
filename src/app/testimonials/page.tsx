@@ -2,6 +2,8 @@ import Link from "next/link";
 import HoverZoomImage from "@/components/HoverZoomImage";
 import { testimonials } from "@/lib/site-content";
 import { getCategories } from "@/lib/categories";
+import { getEventsForCategoryFolder } from "@/lib/albums";
+import { generateAltText } from "@/lib/generate-alt-text";
 
 // Full testimonials page. The teaser (src/components/home/Testimonials.tsx)
 // stays text-only and untouched by design; this page is the whole set,
@@ -26,10 +28,23 @@ export const metadata = {
 // Walk `categories` (canonical order: Weddings → Portraits → Pets → Brands →
 // Motorsports → Real Estate) and drop any group with no testimonials.
 const groups = getCategories()
-  .map((category) => ({
-    category,
-    items: testimonials.filter((t) => t.categorySlug === category.slug),
-  }))
+  .map((category) => {
+    const eventsBySlug = new Map(
+      getEventsForCategoryFolder(category.folderName).map((event) => [
+        event.slug,
+        event.name,
+      ]),
+    );
+    return {
+      category,
+      items: testimonials
+        .filter((t) => t.categorySlug === category.slug)
+        .map((testimonial) => ({
+          ...testimonial,
+          eventName: eventsBySlug.get(testimonial.eventSlug),
+        })),
+    };
+  })
   .filter((group) => group.items.length > 0);
 
 export default function TestimonialsPage() {
@@ -62,7 +77,11 @@ export default function TestimonialsPage() {
                     <div className="grid grid-cols-[96px_1fr] gap-4 sm:grid-cols-[160px_1fr] sm:gap-6">
                       <HoverZoomImage
                         src={testimonial.photo}
-                        alt={`Placeholder photo from ${testimonial.clientName}'s session`}
+                        alt={generateAltText({
+                          kind: "testimonial",
+                          eventName: testimonial.eventName,
+                          category: category.name,
+                        })}
                         sizes="(min-width: 640px) 160px, 96px"
                         className="aspect-[4/5] w-full"
                       />

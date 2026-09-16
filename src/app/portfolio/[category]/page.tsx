@@ -3,10 +3,10 @@ import { notFound } from "next/navigation";
 import { getCategories, getCategoryBySlug } from "@/lib/categories";
 import { getEventsForCategoryFolder } from "@/lib/albums";
 import CategoryGallery from "@/components/Gallery/CategoryGallery";
+import GalleryEmptyState from "@/components/Gallery/GalleryEmptyState";
 
 // Category landing page. Wired to the existing folder-scan logic in
 // `@/lib/albums` — `[category]` maps to a top-level folder under public/photos.
-// Structure/routing only; the design pass handles layout.
 
 export function generateStaticParams() {
   return getCategories().map((category) => ({ category: category.slug }));
@@ -25,30 +25,23 @@ export default async function CategoryPage({
   const events = getEventsForCategoryFolder(category.folderName);
 
   return (
-    <div className="mx-auto flex max-w-4xl flex-1 flex-col gap-8 px-6 py-16">
+    // w-full is load-bearing, not cosmetic: without it, `main`'s flex stretch
+    // fails to size this container once anything inside it (e.g. PhotoGrid's
+    // CSS grid) is a `display: grid` descendant, collapsing the whole column
+    // to that grid's intrinsic width instead of filling the page.
+    <div className="mx-auto flex w-full max-w-4xl flex-1 flex-col gap-8 px-gutter py-section">
       <div>
-        <nav className="mb-2 text-sm text-zinc-500 dark:text-zinc-400">
-          <Link href="/#categories" className="hover:text-zinc-950 dark:hover:text-zinc-50">
+        <nav className="mb-2 text-caption text-muted">
+          <Link href="/#categories" className="link text-ink">
             Portfolio
           </Link>{" "}
           <span aria-hidden="true">›</span> {category.name}
         </nav>
-        <h1 className="text-3xl font-semibold tracking-tight text-zinc-950 dark:text-zinc-50">
-          {category.name}
-        </h1>
-        <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
-          Placeholder category description.
-        </p>
+        <h1 className="font-display text-page text-ink">{category.name}</h1>
       </div>
 
       {events.length === 0 ? (
-        <p className="text-sm text-zinc-500 dark:text-zinc-400">
-          No events yet in this category. Add folders under{" "}
-          <code className="rounded bg-zinc-100 px-1 py-0.5 font-mono text-xs dark:bg-zinc-800">
-            public/photos/{category.folderName}
-          </code>
-          .
-        </p>
+        <GalleryEmptyState />
       ) : (
         <CategoryGallery category={category} events={events} />
       )}
