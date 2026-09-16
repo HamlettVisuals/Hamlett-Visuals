@@ -563,6 +563,23 @@
     50% { opacity: 1; }
   }
 
+  /* BackstageGrid's title + caption block (src/components/Backstage/
+     BackstageGrid.tsx) — a FIXED height (not min-height, which would still
+     let a shorter caption shrink the tile), sized to always fit one
+     text-body title line plus a 2-line text-caption caption, even when
+     there's no caption or a short one. Height is derived from the
+     text-body/text-caption tokens themselves (one text-body line + the 4px
+     gap the block's mt-1 sets + two text-caption lines) rather than a
+     guessed pixel number, so it tracks those tokens if they ever change.
+     This is what keeps every tile in a row — and so every row's images —
+     ending at the same vertical position regardless of caption length. */
+  .backstage-caption-slot {
+    height: calc(
+      (var(--text-body) * var(--text-body--line-height)) + 0.25rem +
+        (var(--text-caption) * var(--text-caption--line-height) * 2)
+    );
+  }
+
   /* Category lightbox (src/components/Gallery/CategoryLightbox.tsx) — a
      user-triggered fade/scale-in on the stage image whenever navigation
      changes it. Covered by the global prefers-reduced-motion safety net

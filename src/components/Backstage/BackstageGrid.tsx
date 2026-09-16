@@ -45,13 +45,17 @@ export default function BackstageGrid({
             )}
           </div>
 
-          <div className="mt-3">
-            <p className="text-body font-medium text-ink">{item.title}</p>
-            {item.caption && (
-              <p className="mt-1 line-clamp-2 text-caption text-muted">
-                {item.caption}
-              </p>
-            )}
+          {/* Fixed-height slot (backstage-caption-slot, globals.css) so a
+              missing or one-line caption doesn't shrink the tile — every
+              tile in a row keeps the same total height and rows stay
+              edge-to-edge, the way they do in the plain gallery grid. */}
+          <div className="backstage-caption-slot mt-3 flex flex-col">
+            <p className="line-clamp-1 text-body font-medium text-ink">
+              {item.title}
+            </p>
+            <p className="mt-1 line-clamp-2 text-caption text-muted">
+              {item.caption}
+            </p>
           </div>
         </button>
       ))}
