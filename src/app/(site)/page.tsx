@@ -1,3 +1,5 @@
+import { getPayload } from "payload";
+import config from "@payload-config";
 import Hero from "@/components/home/Hero";
 import Categories from "@/components/home/Categories";
 import About from "@/components/home/About";
@@ -20,11 +22,14 @@ import Testimonials from "@/components/home/Testimonials";
 //
 // Terms & conditions live on /terms, not on the homepage.
 
-export default function Home() {
+export default async function Home() {
+  const payload = await getPayload({ config });
+  const hero = await payload.findGlobal({ slug: "hero" });
+
   return (
     <>
       {/* 1. Hero */}
-      <Hero />
+      <Hero hero={hero} />
 
       {/* 2. Categories */}
       <Categories />

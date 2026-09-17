@@ -3,7 +3,10 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useLivePreview } from "@payloadcms/live-preview-react";
 import { getHeroSlides } from "@/lib/site-content";
+import { serverURL } from "@/lib/server-url";
+import type { Hero as HeroGlobal } from "@/payload-types";
 
 // Cross-category filmstrip hero. One representative image per category
 // (Weddings → Portraits → Pets → Brands → Motorsports → Real Estate → repeat),
@@ -20,7 +23,17 @@ import { getHeroSlides } from "@/lib/site-content";
 // --hero-fade-duration (1200ms) crossfade overlaps the tail of this window.
 const HOLD_MS = 4500;
 
-export default function Hero() {
+export default function Hero({ hero }: { hero: HeroGlobal }) {
+  // Live Preview overlays the admin's current unsaved form state on top of
+  // `hero` via postMessage — no extra fetch needed for these plain text
+  // fields. Outside of Payload's Live Preview iframe this is a no-op and
+  // `data` just stays equal to the server-fetched `hero` prop.
+  const { data } = useLivePreview<HeroGlobal>({
+    initialData: hero,
+    serverURL,
+    apiRoute: "/hv-studio/api",
+  });
+
   const heroSlides = getHeroSlides();
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
@@ -106,17 +119,19 @@ export default function Hero() {
             className="font-display text-hero font-normal text-canvas"
             style={{ textShadow: "0 1px 24px rgba(23,22,20,0.4)" }}
           >
-            Moments, held.
+            {data.headline}
           </h1>
-          <p
-            className="mt-4 max-w-md text-lead text-canvas/85"
-            style={{ textShadow: "0 1px 16px rgba(23,22,20,0.45)" }}
-          >
-            Weddings, portraits, pets, and more — captured as they happen.
-          </p>
+          {data.subhead && (
+            <p
+              className="mt-4 max-w-md text-lead text-canvas/85"
+              style={{ textShadow: "0 1px 16px rgba(23,22,20,0.45)" }}
+            >
+              {data.subhead}
+            </p>
+          )}
           <div className="mt-8">
-            <Link href="#booking-cta" className="btn">
-              Book a session
+            <Link href={data.ctaHref || "#booking-cta"} className="btn">
+              {data.ctaLabel || "Book a session"}
             </Link>
           </div>
         </div>

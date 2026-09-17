@@ -1,6 +1,13 @@
 import type { NextConfig } from "next";
+import { withPayload } from "@payloadcms/next/withPayload";
 
 const nextConfig: NextConfig = {
+  // Required now that the app has two root layouts — (site) and (payload) —
+  // so there's no single layout to compose a global 404 from. See
+  // app/global-not-found.tsx and node_modules/next/dist/docs/.../not-found.md.
+  experimental: {
+    globalNotFound: true,
+  },
   images: {
     // Local images under public/photos are optimized automatically —
     // no remotePatterns needed since nothing is fetched from an external host.
@@ -11,4 +18,4 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+export default withPayload(nextConfig);

@@ -883,6 +883,33 @@
       animation: none;
     }
   }
+
+  /* Live Preview scroll-to-highlight target (src/components/
+     LivePreviewHighlight.tsx) — editing-time only, applied by that
+     component's own JS and never present in normal page markup, so real
+     visitors never see it. Outline rather than box-shadow: some target
+     sections (e.g. Hero) have overflow-hidden, and box-shadow can be less
+     predictable there. */
+  .live-preview-highlight {
+    outline: 3px solid var(--color-accent);
+    outline-offset: -3px;
+    animation: live-preview-highlight-fade 1.8s var(--ease-standard) forwards;
+  }
+  @keyframes live-preview-highlight-fade {
+    0%,
+    70% {
+      outline-color: var(--color-accent);
+    }
+    100% {
+      outline-color: transparent;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .live-preview-highlight {
+      animation: none;
+      outline-color: var(--color-accent);
+    }
+  }
 }
 
 /* Safety net: honour reduced-motion everywhere, including any motion added

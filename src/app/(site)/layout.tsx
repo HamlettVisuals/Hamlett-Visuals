@@ -3,7 +3,9 @@ import { Fraunces, Inter } from "next/font/google";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import FloatingAskButton from "@/components/AskQuestion/FloatingAskButton";
-import "./globals.css";
+import LivePreviewRefresh from "@/components/LivePreviewRefresh";
+import LivePreviewHighlight from "@/components/LivePreviewHighlight";
+import "../globals.css";
 
 // Display / headings. Variable font — the opsz axis is kept so
 // `font-optical-sizing: auto` (set in globals.css) gives a lighter, more open
@@ -40,6 +42,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <main className="flex flex-1 flex-col">{children}</main>
         <Footer />
         <FloatingAskButton />
+        <LivePreviewRefresh />
+        <LivePreviewHighlight />
       </body>
     </html>
   );
