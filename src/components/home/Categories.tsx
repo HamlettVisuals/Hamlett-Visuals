@@ -1,7 +1,12 @@
+"use client";
+
 import Link from "next/link";
 import HoverZoomImage from "@/components/HoverZoomImage";
 import { getCategories } from "@/lib/categories";
 import { generateAltText } from "@/lib/generate-alt-text";
+import { serverURL } from "@/lib/server-url";
+import { useScopedLivePreview } from "@/lib/use-scoped-live-preview";
+import type { CategoriesIntro } from "@/payload-types";
 
 // Categories section (#categories). A uniform grid of tall tiles — one per
 // category — that reads as a gallery hang: three columns on desktop (3×2), two
@@ -19,14 +24,29 @@ import { generateAltText } from "@/lib/generate-alt-text";
 // src/lib/site-content.ts, so this grid, the portfolio routes and the hero
 // filmstrip all draw from one list.
 
-export default function Categories() {
+export default function Categories({
+  categoriesIntro,
+}: {
+  categoriesIntro: CategoriesIntro;
+}) {
+  // Live Preview overlays the admin's current unsaved form state on top of
+  // `categoriesIntro` via postMessage — same mechanism as Hero/About. The
+  // grid below still reads from the static categories list, not this data,
+  // since the Categories/Events/Photos collections aren't wired yet.
+  const { data } = useScopedLivePreview<CategoriesIntro>({
+    initialData: categoriesIntro,
+    serverURL,
+    globalSlug: "categories-intro",
+    apiRoute: "/hv-studio/api",
+  });
+
   const categories = getCategories();
 
   return (
     <section id="categories" className="border-t border-hairline">
       <div className="mx-auto max-w-7xl px-gutter py-section">
         <h2 className="text-center font-display text-heading text-ink">
-          Browse by category
+          {data.heading}
         </h2>
 
         <ul className="mt-8 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 lg:gap-4">

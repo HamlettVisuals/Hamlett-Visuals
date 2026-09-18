@@ -1,5 +1,6 @@
 import type { GlobalConfig } from "payload";
 import { publicReadAdminWrite } from "#src/access/isAdmin.ts";
+import { serverURL } from "#src/lib/server-url.ts";
 
 // Single source of truth for cross-section branding/contact details —
 // mirrors src/lib/site-settings.ts (favicon/OG image) and the `instagram`
@@ -12,6 +13,19 @@ export const SiteSettings: GlobalConfig = {
     group: "Site",
     description:
       "Studio name, contact details, Instagram, and the small icon/preview image used when the site is shared or shows up in a browser tab. These values are reused in several places across the site.",
+    // Same Live Preview treatment as the other wired globals (openByDefault
+    // + scroll-to-highlight), but this data isn't one homepage section —
+    // it's cross-cutting (Footer, Booking CTA, and the homepage Instagram
+    // section all render pieces of it). Footer is the fullest picture of it
+    // (both contact fields and the Instagram handle/QR code, vs. partial
+    // use elsewhere), and both field-group descriptions above already name
+    // it first, so it's the closest thing to a "home" for this global —
+    // #footer was picked over skipping the highlight entirely so every
+    // global in the nav behaves the same way from an editor's perspective.
+    livePreview: {
+      openByDefault: true,
+      url: () => `${serverURL}/#live-preview:footer`,
+    },
   },
   access: publicReadAdminWrite,
   versions: {

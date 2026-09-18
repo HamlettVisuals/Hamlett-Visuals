@@ -1,5 +1,11 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
+import { RichText } from "@payloadcms/richtext-lexical/react";
+import { serverURL } from "@/lib/server-url";
+import { useScopedLivePreview } from "@/lib/use-scoped-live-preview";
+import type { About as AboutGlobal } from "@/payload-types";
 
 // About section (#about). An editorial two-column block: the photographer's
 // portrait on the left (~40% on desktop), the bio on the right, and two link
@@ -9,13 +15,9 @@ import Link from "next/link";
 // <HoverZoomImage> — the hover-zoom is reserved for gallery / grid thumbnails,
 // not a lone portrait (see DESIGN.md → Motion).
 //
-// Bio copy below is placeholder written in her voice for tone and length.
-// TODO: replace with the photographer's own words before launch.
-
-// The two "more of her" sub-pages. Each chip: a small leading icon, a
-// small-caps label, a title line, and a trailing arrow. Styling lives in
-// `.link-chip` (globals.css); the icons are inline SVGs since no icon library
-// is installed yet, matching the inline-SVG approach already used in Hero.
+// The two "more of her" sub-pages below the bio aren't part of the About
+// global — they're fixed site navigation, not editorial content, so they
+// stay hardcoded here rather than becoming CMS fields.
 const chips = [
   {
     href: "/backstage",
@@ -65,19 +67,35 @@ const chips = [
   },
 ];
 
-export default function About() {
+export default function About({ about }: { about: AboutGlobal }) {
+  // Live Preview overlays the admin's current unsaved form state on top of
+  // `about` via postMessage — same mechanism as Hero.tsx. `apiRoute` matters
+  // more here than it did for Hero: `portrait` is an upload relation, and
+  // depth-populating it while editing goes through this route.
+  const { data } = useScopedLivePreview<AboutGlobal>({
+    initialData: about,
+    serverURL,
+    globalSlug: "about",
+    apiRoute: "/hv-studio/api",
+  });
+
+  const portrait =
+    data.portrait && typeof data.portrait === "object" ? data.portrait : null;
+
   return (
     <section id="about" className="border-t border-hairline bg-canvas-tint">
       <div className="mx-auto max-w-7xl px-gutter py-section">
-        <h2 className="font-display text-heading text-ink">About</h2>
+        <h2 className="font-display text-heading text-ink">{data.heading}</h2>
 
         <div className="mt-8 grid gap-8 md:grid-cols-[2fr_3fr] md:gap-12">
-          {/* Portrait — static, no hover-zoom.
-              TODO: swap the placeholder SVG for her real portrait
-              (keep it portrait-oriented, roughly 4:5). */}
+          {/* Portrait — static, no hover-zoom. Falls back to the placeholder
+              SVG until a real photo is set on the About global. */}
           <Image
-            src="/about/portrait.svg"
-            alt="Placeholder portrait of the photographer behind Hamlett Visuals"
+            src={portrait?.url ?? "/about/portrait.svg"}
+            alt={
+              portrait?.alt ??
+              "Placeholder portrait of the photographer behind Hamlett Visuals"
+            }
             width={800}
             height={1000}
             sizes="(min-width: 768px) 40vw, 100vw"
@@ -85,28 +103,12 @@ export default function About() {
           />
 
           <div>
-            <div className="flex max-w-measure flex-col gap-4 text-body text-muted">
-              <p>
-                I&rsquo;m the photographer behind Hamlett Visuals, and I&rsquo;ve
-                spent the last several years learning that a good picture is
-                mostly about paying attention. I shoot across all six of the
-                things this studio is built on &mdash; weddings, portraits, pets,
-                brands, motorsports, and real estate &mdash; and I like that the
-                list refuses to sit still.
-              </p>
-              <p>
-                My approach is the same whether it&rsquo;s a first dance or a
-                first lap: stay close, stay quiet, and wait for the moment that
-                was always going to happen. I&rsquo;d rather catch the real thing
-                a half-second late than stage a tidy version of it. Editing stays
-                light and warm, so the photos look like the day actually felt.
-              </p>
-              <p>
-                However you found your way here, the goal doesn&rsquo;t change:
-                to hand you back a set of images you&rsquo;ll still want to look
-                at in ten years.
-              </p>
-            </div>
+            {data.bio && (
+              <RichText
+                data={data.bio}
+                className="flex max-w-measure flex-col gap-4 text-body text-muted"
+              />
+            )}
 
             <div className="mt-8 flex max-w-sm flex-col gap-3">
               {chips.map((chip) => (

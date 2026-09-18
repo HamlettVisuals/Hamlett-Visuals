@@ -1,5 +1,9 @@
+"use client";
+
 import Link from "next/link";
-import { instagram } from "@/lib/site-content";
+import { serverURL } from "@/lib/server-url";
+import { useScopedLivePreview } from "@/lib/use-scoped-live-preview";
+import type { SiteSetting } from "@/payload-types";
 
 // Booking CTA section (#booking-cta), between Offers & pricing and Instagram.
 // A short centered band that just prompts the next step — deliberately the
@@ -7,12 +11,28 @@ import { instagram } from "@/lib/site-content";
 // hairline above and below. The only emphasis is the single solid button, so
 // it never competes with the Hero or the Featured offer.
 //
-// The Instagram handle comes from the shared `instagram` constant (also used
-// by the Footer and the Instagram section). The email is still a placeholder.
-// TODO: swap the placeholder headline, supporting line, and email for real
-// copy before launch.
+// The contact email and Instagram handle come from Site Settings — shared
+// with the Footer and the homepage Instagram section.
+// TODO: swap the placeholder headline and supporting line for real copy
+// before launch.
 
-export default function BookingCta() {
+export default function BookingCta({
+  siteSettings,
+}: {
+  siteSettings: SiteSetting;
+}) {
+  const { data: settings } = useScopedLivePreview<SiteSetting>({
+    initialData: siteSettings,
+    serverURL,
+    globalSlug: "site-settings",
+    apiRoute: "/hv-studio/api",
+  });
+
+  const email = settings.contact?.email || "hello@example.com";
+  const instagramHandle = settings.instagram?.handle || "@hamlettvisuals";
+  const instagramUrl =
+    settings.instagram?.url || "https://www.instagram.com/hamlettvisuals/";
+
   return (
     <section id="booking-cta" className="border-y border-hairline bg-canvas-tint">
       <div className="mx-auto max-w-2xl px-gutter py-section text-center">
@@ -32,17 +52,17 @@ export default function BookingCta() {
 
         <p className="mt-4 text-caption text-muted">
           Prefer to email?{" "}
-          <a href="mailto:hello@example.com" className="link text-ink">
-            hello@example.com
+          <a href={`mailto:${email}`} className="link text-ink">
+            {email}
           </a>
           , or find me at{" "}
           <a
-            href={instagram.url}
+            href={instagramUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="link text-ink"
           >
-            {instagram.handle}
+            {instagramHandle}
           </a>
           .
         </p>

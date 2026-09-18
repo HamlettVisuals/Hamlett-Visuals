@@ -1,5 +1,6 @@
 import type { GlobalConfig } from "payload";
 import { publicReadAdminWrite } from "#src/access/isAdmin.ts";
+import { serverURL } from "#src/lib/server-url.ts";
 
 // The offer shown here is whichever row in the Pricing / Offer Rows
 // collection has `featured` checked — this global is just the section
@@ -11,6 +12,16 @@ export const FeaturedOffer: GlobalConfig = {
     group: "Homepage",
     description:
       "The 'Popular right now' spotlight section. To change WHICH package is featured here, go to Pricing / Offer Rows and check 'featured' on the one you want — this page only controls the heading and badge text around it.",
+    // Same Live Preview treatment as Hero/About/CategoriesIntro — opens
+    // automatically and scrolls to/highlights the #hot-offer section via
+    // LivePreviewHighlight. Only heading/badgeLabel are wired here — the
+    // featured package's own title/price/etc. come from whichever Pricing /
+    // Offer Row has `featured` checked, which doesn't live-sync (see that
+    // collection's note in payload.config.ts).
+    livePreview: {
+      openByDefault: true,
+      url: () => `${serverURL}/#live-preview:hot-offer`,
+    },
   },
   access: publicReadAdminWrite,
   versions: {

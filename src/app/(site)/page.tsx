@@ -25,6 +25,19 @@ import Testimonials from "@/components/home/Testimonials";
 export default async function Home() {
   const payload = await getPayload({ config });
   const hero = await payload.findGlobal({ slug: "hero" });
+  const about = await payload.findGlobal({ slug: "about" });
+  const categoriesIntro = await payload.findGlobal({ slug: "categories-intro" });
+  const featuredOffer = await payload.findGlobal({ slug: "featured-offer" });
+  const { docs: pricingRows } = await payload.find({
+    collection: "pricing-rows",
+    depth: 1,
+    sort: "order",
+    limit: 0,
+  });
+  const testimonialsTeaser = await payload.findGlobal({
+    slug: "testimonials-teaser",
+  });
+  const siteSettings = await payload.findGlobal({ slug: "site-settings" });
 
   return (
     <>
@@ -32,25 +45,25 @@ export default async function Home() {
       <Hero hero={hero} />
 
       {/* 2. Categories */}
-      <Categories />
+      <Categories categoriesIntro={categoriesIntro} />
 
       {/* 3. About */}
-      <About />
+      <About about={about} />
 
       {/* 4. Hot offer */}
-      <FeaturedOffer />
+      <FeaturedOffer featuredOffer={featuredOffer} pricingRows={pricingRows} />
 
       {/* 5. Offers & pricing */}
-      <Offers />
+      <Offers pricingRows={pricingRows} />
 
       {/* 6. General booking CTA */}
-      <BookingCta />
+      <BookingCta siteSettings={siteSettings} />
 
       {/* 7. Recent Instagram */}
-      <Instagram />
+      <Instagram siteSettings={siteSettings} />
 
       {/* 8. Testimonials teaser */}
-      <Testimonials />
+      <Testimonials testimonialsTeaser={testimonialsTeaser} />
     </>
   );
 }

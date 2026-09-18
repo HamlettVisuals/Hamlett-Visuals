@@ -69,11 +69,32 @@ export default buildConfig({
         { name: "tablet", label: "Tablet", width: 768, height: 1024 },
         { name: "desktop", label: "Desktop", width: 1440, height: 900 },
       ],
-      // Only the Hero global is wired to the frontend so far — see
-      // components/home/Hero.tsx. Add other globals/collections here as
-      // they're connected; the site-content.ts placeholders don't read from
-      // Payload yet, so enabling live preview for them would do nothing.
-      globals: ["hero"],
+      // Only globals/collections actually wired to the frontend belong here
+      // — see components/home/Hero.tsx, About.tsx, Categories.tsx,
+      // FeaturedOffer.tsx, Offers.tsx, Testimonials.tsx, Footer.tsx,
+      // BookingCta.tsx and Instagram.tsx. Add others as they're connected;
+      // the site-content.ts placeholders don't read from Payload yet, so
+      // enabling live preview for them would do nothing.
+      globals: [
+        "hero",
+        "about",
+        "categories-intro",
+        "featured-offer",
+        "testimonials-teaser",
+        "final-cta-footer",
+        "site-settings",
+      ],
+      // Collections get plain Live Preview only — no openByDefault, no
+      // scroll-to-highlight, and (deliberately) no per-record targeting: a
+      // page can render many documents from one collection at once (e.g.
+      // every Pricing Row), and Payload's live-preview postMessage carries
+      // no document id to filter by, so subscribing every rendered instance
+      // to useLivePreview would let editing any one row overwrite every
+      // other row's displayed content. RefreshRouteOnSave (already mounted
+      // in (site)/layout.tsx) covers reactivity here instead: saving a
+      // document refreshes the page with fresh server data, just not on
+      // every keystroke the way wired globals do.
+      collections: ["pricing-rows"],
     },
     components: {
       // Replaces the default alphabetical/admin.group sidebar with a tree

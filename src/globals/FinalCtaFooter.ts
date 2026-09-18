@@ -1,6 +1,7 @@
 import type { GlobalConfig } from "payload";
 import { publicReadAdminWrite } from "#src/access/isAdmin.ts";
 import { navDestinations } from "#src/lib/nav-destinations.ts";
+import { serverURL } from "#src/lib/server-url.ts";
 
 // Mirrors src/components/Footer.tsx. Contact email/phone and the Instagram
 // handle live on Site Settings (shared with the Booking CTA section).
@@ -11,6 +12,15 @@ export const FinalCtaFooter: GlobalConfig = {
     group: "Site",
     description:
       "The very bottom of every page: the closing message, the 'Book' button, and the small links row (Portfolio, Backstage, Privacy Policy, etc.). Contact details and the Instagram link shown here come from Site Settings.",
+    // Same Live Preview treatment as the other wired globals — opens
+    // automatically and scrolls to/highlights the #footer section via
+    // LivePreviewHighlight. Contact details and the Instagram link are
+    // still static (Site Settings isn't wired yet), so editing this global
+    // won't move those.
+    livePreview: {
+      openByDefault: true,
+      url: () => `${serverURL}/#live-preview:footer`,
+    },
   },
   access: publicReadAdminWrite,
   versions: {

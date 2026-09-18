@@ -1,5 +1,6 @@
 import type { GlobalConfig } from "payload";
 import { publicReadAdminWrite } from "#src/access/isAdmin.ts";
+import { serverURL } from "#src/lib/server-url.ts";
 
 export const About: GlobalConfig = {
   slug: "about",
@@ -7,6 +8,13 @@ export const About: GlobalConfig = {
   admin: {
     group: "Homepage",
     description: "The 'About' section on the homepage — your photo and your bio.",
+    // Same Live Preview treatment as Hero (see globals/Hero.ts) — opens
+    // automatically and scrolls to/highlights the #about section via
+    // LivePreviewHighlight.
+    livePreview: {
+      openByDefault: true,
+      url: () => `${serverURL}/#live-preview:about`,
+    },
   },
   access: publicReadAdminWrite,
   versions: {

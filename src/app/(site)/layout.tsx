@@ -1,10 +1,13 @@
 import type { Metadata } from "next";
 import { Fraunces, Inter } from "next/font/google";
+import { getPayload } from "payload";
+import config from "@payload-config";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import FloatingAskButton from "@/components/AskQuestion/FloatingAskButton";
 import LivePreviewRefresh from "@/components/LivePreviewRefresh";
 import LivePreviewHighlight from "@/components/LivePreviewHighlight";
+import { getInstagramQrSvg } from "@/lib/instagram-qr";
 import "../globals.css";
 
 // Display / headings. Variable font — the opsz axis is kept so
@@ -31,7 +34,18 @@ export const metadata: Metadata = {
     "Weddings, portraits, pets, and more — captured as they happen.",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  // Footer renders on every page (not just the homepage), so it's fetched
+  // here rather than in (site)/page.tsx — same reasoning as the QR code,
+  // which used to be fetched inside Footer.tsx itself before it needed to
+  // become a client component for useLivePreview.
+  const payload = await getPayload({ config });
+  const finalCtaFooter = await payload.findGlobal({ slug: "final-cta-footer" });
+  const siteSettings = await payload.findGlobal({ slug: "site-settings" });
+  const qrSvg = await getInstagramQrSvg(
+    siteSettings.instagram?.url || "https://www.instagram.com/hamlettvisuals/",
+  );
+
   return (
     <html
       lang="en"
@@ -40,7 +54,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body className="flex min-h-full flex-col">
         <Nav />
         <main className="flex flex-1 flex-col">{children}</main>
-        <Footer />
+        <Footer
+          finalCtaFooter={finalCtaFooter}
+          siteSettings={siteSettings}
+          qrSvg={qrSvg}
+        />
         <FloatingAskButton />
         <LivePreviewRefresh />
         <LivePreviewHighlight />

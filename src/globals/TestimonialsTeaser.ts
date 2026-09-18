@@ -1,5 +1,6 @@
 import type { GlobalConfig } from "payload";
 import { publicReadAdminWrite } from "#src/access/isAdmin.ts";
+import { serverURL } from "#src/lib/server-url.ts";
 
 // The two testimonials shown here are whichever Testimonials collection
 // entries have `featured` checked — this global is just the heading/link row
@@ -11,6 +12,16 @@ export const TestimonialsTeaser: GlobalConfig = {
     group: "Homepage",
     description:
       "The 'In their words' preview on the homepage. To change WHICH client quotes appear here, go to Testimonials and check 'featured' on the ones you want (pick exactly two) — this page only controls the heading and link text around them.",
+    // Same Live Preview treatment as Hero/About/CategoriesIntro/FeaturedOffer
+    // — opens automatically and scrolls to/highlights the #testimonials
+    // section via LivePreviewHighlight. The quotes themselves come from the
+    // Testimonials collection, which stays out of scope here (like
+    // Categories/Photos/Pricing Rows) — only heading/linkLabel/linkHref
+    // are wired.
+    livePreview: {
+      openByDefault: true,
+      url: () => `${serverURL}/#live-preview:testimonials`,
+    },
   },
   access: publicReadAdminWrite,
   versions: {

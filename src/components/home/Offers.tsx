@@ -7,7 +7,8 @@ import OfferActions from "@/components/home/OfferActions";
 import OfferBadge from "@/components/home/OfferBadge";
 import OfferPrice from "@/components/home/OfferPrice";
 import OfferTerms from "@/components/home/OfferTerms";
-import { standardOffers, type Offer } from "@/lib/site-content";
+import { resolveCategory } from "@/lib/pricing-rows";
+import type { PricingRow } from "@/payload-types";
 
 // Offers & pricing section (#offers). Every offer, in category order — the
 // featured one included. Plain rows are hairline-divided; the featured row is
@@ -30,10 +31,13 @@ import { standardOffers, type Offer } from "@/lib/site-content";
 // (.offer-disclosure) — no animation library, still under
 // prefers-reduced-motion.
 
-function OfferRow({ offer }: { offer: Offer }) {
+function OfferRow({ offer }: { offer: PricingRow }) {
   const [open, setOpen] = useState(false);
   const detailsId = `offer-details-${offer.id}`;
   const isFeatured = offer.featured === true;
+  const category = resolveCategory(offer.category);
+  const categorySlug = category?.slug ?? "";
+  const features = (offer.features ?? []).map((feature) => feature.text);
 
   return (
     <li
@@ -50,18 +54,17 @@ function OfferRow({ offer }: { offer: Offer }) {
               isFeatured ? "text-accent-text" : "text-ink"
             }`}
           >
-            <Link
-              href={`/portfolio/${offer.categorySlug}`}
-              className="link-quiet"
-            >
+            <Link href={`/portfolio/${categorySlug}`} className="link-quiet">
               {offer.title}
             </Link>
           </h3>
-          <p className="mt-1 text-caption text-muted">{offer.category}</p>
+          {category && (
+            <p className="mt-1 text-caption text-muted">{category.name}</p>
+          )}
         </div>
         <OfferPrice
-          lead={offer.price.lead}
-          amount={offer.price.amount}
+          lead={offer.priceLead || "From"}
+          amount={offer.priceAmount}
           accent={isFeatured}
         />
       </div>
@@ -104,18 +107,18 @@ function OfferRow({ offer }: { offer: Offer }) {
       >
         <div>
           <div className="offer-disclosure-inner">
-            <FeatureList items={offer.features} className="pt-4" />
+            <FeatureList items={features} className="pt-4" />
             <OfferTerms className="mt-4" />
           </div>
         </div>
       </div>
 
-      <OfferActions categorySlug={offer.categorySlug} className="mt-6" />
+      <OfferActions categorySlug={categorySlug} className="mt-6" />
     </li>
   );
 }
 
-export default function Offers() {
+export default function Offers({ pricingRows }: { pricingRows: PricingRow[] }) {
   return (
     <section id="offers" className="border-t border-hairline">
       <div className="mx-auto max-w-7xl px-gutter py-section">
@@ -123,7 +126,7 @@ export default function Offers() {
           Offers &amp; pricing
         </h2>
         <ul className="mt-8">
-          {standardOffers.map((offer) => (
+          {pricingRows.map((offer) => (
             <OfferRow key={offer.id} offer={offer} />
           ))}
         </ul>

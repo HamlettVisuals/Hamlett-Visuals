@@ -1,6 +1,11 @@
+"use client";
+
 import Link from "next/link";
 import { featuredTestimonials } from "@/lib/site-content";
 import { getCategories } from "@/lib/categories";
+import { serverURL } from "@/lib/server-url";
+import { useScopedLivePreview } from "@/lib/use-scoped-live-preview";
+import type { TestimonialsTeaser } from "@/payload-types";
 
 // Testimonials teaser (#testimonials), between the Instagram grid and the Terms
 // anchor. Shows only the entries flagged `featured` in `testimonials`
@@ -16,14 +21,29 @@ import { getCategories } from "@/lib/categories";
 const categoryName = (slug: string) =>
   getCategories().find((category) => category.slug === slug)?.name ?? "";
 
-export default function Testimonials() {
+export default function Testimonials({
+  testimonialsTeaser,
+}: {
+  testimonialsTeaser: TestimonialsTeaser;
+}) {
+  // Live Preview for the heading/link row — same mechanism as the other
+  // wired globals. The quotes below still come from the static
+  // featuredTestimonials list, not this data — the Testimonials collection
+  // stays out of scope for this pass.
+  const { data } = useScopedLivePreview<TestimonialsTeaser>({
+    initialData: testimonialsTeaser,
+    serverURL,
+    globalSlug: "testimonials-teaser",
+    apiRoute: "/hv-studio/api",
+  });
+
   return (
     <section id="testimonials" className="border-t border-hairline">
       <div className="mx-auto max-w-7xl px-gutter py-section">
         <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
-          <h2 className="font-display text-heading text-ink">In their words</h2>
-          <Link href="/testimonials" className="link text-body text-ink">
-            All testimonials
+          <h2 className="font-display text-heading text-ink">{data.heading}</h2>
+          <Link href={data.linkHref || "/testimonials"} className="link text-body text-ink">
+            {data.linkLabel}
           </Link>
         </div>
 

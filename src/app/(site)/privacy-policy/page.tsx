@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { getSiteSettings } from "@/lib/site-settings";
 
 // Privacy Policy — standalone page. Placeholder content only; real policy
 // copy comes later. Structure and section headings are final; the paragraph
@@ -8,22 +9,23 @@ import Link from "next/link";
 // Terms & Conditions used to live here as a second #terms section; it now has
 // its own page at src/app/terms/page.tsx, which mirrors this page's shell so
 // the two documents read as siblings.
+//
+// Contact details come from Site Settings — same source as the Footer and
+// Booking CTA — but this page isn't part of the homepage Live Preview, so
+// there's no useLivePreview here: it just reads the current published/draft
+// value at request time, same as any other server-rendered page.
 
 export const metadata = {
   title: "Privacy Policy — Hamlett Visuals",
 };
 
-// TODO: placeholder contact details — mirrors src/components/Footer.tsx.
-// Swap both for the real email and phone number before launch.
-const EMAIL = "hello@example.com";
-const PHONE_DISPLAY = "+0 000 000 0000";
-const PHONE_HREF = "tel:+00000000000";
-
 // TODO: placeholder "last updated" date — swap for the real date whenever
 // the wording is next revised.
 const PRIVACY_LAST_UPDATED = "September 15, 2026";
 
-export default function PrivacyPolicyPage() {
+export default async function PrivacyPolicyPage() {
+  const { contact } = await getSiteSettings();
+
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col px-gutter py-section">
       <header>
@@ -98,11 +100,11 @@ export default function PrivacyPolicyPage() {
             are welcome any time.
           </p>
           <div className="mt-4 flex flex-col gap-1.5 text-caption text-muted">
-            <a href={`mailto:${EMAIL}`} className="link text-ink">
-              {EMAIL}
+            <a href={`mailto:${contact.email}`} className="link text-ink">
+              {contact.email}
             </a>
-            <a href={PHONE_HREF} className="link text-ink">
-              {PHONE_DISPLAY}
+            <a href={contact.phoneHref} className="link text-ink">
+              {contact.phoneDisplay}
             </a>
           </div>
         </section>

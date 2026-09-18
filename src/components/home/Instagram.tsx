@@ -1,6 +1,10 @@
+"use client";
+
 import HoverZoomImage from "@/components/HoverZoomImage";
-import { instagram } from "@/lib/site-content";
 import { instagramPosts, selectFeaturedPosts } from "@/lib/instagram-posts";
+import { serverURL } from "@/lib/server-url";
+import { useScopedLivePreview } from "@/lib/use-scoped-live-preview";
+import type { SiteSetting } from "@/payload-types";
 
 // Recent on Instagram section (#instagram), between the Booking CTA and the
 // Testimonials teaser.
@@ -23,7 +27,20 @@ const INSTAGRAM_GRID_CLASS =
 // grid always fills complete rows — update both together if either changes.
 const FEATURED_COUNT = 6;
 
-export default function Instagram() {
+export default function Instagram({
+  siteSettings,
+}: {
+  siteSettings: SiteSetting;
+}) {
+  const { data: settings } = useScopedLivePreview<SiteSetting>({
+    initialData: siteSettings,
+    serverURL,
+    globalSlug: "site-settings",
+    apiRoute: "/hv-studio/api",
+  });
+
+  const instagramUrl =
+    settings.instagram?.url || "https://www.instagram.com/hamlettvisuals/";
   const posts = selectFeaturedPosts(instagramPosts, FEATURED_COUNT);
 
   return (
@@ -34,7 +51,7 @@ export default function Instagram() {
             Recent on Instagram
           </h2>
           <a
-            href={instagram.url}
+            href={instagramUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="link inline-flex items-center gap-1.5 text-body text-ink"

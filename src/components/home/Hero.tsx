@@ -3,9 +3,9 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useLivePreview } from "@payloadcms/live-preview-react";
 import { getHeroSlides } from "@/lib/site-content";
 import { serverURL } from "@/lib/server-url";
+import { useScopedLivePreview } from "@/lib/use-scoped-live-preview";
 import type { Hero as HeroGlobal } from "@/payload-types";
 
 // Cross-category filmstrip hero. One representative image per category
@@ -27,10 +27,13 @@ export default function Hero({ hero }: { hero: HeroGlobal }) {
   // Live Preview overlays the admin's current unsaved form state on top of
   // `hero` via postMessage — no extra fetch needed for these plain text
   // fields. Outside of Payload's Live Preview iframe this is a no-op and
-  // `data` just stays equal to the server-fetched `hero` prop.
-  const { data } = useLivePreview<HeroGlobal>({
+  // `data` just stays equal to the server-fetched `hero` prop. Scoped to
+  // the "hero" global specifically — see use-scoped-live-preview.ts for why
+  // the stock useLivePreview hook isn't used here.
+  const { data } = useScopedLivePreview<HeroGlobal>({
     initialData: hero,
     serverURL,
+    globalSlug: "hero",
     apiRoute: "/hv-studio/api",
   });
 

@@ -5,7 +5,6 @@ import { loadGoogleFont } from "@/lib/og-fonts";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
-const SITE_NAME = "Hamlett Visuals";
 const TAGLINE = "Weddings, portraits, pets, and more — captured as they happen.";
 
 // Mirrors globals.css's --color-canvas / --color-ink / --color-muted — this
@@ -32,7 +31,7 @@ export default async function Image() {
   }
 
   const [fraunces, inter] = await Promise.all([
-    loadGoogleFont("Fraunces", 500, SITE_NAME),
+    loadGoogleFont("Fraunces", 500, settings.siteName),
     loadGoogleFont("Inter", 400, TAGLINE),
   ]);
 
@@ -63,7 +62,7 @@ export default async function Image() {
             letterSpacing: "-0.02em",
           }}
         >
-          {SITE_NAME}
+          {settings.siteName}
         </div>
         <div
           style={{
