@@ -19,6 +19,7 @@ export const Backstage: CollectionConfig = {
     plural: "Backstage",
   },
   admin: {
+    hideAPIURL: true,
     useAsTitle: "title",
     defaultColumns: ["title", "type", "order", "published"],
     description:
@@ -34,6 +35,9 @@ export const Backstage: CollectionConfig = {
     mimeTypes: ["video/*"],
     filesRequiredOnCreate: false,
   },
+  // Powers the History tab (restore an earlier save). No drafts — Save
+  // writes straight through, same as before.
+  versions: true,
   fields: [
     {
       name: "title",

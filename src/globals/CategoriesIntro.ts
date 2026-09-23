@@ -8,6 +8,12 @@ export const CategoriesIntro: GlobalConfig = {
   slug: "categories-intro",
   label: "Categories Intro",
   admin: {
+    hideAPIURL: true,
+    components: {
+      elements: {
+        SaveButton: "/components/admin/PublishButton#default",
+      },
+    },
     group: "Homepage",
     description:
       "The heading above the row of category photos (Weddings, Portraits, etc.) on the homepage.",
@@ -24,9 +30,9 @@ export const CategoriesIntro: GlobalConfig = {
     },
   },
   access: publicReadAdminWrite,
-  versions: {
-    drafts: true,
-  },
+  // History only — no drafts, so the one button saves straight to the live
+  // site. See components/admin/PublishButton.tsx.
+  versions: true,
   fields: [
     {
       name: "heading",

@@ -4,6 +4,7 @@ import { isAdmin } from "#src/access/isAdmin.ts";
 export const Testimonials: CollectionConfig = {
   slug: "testimonials",
   admin: {
+    hideAPIURL: true,
     useAsTitle: "clientName",
     defaultColumns: ["clientName", "category", "featured", "published"],
     description:
@@ -15,6 +16,9 @@ export const Testimonials: CollectionConfig = {
     update: isAdmin,
     delete: isAdmin,
   },
+  // Powers the History tab (restore an earlier save). No drafts — Save
+  // writes straight through, same as before.
+  versions: true,
   fields: [
     {
       name: "quote",

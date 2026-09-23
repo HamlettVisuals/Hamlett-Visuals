@@ -14,6 +14,7 @@ export const TestimonialPhotos: CollectionConfig = {
     plural: "Testimonial Photos",
   },
   admin: {
+    hideAPIURL: true,
     useAsTitle: "filename",
     description:
       "Photos clients attach to a testimonial submission — private until you promote one into the Photos library from the submission's review screen.",

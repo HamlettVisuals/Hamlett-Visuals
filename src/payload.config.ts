@@ -138,6 +138,21 @@ export default buildConfig({
           // kanban board (see next.config.ts), so "Dashboard" would be wrong.
           dashboard: "Kanban Board",
         },
+        // "Versions" reads as developer jargon — the tab, History page
+        // heading, breadcrumb and tab title all use version:versions.
+        version: {
+          versions: "History",
+          compareVersions: "Compare with",
+          moreVersions: "More history...",
+          noFurtherVersionsFound: "No further history found",
+          showingVersionsFor: "Showing history for:",
+          versionCount_many: "{{count}} saves found",
+          versionCount_none: "No history yet",
+          versionCount_one: "{{count}} save found",
+          versionCount_other: "{{count}} saves found",
+          viewingVersions: "History for the {{entityLabel}} {{documentTitle}}",
+          viewingVersionsGlobal: "History for {{entityLabel}}",
+        },
       },
     },
   },

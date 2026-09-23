@@ -8,6 +8,12 @@ export const HeaderNav: GlobalConfig = {
   slug: "header-nav",
   label: "Header / Nav",
   admin: {
+    hideAPIURL: true,
+    components: {
+      elements: {
+        SaveButton: "/components/admin/PublishButton#default",
+      },
+    },
     group: "Site",
     description:
       "The menu bar at the top of every page: the links people see and the 'Book' button on the right.",
@@ -20,9 +26,9 @@ export const HeaderNav: GlobalConfig = {
     },
   },
   access: publicReadAdminWrite,
-  versions: {
-    drafts: true,
-  },
+  // History only — no drafts, so the one button saves straight to the live
+  // site. See components/admin/PublishButton.tsx.
+  versions: true,
   fields: [
     {
       name: "navLinks",

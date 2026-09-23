@@ -10,6 +10,7 @@ import { isAdmin } from "#src/access/isAdmin.ts";
 export const ChecklistTemplates: CollectionConfig = {
   slug: "checklist-templates",
   admin: {
+    hideAPIURL: true,
     useAsTitle: "name",
     defaultColumns: ["name", "type", "category"],
     description: "Item lists reused across Prep and Post-Production checklists — one Standard template per type, plus optional per-category overrides.",

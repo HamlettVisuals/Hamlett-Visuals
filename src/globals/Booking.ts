@@ -11,6 +11,12 @@ export const Booking: GlobalConfig = {
   slug: "booking",
   label: "Booking",
   admin: {
+    hideAPIURL: true,
+    components: {
+      elements: {
+        SaveButton: "/components/admin/PublishButton#default",
+      },
+    },
     group: "Booking",
     description:
       "The heading, intro paragraph, and \"How it works\" steps on the Book a session page.",
@@ -28,9 +34,9 @@ export const Booking: GlobalConfig = {
     },
   },
   access: publicReadAdminWrite,
-  versions: {
-    drafts: true,
-  },
+  // History only — no drafts, so the one button saves straight to the live
+  // site. See components/admin/PublishButton.tsx.
+  versions: true,
   fields: [
     {
       name: "heading",

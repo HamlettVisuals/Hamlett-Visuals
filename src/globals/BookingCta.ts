@@ -8,6 +8,12 @@ export const BookingCta: GlobalConfig = {
   slug: "booking-cta",
   label: "Booking CTA",
   admin: {
+    hideAPIURL: true,
+    components: {
+      elements: {
+        SaveButton: "/components/admin/PublishButton#default",
+      },
+    },
     group: "Homepage",
     description:
       "The 'Ready when you are' section on the homepage that invites people to book a session. (The email address shown there comes from Site Settings.)",
@@ -20,9 +26,9 @@ export const BookingCta: GlobalConfig = {
     },
   },
   access: publicReadAdminWrite,
-  versions: {
-    drafts: true,
-  },
+  // History only — no drafts, so the one button saves straight to the live
+  // site. See components/admin/PublishButton.tsx.
+  versions: true,
   fields: [
     {
       name: "heading",

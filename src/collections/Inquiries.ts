@@ -37,6 +37,7 @@ const seedShootDateFromPreferred: CollectionBeforeChangeHook = ({ data, operatio
 export const Inquiries: CollectionConfig = {
   slug: "inquiries",
   admin: {
+    hideAPIURL: true,
     useAsTitle: "name",
     defaultColumns: ["status", "type", "name", "createdAt"],
     description:

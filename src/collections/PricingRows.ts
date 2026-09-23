@@ -11,6 +11,7 @@ export const PricingRows: CollectionConfig = {
     plural: "Pricing / Offer Rows",
   },
   admin: {
+    hideAPIURL: true,
     useAsTitle: "title",
     defaultColumns: ["title", "category", "priceAmount", "featured"],
     description:
@@ -22,6 +23,9 @@ export const PricingRows: CollectionConfig = {
     update: isAdmin,
     delete: isAdmin,
   },
+  // Powers the History tab (restore an earlier save). No drafts — Save
+  // writes straight through, same as before.
+  versions: true,
   fields: [
     {
       name: "title",

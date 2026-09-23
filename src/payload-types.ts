@@ -1215,7 +1215,6 @@ export interface HeaderNav {
    * Where the 'Book' button sends people. Locked to the booking page.
    */
   bookHref?: string | null;
-  _status?: ('draft' | 'published') | null;
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -1243,7 +1242,6 @@ export interface Hero {
    * Where the button sends people. Locked to the booking section.
    */
   ctaHref?: string | null;
-  _status?: ('draft' | 'published') | null;
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -1259,7 +1257,6 @@ export interface CategoriesIntro {
    * The title text above the category photos.
    */
   heading: string;
-  _status?: ('draft' | 'published') | null;
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -1297,7 +1294,6 @@ export interface About {
     };
     [k: string]: unknown;
   } | null;
-  _status?: ('draft' | 'published') | null;
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -1317,7 +1313,6 @@ export interface FeaturedOffer {
    * The small highlighted tag on the featured package.
    */
   badgeLabel?: string | null;
-  _status?: ('draft' | 'published') | null;
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -1345,7 +1340,6 @@ export interface BookingCta {
    * Where the button sends people. Locked to the booking page.
    */
   ctaHref?: string | null;
-  _status?: ('draft' | 'published') | null;
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -1369,7 +1363,6 @@ export interface TestimonialsTeaser {
    * Where that link goes. Locked to the testimonials page.
    */
   linkHref?: string | null;
-  _status?: ('draft' | 'published') | null;
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -1426,7 +1419,6 @@ export interface FinalCtaFooter {
    * The name shown in the copyright line at the very bottom of the page (e.g. "© 2026 [this name]. All rights reserved.").
    */
   copyrightName?: string | null;
-  _status?: ('draft' | 'published') | null;
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -1484,7 +1476,6 @@ export interface SiteSetting {
      */
     url?: string | null;
   };
-  _status?: ('draft' | 'published') | null;
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -1520,7 +1511,6 @@ export interface Booking {
         id?: string | null;
       }[]
     | null;
-  _status?: ('draft' | 'published') | null;
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -1538,7 +1528,6 @@ export interface HeaderNavSelect<T extends boolean = true> {
       };
   bookLabel?: T;
   bookHref?: T;
-  _status?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;
@@ -1552,7 +1541,6 @@ export interface HeroSelect<T extends boolean = true> {
   subhead?: T;
   ctaLabel?: T;
   ctaHref?: T;
-  _status?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;
@@ -1563,7 +1551,6 @@ export interface HeroSelect<T extends boolean = true> {
  */
 export interface CategoriesIntroSelect<T extends boolean = true> {
   heading?: T;
-  _status?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;
@@ -1576,7 +1563,6 @@ export interface AboutSelect<T extends boolean = true> {
   heading?: T;
   portrait?: T;
   bio?: T;
-  _status?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;
@@ -1588,7 +1574,6 @@ export interface AboutSelect<T extends boolean = true> {
 export interface FeaturedOfferSelect<T extends boolean = true> {
   heading?: T;
   badgeLabel?: T;
-  _status?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;
@@ -1602,7 +1587,6 @@ export interface BookingCtaSelect<T extends boolean = true> {
   subheading?: T;
   ctaLabel?: T;
   ctaHref?: T;
-  _status?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;
@@ -1615,7 +1599,6 @@ export interface TestimonialsTeaserSelect<T extends boolean = true> {
   heading?: T;
   linkLabel?: T;
   linkHref?: T;
-  _status?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;
@@ -1636,7 +1619,6 @@ export interface FinalCtaFooterSelect<T extends boolean = true> {
         id?: T;
       };
   copyrightName?: T;
-  _status?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;
@@ -1663,7 +1645,6 @@ export interface SiteSettingsSelect<T extends boolean = true> {
         handle?: T;
         url?: T;
       };
-  _status?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;
@@ -1682,7 +1663,6 @@ export interface BookingSelect<T extends boolean = true> {
         description?: T;
         id?: T;
       };
-  _status?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

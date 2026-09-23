@@ -10,6 +10,12 @@ export const SiteSettings: GlobalConfig = {
   slug: "site-settings",
   label: "Site Settings",
   admin: {
+    hideAPIURL: true,
+    components: {
+      elements: {
+        SaveButton: "/components/admin/PublishButton#default",
+      },
+    },
     group: "Site",
     description:
       "Studio name, contact details, Instagram, and the small icon/preview image used when the site is shared or shows up in a browser tab. These values are reused in several places across the site.",
@@ -28,9 +34,9 @@ export const SiteSettings: GlobalConfig = {
     },
   },
   access: publicReadAdminWrite,
-  versions: {
-    drafts: true,
-  },
+  // History only — no drafts, so the one button saves straight to the live
+  // site. See components/admin/PublishButton.tsx.
+  versions: true,
   fields: [
     {
       name: "siteName",

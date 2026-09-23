@@ -6,6 +6,12 @@ export const About: GlobalConfig = {
   slug: "about",
   label: "About",
   admin: {
+    hideAPIURL: true,
+    components: {
+      elements: {
+        SaveButton: "/components/admin/PublishButton#default",
+      },
+    },
     group: "Homepage",
     description: "The 'About' section on the homepage — your photo and your bio.",
     // Same Live Preview treatment as Hero (see globals/Hero.ts) — opens
@@ -17,9 +23,9 @@ export const About: GlobalConfig = {
     },
   },
   access: publicReadAdminWrite,
-  versions: {
-    drafts: true,
-  },
+  // History only — no drafts, so the one button saves straight to the live
+  // site. See components/admin/PublishButton.tsx.
+  versions: true,
   fields: [
     {
       name: "heading",

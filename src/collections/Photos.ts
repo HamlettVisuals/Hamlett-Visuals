@@ -4,6 +4,7 @@ import { isAdmin } from "#src/access/isAdmin.ts";
 export const Photos: CollectionConfig = {
   slug: "photos",
   admin: {
+    hideAPIURL: true,
     useAsTitle: "alt",
     defaultColumns: ["filename", "alt", "event", "category"],
     description:
@@ -26,6 +27,9 @@ export const Photos: CollectionConfig = {
       },
     ],
   },
+  // Powers the History tab (restore an earlier save). No drafts — Save
+  // writes straight through, same as before.
+  versions: true,
   fields: [
     {
       name: "alt",

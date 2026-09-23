@@ -9,6 +9,12 @@ export const TestimonialsTeaser: GlobalConfig = {
   slug: "testimonials-teaser",
   label: "Testimonials Teaser",
   admin: {
+    hideAPIURL: true,
+    components: {
+      elements: {
+        SaveButton: "/components/admin/PublishButton#default",
+      },
+    },
     group: "Homepage",
     description:
       "The 'In their words' preview on the homepage. To change WHICH client quotes appear here, go to Testimonials and check 'featured' on the ones you want (pick exactly two) — this page only controls the heading and link text around them.",
@@ -24,9 +30,9 @@ export const TestimonialsTeaser: GlobalConfig = {
     },
   },
   access: publicReadAdminWrite,
-  versions: {
-    drafts: true,
-  },
+  // History only — no drafts, so the one button saves straight to the live
+  // site. See components/admin/PublishButton.tsx.
+  versions: true,
   fields: [
     {
       name: "heading",

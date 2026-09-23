@@ -42,3 +42,6 @@ Supabase_Cloudflare_Info.txt
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# local pre-migration DB backups — never commit
+/.backups/

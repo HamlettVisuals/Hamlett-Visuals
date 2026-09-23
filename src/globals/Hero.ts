@@ -9,6 +9,12 @@ export const Hero: GlobalConfig = {
   slug: "hero",
   label: "Hero",
   admin: {
+    hideAPIURL: true,
+    components: {
+      elements: {
+        SaveButton: "/components/admin/PublishButton#default",
+      },
+    },
     group: "Homepage",
     description:
       "The big image and headline at the very top of the homepage — the first thing anyone sees.",
@@ -27,9 +33,9 @@ export const Hero: GlobalConfig = {
     },
   },
   access: publicReadAdminWrite,
-  versions: {
-    drafts: true,
-  },
+  // History only — no drafts, so the one button saves straight to the live
+  // site. See components/admin/PublishButton.tsx.
+  versions: true,
   fields: [
     {
       name: "headline",

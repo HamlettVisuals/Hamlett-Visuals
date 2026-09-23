@@ -20,6 +20,7 @@ export const TestimonialSubmissions: CollectionConfig = {
     plural: "Testimonial Submissions",
   },
   admin: {
+    hideAPIURL: true,
     useAsTitle: "name",
     defaultColumns: ["name", "category", "status", "createdAt"],
     description:

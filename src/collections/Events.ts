@@ -13,6 +13,7 @@ export const Events: CollectionConfig = {
     plural: "Events / Albums",
   },
   admin: {
+    hideAPIURL: true,
     useAsTitle: "title",
     defaultColumns: ["title", "category", "date", "published"],
     description:
@@ -24,6 +25,9 @@ export const Events: CollectionConfig = {
     update: isAdmin,
     delete: isAdmin,
   },
+  // Powers the History tab (restore an earlier save). No drafts — Save
+  // writes straight through, same as before.
+  versions: true,
   fields: [
     {
       name: "title",

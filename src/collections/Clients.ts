@@ -7,6 +7,7 @@ import { isAdmin } from "#src/access/isAdmin.ts";
 export const Clients: CollectionConfig = {
   slug: "clients",
   admin: {
+    hideAPIURL: true,
     useAsTitle: "name",
     defaultColumns: ["name", "email", "phone"],
     description: "Everyone who's booked or inquired — link an Inquiry to a Client to track repeat business.",

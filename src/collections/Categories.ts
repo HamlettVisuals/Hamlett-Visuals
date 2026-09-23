@@ -36,6 +36,7 @@ const createBlankChecklistTemplates: CollectionAfterChangeHook = async ({
 export const Categories: CollectionConfig = {
   slug: "categories",
   admin: {
+    hideAPIURL: true,
     useAsTitle: "name",
     defaultColumns: ["name", "slug", "order", "published"],
     description:
@@ -50,6 +51,9 @@ export const Categories: CollectionConfig = {
   hooks: {
     afterChange: [createBlankChecklistTemplates],
   },
+  // Powers the History tab (restore an earlier save). No drafts — Save
+  // writes straight through, same as before.
+  versions: true,
   fields: [
     {
       name: "name",

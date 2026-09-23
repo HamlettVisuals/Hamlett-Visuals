@@ -10,6 +10,7 @@ export const Users: CollectionConfig = {
   slug: "users",
   auth: true,
   admin: {
+    hideAPIURL: true,
     useAsTitle: "email",
     description:
       "Who can log in to this dashboard. There should normally be just one account here — yours.",

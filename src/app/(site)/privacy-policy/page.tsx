@@ -12,8 +12,8 @@ import { getSiteSettings } from "@/lib/site-settings";
 //
 // Contact details come from Site Settings — same source as the Footer and
 // Booking CTA — but this page isn't part of the homepage Live Preview, so
-// there's no useLivePreview here: it just reads the current published/draft
-// value at request time, same as any other server-rendered page.
+// there's no useLivePreview here: it just reads the current saved value at
+// request time, same as any other server-rendered page.
 
 export const metadata = {
   title: "Privacy Policy — Hamlett Visuals",

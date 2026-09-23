@@ -9,6 +9,12 @@ export const FinalCtaFooter: GlobalConfig = {
   slug: "final-cta-footer",
   label: "Final CTA / Footer",
   admin: {
+    hideAPIURL: true,
+    components: {
+      elements: {
+        SaveButton: "/components/admin/PublishButton#default",
+      },
+    },
     group: "Site",
     description:
       "The very bottom of every page: the closing message, the 'Book' button, and the small links row (Portfolio, Backstage, Privacy Policy, etc.). Contact details and the Instagram link shown here come from Site Settings.",
@@ -23,9 +29,9 @@ export const FinalCtaFooter: GlobalConfig = {
     },
   },
   access: publicReadAdminWrite,
-  versions: {
-    drafts: true,
-  },
+  // History only — no drafts, so the one button saves straight to the live
+  // site. See components/admin/PublishButton.tsx.
+  versions: true,
   fields: [
     {
       name: "signOffLine",

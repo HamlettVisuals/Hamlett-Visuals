@@ -9,6 +9,12 @@ export const FeaturedOffer: GlobalConfig = {
   slug: "featured-offer",
   label: "Featured Offer",
   admin: {
+    hideAPIURL: true,
+    components: {
+      elements: {
+        SaveButton: "/components/admin/PublishButton#default",
+      },
+    },
     group: "Homepage",
     description:
       "The 'Popular right now' spotlight section. To change WHICH package is featured here, go to Pricing / Offer Rows and check 'featured' on the one you want — this page only controls the heading and badge text around it.",
@@ -24,9 +30,9 @@ export const FeaturedOffer: GlobalConfig = {
     },
   },
   access: publicReadAdminWrite,
-  versions: {
-    drafts: true,
-  },
+  // History only — no drafts, so the one button saves straight to the live
+  // site. See components/admin/PublishButton.tsx.
+  versions: true,
   fields: [
     {
       name: "heading",
