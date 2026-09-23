@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import type { Category } from "@/lib/categories";
+import type { Category } from "@/payload-types";
 import { usePrefersReducedMotion } from "@/lib/use-prefers-reduced-motion";
 import BookingForm from "./BookingForm";
 
@@ -22,9 +22,11 @@ export type Step = { title: string; description: string };
 
 export default function BookingFlow({
   categories,
+  fallbackCategoryId,
   steps,
 }: {
   categories: Category[];
+  fallbackCategoryId: number | undefined;
   steps: Step[];
 }) {
   const [submitted, setSubmitted] = useState(false);
@@ -141,6 +143,7 @@ export default function BookingFlow({
 
       <BookingForm
         categories={categories}
+        fallbackCategoryId={fallbackCategoryId}
         submitted={submitted}
         firstName={firstName}
         onSubmitted={handleSubmitted}

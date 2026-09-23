@@ -1,5 +1,10 @@
 import config from "@payload-config";
 import "@payloadcms/next/css";
+// Unlayered overrides — see the file's own header comment for why these
+// win over Payload's `@layer payload-default` styles without !important.
+// Loaded after Payload's own CSS so cascade layer order can't matter
+// either way, but the order is kept correct regardless.
+import "./admin-overrides.css";
 import type { Metadata } from "next";
 import type { ServerFunctionClient } from "payload";
 import { handleServerFunctions, RootLayout } from "@payloadcms/next/layouts";

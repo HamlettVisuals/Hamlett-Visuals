@@ -33,11 +33,18 @@ export const Testimonials: CollectionConfig = {
       },
     },
     {
+      // Required: /testimonials (src/app/(site)/testimonials/page.tsx) groups
+      // testimonials by category and silently drops any without one — a
+      // testimonial saved without a category would still show up featured on
+      // the homepage teaser, but never appear on the full testimonials page.
+      // Making this required surfaces that at save time instead.
       name: "category",
       type: "relationship",
       relationTo: "categories",
+      required: true,
       admin: {
-        description: "Which category this testimonial relates to.",
+        description:
+          "Which category this testimonial relates to. Required — testimonials without one won't appear on the Testimonials page.",
       },
     },
     {

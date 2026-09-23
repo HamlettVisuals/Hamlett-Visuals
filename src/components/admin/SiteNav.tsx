@@ -21,11 +21,20 @@ const baseClass = "nav";
 // a real global/collection slug, the link will 404 — that's the tradeoff
 // for a hand-authored map instead of a derived one.
 
-type LeafNode = {
-  kind: "global" | "collection";
-  slug: string;
-  label: string;
-};
+type LeafNode =
+  | {
+      kind: "global" | "collection";
+      slug: string;
+      label: string;
+    }
+  | {
+      kind: "view";
+      // A custom admin.components.views path (e.g. the kanban board),
+      // rather than a /collections or /globals route derived from a slug.
+      path: `/${string}`;
+      slug: string;
+      label: string;
+    };
 
 type DisabledNode = {
   disabled: true;
@@ -44,6 +53,17 @@ type TreeNode = LeafNode | DisabledNode | GroupNode;
 const NOT_YET_EDITABLE = "Not yet editable — no CMS content for this page";
 
 const siteTree: TreeNode[] = [
+  // Not part of the site's page map, but first: the kanban board is the
+  // admin's home screen (/hv-studio redirects there — see next.config.ts).
+  {
+    label: "Admin",
+    defaultOpen: true,
+    children: [
+      { kind: "view", path: "/kanban", slug: "kanban", label: "Kanban Board" },
+      { kind: "collection", slug: "inquiries", label: "Inquiries" },
+      { kind: "collection", slug: "users", label: "Users" },
+    ],
+  },
   {
     label: "Homepage",
     defaultOpen: true,
@@ -72,28 +92,21 @@ const siteTree: TreeNode[] = [
       { kind: "global", slug: "final-cta-footer", label: "Footer" },
     ],
   },
-  { disabled: true, label: "Backstage", note: NOT_YET_EDITABLE },
+  { kind: "collection", slug: "backstage", label: "Backstage" },
   { kind: "collection", slug: "testimonials", label: "Testimonials" },
-  { disabled: true, label: "Booking (page)", note: NOT_YET_EDITABLE },
+  { kind: "global", slug: "booking", label: "Booking (page)" },
   { disabled: true, label: "Privacy Policy", note: NOT_YET_EDITABLE },
   { disabled: true, label: "Terms & Conditions", note: NOT_YET_EDITABLE },
   { kind: "global", slug: "site-settings", label: "Site Settings" },
-  // Not part of the site's page map, but still need a way in — grouped
-  // separately rather than left with no nav entry at all.
-  {
-    label: "Admin",
-    children: [
-      { kind: "collection", slug: "inquiries", label: "Inquiries" },
-      { kind: "collection", slug: "users", label: "Users" },
-    ],
-  },
 ];
 
 function nodeHref(node: LeafNode, adminRoute: string): string {
   const path: `/${string}` =
-    node.kind === "global"
-      ? `/globals/${node.slug}`
-      : `/collections/${node.slug}`;
+    node.kind === "view"
+      ? node.path
+      : node.kind === "global"
+        ? `/globals/${node.slug}`
+        : `/collections/${node.slug}`;
   return formatAdminURL({ adminRoute, path });
 }
 

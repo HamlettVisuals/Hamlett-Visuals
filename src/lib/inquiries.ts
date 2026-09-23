@@ -1,43 +1,46 @@
-// Data-layer seam for the site's two contact forms (AskQuestionPanel today,
-// BookingForm eventually). `Inquiry` models the future shared `inquiries`
-// table; `InquiryInput` is the subset a client actually submits — `id`,
-// `status` and `created_at` are server-side concerns (primary key, default
-// 'new', insert timestamp) and never come from the browser.
-//
-// submitInquiry is the only thing that needs to change once there's a real
-// API route: swap its body for `await fetch("/api/inquiries", { method:
-// "POST", body: JSON.stringify(data) })` and everything upstream (the
-// submitting/success/error state machine in AskQuestionPanel) keeps working
-// unmodified, since it already only reacts to this function's return value.
+// Client-side seam for the site's two contact forms (AskQuestionPanel,
+// BookingForm) — both call submitInquiry and only react to its return value,
+// so POST /api/inquiries (src/app/api/inquiries/route.ts) is the only thing
+// that needs to change if the write path ever moves again. Field names
+// mirror the Inquiries collection exactly (src/collections/Inquiries.ts),
+// since this now posts straight into that schema.
 
 export type InquiryType = "question" | "booking";
-export type InquiryStatus = "new" | "read" | "replied" | "archived";
 
-export type Inquiry = {
-  id: string; // uuid, server-generated
+export type InquiryInput = {
   type: InquiryType;
+  // The CRM-side booking/question split (see src/collections/Inquiries.ts) —
+  // gates whether `category` is required. BookingForm sends "booking" with
+  // its session-type select's value as `category`; AskQuestionPanel sends
+  // "question" and omits `category` entirely, since it never collects one.
+  inquiryType: InquiryType;
   name: string;
   email: string;
+  phone?: string;
   message: string;
-  source_page: string;
-  status: InquiryStatus; // defaults to 'new', set server-side
-  created_at: string; // ISO timestamp, set server-side
+  preferredDate?: string;
+  category?: number;
+  location?: {
+    street?: string;
+    city?: string;
+    state?: string;
+  };
+  sourcePage: string;
 };
 
-export type InquiryInput = Pick<
-  Inquiry,
-  "type" | "name" | "email" | "message" | "source_page"
->;
-
 export type SubmitInquiryResult = { success: true } | { success: false };
-
-// Stands in for the real network latency until there's an endpoint to hit.
-const SIMULATED_LATENCY_MS = 600;
 
 export async function submitInquiry(
   data: InquiryInput,
 ): Promise<SubmitInquiryResult> {
-  console.log("[inquiries] submitInquiry", data);
-  await new Promise((resolve) => setTimeout(resolve, SIMULATED_LATENCY_MS));
-  return { success: true };
+  try {
+    const response = await fetch("/api/inquiries", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+    return response.ok ? { success: true } : { success: false };
+  } catch {
+    return { success: false };
+  }
 }

@@ -1,10 +1,38 @@
-import type { CollectionConfig } from "payload";
+import type { CollectionAfterChangeHook, CollectionConfig } from "payload";
 import { isAdmin } from "#src/access/isAdmin.ts";
 import { formatSlug } from "#src/hooks/formatSlug.ts";
 
-// Mirrors src/content/categories.json (weddings, portraits, pets, brands,
-// motorsports, real-estate) — field names match that shape so wiring the
-// homepage up to this collection later is a straight swap.
+// Gives every new category its own blank Prep and Post-Production checklist
+// templates to customize, rather than leaving it to fall back to the
+// Standard template (see ChecklistTemplates.ts) with no way to tell them
+// apart in the admin list. Create-only: renaming a category later doesn't
+// rename its templates, since she may have already retitled them herself.
+const createBlankChecklistTemplates: CollectionAfterChangeHook = async ({
+  doc,
+  operation,
+  req,
+}) => {
+  if (operation !== "create") return doc;
+
+  await req.payload.create({
+    collection: "checklist-templates",
+    data: { name: `${doc.name} — Prep`, type: "prep", category: doc.id, items: [] },
+    req,
+  });
+
+  await req.payload.create({
+    collection: "checklist-templates",
+    data: { name: `${doc.name} — Post-Production`, type: "postProduction", category: doc.id, items: [] },
+    req,
+  });
+
+  return doc;
+};
+
+// The types of photography offered — every page that used to read from the
+// old static src/content/categories.json placeholder (now removed) reads
+// from this collection instead: the homepage grid, the booking form's
+// session-type list, and each /portfolio/[category] page.
 export const Categories: CollectionConfig = {
   slug: "categories",
   admin: {
@@ -18,6 +46,9 @@ export const Categories: CollectionConfig = {
     create: isAdmin,
     update: isAdmin,
     delete: isAdmin,
+  },
+  hooks: {
+    afterChange: [createBlankChecklistTemplates],
   },
   fields: [
     {

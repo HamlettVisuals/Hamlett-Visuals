@@ -1,28 +1,85 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getCategories, getCategoryBySlug } from "@/lib/categories";
-import { getEventsForCategoryFolder } from "@/lib/albums";
+import { getPayload } from "payload";
+import config from "@payload-config";
 import CategoryGallery from "@/components/Gallery/CategoryGallery";
 import GalleryEmptyState from "@/components/Gallery/GalleryEmptyState";
+import type { GalleryEvent } from "@/components/Gallery/types";
 
-// Category landing page. Wired to the existing folder-scan logic in
-// `@/lib/albums` — `[category]` maps to a top-level folder under public/photos.
+// Category landing page. Category -> Events -> Photos, all from Payload:
+// two queries (this category's Events, then Photos where event is one of
+// those Events' ids) grouped by event id in application code below, rather
+// than one query per event — see payload.config.ts for why these two
+// collections only get plain (unscoped) Live Preview.
 
-export function generateStaticParams() {
-  return getCategories().map((category) => ({ category: category.slug }));
+export async function generateStaticParams() {
+  const payload = await getPayload({ config });
+  const { docs: categories } = await payload.find({
+    collection: "categories",
+    where: { published: { equals: true } },
+    limit: 0,
+  });
+  return categories.map((category) => ({ category: category.slug }));
 }
 
 export default async function CategoryPage({
   params,
 }: PageProps<"/portfolio/[category]">) {
   const { category: slug } = await params;
-  const category = getCategoryBySlug(slug);
+  const payload = await getPayload({ config });
+
+  const { docs: matchingCategories } = await payload.find({
+    collection: "categories",
+    where: { slug: { equals: slug }, published: { equals: true } },
+    limit: 1,
+  });
+  const category = matchingCategories[0];
 
   if (!category) {
     notFound();
   }
 
-  const events = getEventsForCategoryFolder(category.folderName);
+  const { docs: categoryEvents } = await payload.find({
+    collection: "events",
+    where: { category: { equals: category.id }, published: { equals: true } },
+    sort: "-date",
+    depth: 0,
+    limit: 0,
+  });
+
+  const eventIds = categoryEvents.map((event) => event.id);
+  const { docs: eventPhotos } = eventIds.length
+    ? await payload.find({
+        collection: "photos",
+        where: { event: { in: eventIds } },
+        sort: "createdAt",
+        depth: 0,
+        limit: 0,
+      })
+    : { docs: [] };
+
+  // Grouped here in application code (not a per-event query) since the
+  // photos query above already fetched every event's photos in one shot.
+  // Photos without a resolved url are skipped rather than shown broken —
+  // same approach as Hero/Categories for their cover/hero photos.
+  const photosByEventId = new Map<number, GalleryEvent["photos"]>();
+  for (const photo of eventPhotos) {
+    if (typeof photo.event !== "number" || !photo.url) continue;
+    const resolved = {
+      filename: photo.filename ?? `photo-${photo.id}`,
+      url: photo.url,
+      alt: photo.alt,
+    };
+    const existing = photosByEventId.get(photo.event);
+    if (existing) existing.push(resolved);
+    else photosByEventId.set(photo.event, [resolved]);
+  }
+
+  const events: GalleryEvent[] = categoryEvents.map((event) => ({
+    slug: event.slug,
+    name: event.title,
+    photos: photosByEventId.get(event.id) ?? [],
+  }));
 
   return (
     // w-full is load-bearing, not cosmetic: without it, `main`'s flex stretch

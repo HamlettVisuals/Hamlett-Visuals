@@ -2,13 +2,13 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
-import type { Photo } from "@/lib/albums";
+import type { GalleryPhoto } from "./types";
 import { DEFAULT_LOCATION, generateAltText } from "@/lib/generate-alt-text";
 
 type CategoryLightboxProps = {
   /** Display name of the category this gallery belongs to, e.g. "Weddings". */
   category: string;
-  events: { name: string; photos: Photo[] }[];
+  events: { name: string; photos: GalleryPhoto[] }[];
   isOpen: boolean;
   /** Index into the flattened photo list across all events. */
   startIndex: number;
@@ -16,7 +16,7 @@ type CategoryLightboxProps = {
 };
 
 type FlatPhoto = {
-  photo: Photo;
+  photo: GalleryPhoto;
   eventName: string;
   indexInEvent: number;
   totalInEvent: number;
@@ -164,12 +164,15 @@ export default function CategoryLightbox({
         >
           <Image
             src={current.photo.url}
-            alt={generateAltText({
-              kind: "event",
-              eventName: current.eventName,
-              category,
-              location: DEFAULT_LOCATION,
-            })}
+            alt={
+              current.photo.alt ||
+              generateAltText({
+                kind: "event",
+                eventName: current.eventName,
+                category,
+                location: DEFAULT_LOCATION,
+              })
+            }
             fill
             quality={95}
             sizes="90vw"

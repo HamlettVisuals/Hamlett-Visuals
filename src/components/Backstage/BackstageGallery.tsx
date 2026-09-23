@@ -1,19 +1,17 @@
 "use client";
 
-import { Suspense, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import type { BackstageItem } from "@/lib/backstage-items";
 import GalleryEmptyState from "@/components/Gallery/GalleryEmptyState";
 import BackstageGrid from "./BackstageGrid";
 import BackstageLightbox from "./BackstageLightbox";
-import DevBackstagePreviewParam from "./DevBackstagePreviewParam";
-import { PREVIEW_BACKSTAGE_ITEMS } from "./backstagePreviewItems";
 
 type BackstageGalleryProps = {
+  /** Already in display order (Payload's `order` field) — see page.tsx. */
   items: BackstageItem[];
 };
 
 export default function BackstageGallery({ items }: BackstageGalleryProps) {
-  const [previewEnabled, setPreviewEnabled] = useState(false);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
 
@@ -21,12 +19,15 @@ export default function BackstageGallery({ items }: BackstageGalleryProps) {
   // close — same convention as FloatingAskButton's triggerRef.
   const openerRef = useRef<HTMLButtonElement | null>(null);
 
-  const source = previewEnabled ? PREVIEW_BACKSTAGE_ITEMS : items;
-  const sorted = [...source].sort(
-    (a, b) => new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime(),
-  );
+  // A "reel_embed" tile links straight out to Instagram (see BackstageGrid)
+  // rather than opening the lightbox, so the lightbox only ever cycles
+  // through the video items — its prev/next index math is scoped to this
+  // subset, not the full grid.
+  const videoItems = items.filter((item) => item.type === "video");
 
-  function handleItemClick(index: number, opener: HTMLButtonElement) {
+  function handleItemClick(item: BackstageItem, opener: HTMLButtonElement) {
+    const index = videoItems.findIndex((video) => video.id === item.id);
+    if (index === -1) return;
     openerRef.current = opener;
     setLightboxIndex(index);
     setLightboxOpen(true);
@@ -39,19 +40,13 @@ export default function BackstageGallery({ items }: BackstageGalleryProps) {
 
   return (
     <>
-      {process.env.NODE_ENV === "development" && (
-        <Suspense fallback={null}>
-          <DevBackstagePreviewParam onChange={setPreviewEnabled} />
-        </Suspense>
-      )}
-
-      {sorted.length === 0 ? (
+      {items.length === 0 ? (
         <GalleryEmptyState message="Behind-the-scenes content coming soon." />
       ) : (
         <>
-          <BackstageGrid items={sorted} onItemClick={handleItemClick} />
+          <BackstageGrid items={items} onItemClick={handleItemClick} />
           <BackstageLightbox
-            items={sorted}
+            items={videoItems}
             isOpen={lightboxOpen}
             startIndex={lightboxIndex}
             onClose={handleClose}

@@ -7,8 +7,10 @@ import {
   useState,
   type FormEvent,
 } from "react";
-import { useSearchParams } from "next/navigation";
-import type { Category } from "@/lib/categories";
+import { useSearchParams, usePathname } from "next/navigation";
+import type { Category } from "@/payload-types";
+import { submitInquiry } from "@/lib/inquiries";
+import { OTHER_SESSION_TYPE } from "@/lib/booking-session-type";
 import { usePrefersReducedMotion } from "@/lib/use-prefers-reduced-motion";
 import DatePicker from "./DatePicker";
 
@@ -23,16 +25,14 @@ import DatePicker from "./DatePicker";
 // state here. This component just calls `onSubmitted` once a submission is
 // valid.
 //
-// No backend wiring yet — a valid submit holds the button in a "Sending…"
-// state for SENDING_DELAY_MS (submitBooking below), then reads the name off
-// the form and flips to the success state. submitBooking is deliberately the
-// only thing that needs to change once there's a real API route — swap its
-// body for `await fetch(...)` and everything downstream (the pending state,
-// the crossfade, the error retry) keeps working unmodified. It can also
-// reject, standing in for that future request failing — forced via the
-// dev-only ?bookingResult=error query param (see devForceError below) since
-// there's no real backend yet to fail on its own. The honeypot field skips
-// the submitBooking call entirely and goes straight to success, matching
+// A valid submit posts a real Inquiry (type: "booking") via submitInquiry
+// (src/lib/inquiries.ts) — session type, preferred time, and the Instagram
+// handle all get folded into the Inquiry's one `message` field (composeMessage
+// below) since the collection doesn't have dedicated columns for them. The
+// dev-only ?bookingResult=error query param (devForceError below) still
+// forces the error path without needing the backend itself to fail, for
+// exercising that UI state on demand. The honeypot field skips the
+// submitInquiry call entirely and goes straight to success, matching
 // AskQuestionPanel's honeypot behavior.
 //
 // The form→success swap itself (once `submitted` flips true) crossfades
@@ -51,28 +51,19 @@ import DatePicker from "./DatePicker";
 // message below the field (see FormErrors below) rather than blocking with
 // native UI.
 
-// Outside the real category slugs on purpose, so it can never collide with one.
-const OTHER_SESSION_TYPE = "other";
-
-// How long the submit button holds its "Sending…" state before flipping to
-// success (or error) — long enough to read as a real network round trip
-// rather than an instant flash, short enough not to feel slow. Stands in for
-// a real network delay; once there's a real endpoint, submitBooking's body
-// becomes the actual `await fetch(...)` and this constant goes away on its
-// own. The button's dots animate on an infinite loop (see .btn-dots in
-// globals.css), so nothing here needs to change for the indicator to still
-// read naturally at this length.
+// How long the forced-error dev escape hatch (devForceError below) holds the
+// button in "Sending…" before rejecting — long enough to read as a real
+// network round trip. The button's dots animate on an infinite loop (see
+// .btn-dots in globals.css), so nothing here needs to change for the
+// indicator to still read naturally at this length.
 const SENDING_DELAY_MS = 1400;
 
-function submitBooking(forceError: boolean): Promise<void> {
-  return new Promise((resolve, reject) => {
-    window.setTimeout(() => {
-      if (forceError) {
-        reject(new Error("Simulated booking failure"));
-      } else {
-        resolve();
-      }
-    }, SENDING_DELAY_MS);
+function simulateBookingFailure(): Promise<never> {
+  return new Promise((_resolve, reject) => {
+    window.setTimeout(
+      () => reject(new Error("Simulated booking failure")),
+      SENDING_DELAY_MS,
+    );
   });
 }
 
@@ -122,6 +113,39 @@ function timeLabel(value: string): string | null {
   return match && match.value ? match.label : null;
 }
 
+// DatePicker's plain "yyyy-mm-dd" would be read by `new Date(...)` as UTC
+// midnight, which can display as the day before once Payload's admin
+// renders it in a timezone behind UTC (confirmed: 10/15 submitted showed as
+// 10/14 in /hv-studio). Pinning to noon UTC keeps the calendar date stable
+// across every real-world timezone offset — same reasoning as
+// formatSummaryDate above parsing explicit year/month/day instead of
+// `new Date(iso)`.
+function toPreferredDateISO(iso: string): string | undefined {
+  if (!iso) return undefined;
+  return `${iso}T12:00:00.000Z`;
+}
+
+// The Inquiries collection has one free-text `message` field — no dedicated
+// columns for session type, preferred time, or Instagram handle — so those
+// get folded into it here, ahead of whatever the client actually typed, so
+// none of it is lost for the person reading the inbox.
+function composeMessage(fields: {
+  sessionType: string;
+  time: string;
+  handle: string;
+  message: string;
+  categories: Category[];
+}): string {
+  const lines = [
+    `Session type: ${sessionTypeLabel(fields.sessionType, fields.categories)}`,
+  ];
+  const time = timeLabel(fields.time);
+  if (time) lines.push(`Preferred time: ${time}`);
+  if (fields.handle.trim()) lines.push(`Instagram: ${fields.handle.trim()}`);
+  if (fields.message.trim()) lines.push("", fields.message.trim());
+  return lines.join("\n");
+}
+
 type FormErrors = {
   sessionType?: string;
   name?: string;
@@ -146,11 +170,17 @@ function validate(fields: {
 
 export default function BookingForm({
   categories,
+  fallbackCategoryId,
   submitted,
   firstName,
   onSubmitted,
 }: {
   categories: Category[];
+  // The unpublished "Other" Category's id (booking/page.tsx looks it up by
+  // slug, unfiltered by `published`) — `categories` itself only ever holds
+  // published ones, so "Something else" can't resolve against it directly.
+  // Undefined if that category doesn't exist yet.
+  fallbackCategoryId: number | undefined;
   submitted: boolean;
   firstName: string;
   onSubmitted: (firstName: string) => void;
@@ -161,8 +191,14 @@ export default function BookingForm({
     (category) => category.slug === typeParam,
   );
 
-  // Dev-only escape hatch to preview/verify the error state without a real
-  // backend to fail on — see submitBooking above. Never true in production.
+  // Captured once, at mount — see AskQuestionPanel's identical sourcePageRef
+  // for why this is a ref rather than read fresh on submit.
+  const pathname = usePathname();
+  const sourcePageRef = useRef(pathname);
+
+  // Dev-only escape hatch to preview/verify the error state without the
+  // backend itself needing to fail — see simulateBookingFailure above. Never
+  // true in production.
   const devForceError =
     process.env.NODE_ENV === "development" &&
     searchParams.get("bookingResult") === "error";
@@ -265,9 +301,15 @@ export default function BookingForm({
     const name = String(data.get("name") ?? "");
     const email = String(data.get("email") ?? "");
     const time = String(data.get("time") ?? "");
+    const phone = String(data.get("phone") ?? "");
+    const handle = String(data.get("handle") ?? "");
+    const message = String(data.get("message") ?? "");
+    const street = String(data.get("street") ?? "");
+    const city = String(data.get("city") ?? "");
+    const state = String(data.get("state") ?? "");
 
     // Real users never fill this in — a bot that does gets a silent,
-    // convincing "success" with no real submitBooking call underneath.
+    // convincing "success" with no real submitInquiry call underneath.
     const isSpam = Boolean(String(data.get("website") ?? "").trim());
 
     const nextErrors = validate({ sessionType, name, email });
@@ -293,7 +335,36 @@ export default function BookingForm({
 
     setPending(true);
     try {
-      await submitBooking(devForceError);
+      if (devForceError) {
+        await simulateBookingFailure();
+      }
+      const result = await submitInquiry({
+        type: "booking",
+        inquiryType: "booking",
+        name: name.trim(),
+        email: email.trim(),
+        phone: phone.trim() || undefined,
+        message: composeMessage({ sessionType, time, handle, message, categories }),
+        preferredDate: toPreferredDateISO(date),
+        // The session-type select's value is a real Category slug, except
+        // OTHER_SESSION_TYPE ("Something else"), which isn't one — `categories`
+        // only holds published categories, so it can't resolve that case
+        // itself. fallbackCategoryId is the one place that unpublished
+        // "Other" record's id comes from; still undefined (and still a
+        // real validation error, not a silent bad write) if it hasn't been
+        // created yet.
+        category:
+          sessionType === OTHER_SESSION_TYPE
+            ? fallbackCategoryId
+            : categories.find((category) => category.slug === sessionType)?.id,
+        location: {
+          street: street.trim() || undefined,
+          city: city.trim() || undefined,
+          state: state.trim() || undefined,
+        },
+        sourcePage: sourcePageRef.current,
+      });
+      if (!result.success) throw new Error("submitInquiry failed");
       setPending(false);
       onSubmitted(name.trim().split(/\s+/)[0] ?? "");
     } catch {
@@ -483,6 +554,52 @@ export default function BookingForm({
               placeholder="Anything you'd like her to know — the occasion, the people involved, a rough headcount, locations you have in mind."
               className="field-input"
             />
+          </div>
+
+          <div>
+            <span className="field-label">Location</span>
+            <p className="mt-1 text-caption text-muted">
+              Know the venue already? Add it here — leave it blank if you&rsquo;re
+              still deciding.
+            </p>
+            <div className="mt-3">
+              <label htmlFor="street" className="field-label">
+                Street
+              </label>
+              <input
+                type="text"
+                id="street"
+                name="street"
+                autoComplete="street-address"
+                className="field-input"
+              />
+            </div>
+            <div className="mt-6 grid gap-6 sm:grid-cols-2">
+              <div>
+                <label htmlFor="city" className="field-label">
+                  City
+                </label>
+                <input
+                  type="text"
+                  id="city"
+                  name="city"
+                  autoComplete="address-level2"
+                  className="field-input"
+                />
+              </div>
+              <div>
+                <label htmlFor="state" className="field-label">
+                  State
+                </label>
+                <input
+                  type="text"
+                  id="state"
+                  name="state"
+                  autoComplete="address-level1"
+                  className="field-input"
+                />
+              </div>
+            </div>
           </div>
 
           {/* Honeypot — off-screen (not display:none) so it stays in the DOM

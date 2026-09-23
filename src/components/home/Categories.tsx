@@ -2,11 +2,11 @@
 
 import Link from "next/link";
 import HoverZoomImage from "@/components/HoverZoomImage";
-import { getCategories } from "@/lib/categories";
 import { generateAltText } from "@/lib/generate-alt-text";
+import { resolvePhoto } from "@/lib/resolve-photo";
 import { serverURL } from "@/lib/server-url";
 import { useScopedLivePreview } from "@/lib/use-scoped-live-preview";
-import type { CategoriesIntro } from "@/payload-types";
+import type { CategoriesIntro, Category } from "@/payload-types";
 
 // Categories section (#categories). A uniform grid of tall tiles — one per
 // category — that reads as a gallery hang: three columns on desktop (3×2), two
@@ -26,13 +26,15 @@ import type { CategoriesIntro } from "@/payload-types";
 
 export default function Categories({
   categoriesIntro,
+  categories,
 }: {
   categoriesIntro: CategoriesIntro;
+  categories: Category[];
 }) {
   // Live Preview overlays the admin's current unsaved form state on top of
   // `categoriesIntro` via postMessage — same mechanism as Hero/About. The
-  // grid below still reads from the static categories list, not this data,
-  // since the Categories/Events/Photos collections aren't wired yet.
+  // grid itself doesn't live-sync — it's driven by the Categories
+  // collection, which gets plain Live Preview only (see payload.config.ts).
   const { data } = useScopedLivePreview<CategoriesIntro>({
     initialData: categoriesIntro,
     serverURL,
@@ -40,7 +42,14 @@ export default function Categories({
     apiRoute: "/hv-studio/api",
   });
 
-  const categories = getCategories();
+  // Tiles without a cover photo are skipped rather than shown broken —
+  // same approach as Hero's filmstrip for the same underlying data.
+  const tiles = categories.flatMap((category) => {
+    const coverPhoto = resolvePhoto(category.coverPhoto);
+    const coverPhotoUrl = coverPhoto?.url;
+    if (!coverPhotoUrl) return [];
+    return [{ category, coverPhoto: { ...coverPhoto, url: coverPhotoUrl } }];
+  });
 
   return (
     <section id="categories" className="border-t border-hairline">
@@ -50,12 +59,15 @@ export default function Categories({
         </h2>
 
         <ul className="mt-8 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 lg:gap-4">
-          {categories.map((category) => (
+          {tiles.map(({ category, coverPhoto }) => (
             <li key={category.slug}>
               <Link href={`/portfolio/${category.slug}`} className="block">
                 <HoverZoomImage
-                  src={category.image}
-                  alt={generateAltText({ kind: "category", category: category.name })}
+                  src={coverPhoto.url}
+                  alt={
+                    coverPhoto.alt ||
+                    generateAltText({ kind: "category", category: category.name })
+                  }
                   sizes="(min-width: 1024px) 336px, (min-width: 640px) 50vw, 100vw"
                   className="aspect-[9/16] w-full"
                 />

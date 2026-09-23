@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { serverURL } from "@/lib/server-url";
 import { useScopedLivePreview } from "@/lib/use-scoped-live-preview";
-import type { SiteSetting } from "@/payload-types";
+import type { BookingCta as BookingCtaGlobal, SiteSetting } from "@/payload-types";
 
 // Booking CTA section (#booking-cta), between Offers & pricing and Instagram.
 // A short centered band that just prompts the next step — deliberately the
@@ -11,16 +11,25 @@ import type { SiteSetting } from "@/payload-types";
 // hairline above and below. The only emphasis is the single solid button, so
 // it never competes with the Hero or the Featured offer.
 //
-// The contact email and Instagram handle come from Site Settings — shared
-// with the Footer and the homepage Instagram section.
-// TODO: swap the placeholder headline and supporting line for real copy
-// before launch.
+// Heading/subheading/CTA come from the Booking CTA global (see
+// globals/BookingCta.ts); the contact email and Instagram handle come from
+// Site Settings — shared with the Footer and the homepage Instagram section.
+// Two separate globals render here, so two separate (scoped) Live Preview
+// subscriptions — same pattern as Footer.tsx.
 
 export default function BookingCta({
+  bookingCta,
   siteSettings,
 }: {
+  bookingCta: BookingCtaGlobal;
   siteSettings: SiteSetting;
 }) {
+  const { data } = useScopedLivePreview<BookingCtaGlobal>({
+    initialData: bookingCta,
+    serverURL,
+    globalSlug: "booking-cta",
+    apiRoute: "/hv-studio/api",
+  });
   const { data: settings } = useScopedLivePreview<SiteSetting>({
     initialData: siteSettings,
     serverURL,
@@ -37,16 +46,15 @@ export default function BookingCta({
     <section id="booking-cta" className="border-y border-hairline bg-canvas-tint">
       <div className="mx-auto max-w-2xl px-gutter py-section text-center">
         <h2 className="font-display text-heading text-ink">
-          Ready when you are
+          {data.heading}
         </h2>
         <p className="mx-auto mt-3 max-w-md text-body text-muted">
-          Tell me what you&rsquo;re planning and I&rsquo;ll get back to you
-          within a day.
+          {data.subheading}
         </p>
 
         <div className="mt-8">
-          <Link href="/booking" className="btn">
-            Book a session
+          <Link href={data.ctaHref || "/booking"} className="btn">
+            {data.ctaLabel || "Book a session"}
           </Link>
         </div>
 

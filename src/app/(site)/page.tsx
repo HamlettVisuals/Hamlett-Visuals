@@ -24,6 +24,13 @@ import Testimonials from "@/components/home/Testimonials";
 
 export default async function Home() {
   const payload = await getPayload({ config });
+  const { docs: categories } = await payload.find({
+    collection: "categories",
+    where: { published: { equals: true } },
+    sort: "order",
+    depth: 1,
+    limit: 0,
+  });
   const hero = await payload.findGlobal({ slug: "hero" });
   const about = await payload.findGlobal({ slug: "about" });
   const categoriesIntro = await payload.findGlobal({ slug: "categories-intro" });
@@ -37,15 +44,22 @@ export default async function Home() {
   const testimonialsTeaser = await payload.findGlobal({
     slug: "testimonials-teaser",
   });
+  const bookingCta = await payload.findGlobal({ slug: "booking-cta" });
+  const { docs: featuredTestimonials } = await payload.find({
+    collection: "testimonials",
+    where: { featured: { equals: true }, published: { equals: true } },
+    depth: 1,
+    limit: 0,
+  });
   const siteSettings = await payload.findGlobal({ slug: "site-settings" });
 
   return (
     <>
       {/* 1. Hero */}
-      <Hero hero={hero} />
+      <Hero hero={hero} categories={categories} />
 
       {/* 2. Categories */}
-      <Categories categoriesIntro={categoriesIntro} />
+      <Categories categoriesIntro={categoriesIntro} categories={categories} />
 
       {/* 3. About */}
       <About about={about} />
@@ -57,13 +71,16 @@ export default async function Home() {
       <Offers pricingRows={pricingRows} />
 
       {/* 6. General booking CTA */}
-      <BookingCta siteSettings={siteSettings} />
+      <BookingCta bookingCta={bookingCta} siteSettings={siteSettings} />
 
       {/* 7. Recent Instagram */}
       <Instagram siteSettings={siteSettings} />
 
       {/* 8. Testimonials teaser */}
-      <Testimonials testimonialsTeaser={testimonialsTeaser} />
+      <Testimonials
+        testimonialsTeaser={testimonialsTeaser}
+        featuredTestimonials={featuredTestimonials}
+      />
     </>
   );
 }

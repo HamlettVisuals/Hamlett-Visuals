@@ -2,9 +2,10 @@ import type { CollectionConfig } from "payload";
 import { isAdmin } from "#src/access/isAdmin.ts";
 import { formatSlug } from "#src/hooks/formatSlug.ts";
 
-// An "Event" is a single shoot/album within a category — mirrors the
-// Album -> Event -> Photo hierarchy in src/lib/albums.ts (e.g. the
-// "Priya & Daniel" wedding within the Weddings category).
+// An "Event" is a single shoot/album within a category (e.g. the
+// "Priya & Daniel" wedding within the Weddings category) — see
+// /portfolio/[category]/page.tsx for how Category -> Event -> Photo is
+// queried and grouped for the gallery.
 export const Events: CollectionConfig = {
   slug: "events",
   labels: {

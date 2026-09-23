@@ -17,6 +17,20 @@ const nextConfig: NextConfig = {
   experimental: {
     globalNotFound: true,
   },
+  // The kanban board is the admin's home screen — Payload's default
+  // dashboard card grid is never shown. Done here (not via
+  // admin.components.views.dashboard) so it happens at the routing layer,
+  // before Payload renders anything: no flash of the old grid, and it covers
+  // every way of reaching the admin root at once — post-login (Payload's
+  // login form pushes to routes.admin unless ?redirect= is set), the
+  // breadcrumb home icon, and direct visits. Exact match only, so /login,
+  // /collections/*, etc. are untouched (no login redirect loop). Keep in
+  // sync with routes.admin in payload.config.ts and the kanban view's path.
+  async redirects() {
+    return [
+      { source: "/hv-studio", destination: "/hv-studio/kanban", permanent: false },
+    ];
+  },
   images: {
     formats: ["image/avif", "image/webp"],
     // Next.js 16 restricts `quality` to this allowlist by default ([75] only);

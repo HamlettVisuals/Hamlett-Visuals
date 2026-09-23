@@ -231,7 +231,11 @@ export default function BackstageLightbox({
             <>
               <video
                 ref={videoRef}
-                src={current.mediaUrl}
+                // Every item that reaches the lightbox is a "video" item
+                // (see BackstageGallery's videoItems filter), so mediaUrl is
+                // always populated here — the `| null` in BackstageItem's
+                // type only covers the (never-reached-here) reel_embed case.
+                src={current.mediaUrl ?? undefined}
                 poster={current.thumbnailUrl}
                 autoPlay
                 playsInline

@@ -3,6 +3,9 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Wordmark from "@/components/Wordmark";
+import { serverURL } from "@/lib/server-url";
+import { useScopedLivePreview } from "@/lib/use-scoped-live-preview";
+import type { HeaderNav as HeaderNavGlobal } from "@/payload-types";
 
 // Single-page site: most nav items are anchors into the homepage sections;
 // Testimonials and Book are their own routed pages.
@@ -15,19 +18,11 @@ import Wordmark from "@/components/Wordmark";
 // layout. This scroll/border behaviour is unchanged from the previous pass.
 //
 // The logo is the shared <Wordmark> (also used in the footer).
-
-// Destinations are unchanged. Book is split out below: it renders as the one
-// solid button, not a quiet link.
-const navLinks = [
-  { href: "/#categories", label: "Portfolio" },
-  { href: "/#about", label: "About" },
-  { href: "/#offers", label: "Pricing" },
-  { href: "/#instagram", label: "Instagram" },
-  { href: "/backstage", label: "Backstage" },
-  { href: "/testimonials", label: "Testimonials" },
-];
-
-const BOOK_HREF = "/booking";
+//
+// navLinks and the Book button come from the Header/Nav global (see
+// globals/HeaderNav.ts) — passed in as `headerNav` from
+// (site)/layout.tsx, then kept live via useScopedLivePreview the same way
+// Footer.tsx does for its two globals.
 
 // A few pixels — enough to mean "we've left the top" without flickering on
 // sub-pixel scroll jitter or elastic overscroll.
@@ -57,7 +52,17 @@ function MenuIcon({ open }: { open: boolean }) {
   );
 }
 
-export default function Nav() {
+export default function Nav({ headerNav }: { headerNav: HeaderNavGlobal }) {
+  const { data } = useScopedLivePreview<HeaderNavGlobal>({
+    initialData: headerNav,
+    serverURL,
+    globalSlug: "header-nav",
+    apiRoute: "/hv-studio/api",
+  });
+  const navLinks = data.navLinks ?? [];
+  const bookLabel = data.bookLabel || "Book";
+  const bookHref = data.bookHref || "/booking";
+
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const toggleButtonRef = useRef<HTMLButtonElement>(null);
@@ -139,6 +144,7 @@ export default function Nav() {
 
   return (
     <header
+      id="site-header"
       className={`sticky top-0 z-50 border-b bg-canvas transition-colors duration-150 ${
         scrolled ? "border-hairline" : "border-transparent"
       }`}
@@ -150,15 +156,15 @@ export default function Nav() {
         <div className="hidden items-center gap-8 header:flex">
           <ul className="flex items-center gap-6">
             {navLinks.map((link) => (
-              <li key={link.href}>
+              <li key={link.id ?? link.href}>
                 <Link href={link.href} className="link text-caption text-ink">
                   {link.label}
                 </Link>
               </li>
             ))}
           </ul>
-          <Link href={BOOK_HREF} className="btn">
-            Book
+          <Link href={bookHref} className="btn">
+            {bookLabel}
           </Link>
         </div>
 
@@ -215,7 +221,7 @@ export default function Nav() {
 
         <ul className="flex flex-col border-t border-hairline px-6 pt-2">
           {navLinks.map((link) => (
-            <li key={link.href}>
+            <li key={link.id ?? link.href}>
               <Link
                 href={link.href}
                 onClick={closeMenu}
@@ -228,8 +234,8 @@ export default function Nav() {
         </ul>
 
         <div className="mt-auto px-6 pb-8 pt-6">
-          <Link href={BOOK_HREF} onClick={closeMenu} className="btn w-full">
-            Book
+          <Link href={bookHref} onClick={closeMenu} className="btn w-full">
+            {bookLabel}
           </Link>
         </div>
       </div>

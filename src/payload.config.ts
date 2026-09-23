@@ -35,6 +35,11 @@ import { Photos } from "#src/collections/Photos.ts";
 import { Testimonials } from "#src/collections/Testimonials.ts";
 import { PricingRows } from "#src/collections/PricingRows.ts";
 import { Inquiries } from "#src/collections/Inquiries.ts";
+import { Clients } from "#src/collections/Clients.ts";
+import { ChecklistTemplates } from "#src/collections/ChecklistTemplates.ts";
+import { Backstage } from "#src/collections/Backstage.ts";
+import { TestimonialSubmissions } from "#src/collections/TestimonialSubmissions.ts";
+import { TestimonialPhotos } from "#src/collections/TestimonialPhotos.ts";
 
 import { HeaderNav } from "#src/globals/HeaderNav.ts";
 import { Hero } from "#src/globals/Hero.ts";
@@ -45,6 +50,7 @@ import { BookingCta } from "#src/globals/BookingCta.ts";
 import { TestimonialsTeaser } from "#src/globals/TestimonialsTeaser.ts";
 import { FinalCtaFooter } from "#src/globals/FinalCtaFooter.ts";
 import { SiteSettings } from "#src/globals/SiteSettings.ts";
+import { Booking } from "#src/globals/Booking.ts";
 import { serverURL } from "#src/lib/server-url.ts";
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -72,9 +78,12 @@ export default buildConfig({
       // Only globals/collections actually wired to the frontend belong here
       // — see components/home/Hero.tsx, About.tsx, Categories.tsx,
       // FeaturedOffer.tsx, Offers.tsx, Testimonials.tsx, Footer.tsx,
-      // BookingCta.tsx and Instagram.tsx. Add others as they're connected;
-      // the site-content.ts placeholders don't read from Payload yet, so
-      // enabling live preview for them would do nothing.
+      // BookingCta.tsx, Instagram.tsx, Nav.tsx,
+      // (site)/portfolio/[category]/page.tsx + components/Gallery/* for
+      // events/photos, and (site)/testimonials/page.tsx for testimonials.
+      // Add others as they're connected; the site-content.ts placeholders
+      // don't read from Payload yet, so enabling live preview for them would
+      // do nothing.
       globals: [
         "hero",
         "about",
@@ -83,6 +92,9 @@ export default buildConfig({
         "testimonials-teaser",
         "final-cta-footer",
         "site-settings",
+        "booking",
+        "header-nav",
+        "booking-cta",
       ],
       // Collections get plain Live Preview only — no openByDefault, no
       // scroll-to-highlight, and (deliberately) no per-record targeting: a
@@ -94,17 +106,39 @@ export default buildConfig({
       // in (site)/layout.tsx) covers reactivity here instead: saving a
       // document refreshes the page with fresh server data, just not on
       // every keystroke the way wired globals do.
-      collections: ["pricing-rows"],
+      collections: ["pricing-rows", "categories", "events", "photos", "testimonials", "backstage"],
     },
     components: {
       // Replaces the default alphabetical/admin.group sidebar with a tree
       // that mirrors the real site's page structure — see SiteNav.tsx.
       Nav: "/components/admin/SiteNav#default",
+      views: {
+        // The Inquiries kanban board (Phase 4 of the CRM plan) — a
+        // top-level custom view rather than a collection view, since it
+        // spans every stage rather than living under /collections/inquiries.
+        // See KanbanBoard/index.tsx's header comment for why it wraps
+        // itself in DefaultTemplate.
+        kanban: {
+          Component: "/components/admin/KanbanBoard#default",
+          path: "/kanban",
+        },
+      },
     },
     importMap: {
       // Custom admin component paths (e.g. Inquiries' status Cell) resolve
       // relative to this directory, so they're written as "/components/...".
       baseDir: dirname,
+    },
+  },
+  i18n: {
+    translations: {
+      en: {
+        general: {
+          // The breadcrumb home icon's tooltip. /hv-studio redirects to the
+          // kanban board (see next.config.ts), so "Dashboard" would be wrong.
+          dashboard: "Kanban Board",
+        },
+      },
     },
   },
   collections: [
@@ -115,6 +149,11 @@ export default buildConfig({
     Testimonials,
     PricingRows,
     Inquiries,
+    Clients,
+    ChecklistTemplates,
+    Backstage,
+    TestimonialSubmissions,
+    TestimonialPhotos,
   ],
   globals: [
     HeaderNav,
@@ -126,6 +165,7 @@ export default buildConfig({
     TestimonialsTeaser,
     FinalCtaFooter,
     SiteSettings,
+    Booking,
   ],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET ?? "",
@@ -158,7 +198,38 @@ export default buildConfig({
     s3Storage({
       collections: {
         photos: true,
+        "testimonial-photos": true,
       },
+      bucket: process.env.R2_BUCKET ?? "",
+      config: {
+        region: "auto",
+        endpoint: process.env.R2_ENDPOINT,
+        forcePathStyle: true,
+        credentials: {
+          accessKeyId: process.env.R2_ACCESS_KEY_ID ?? "",
+          secretAccessKey: process.env.R2_SECRET_ACCESS_KEY ?? "",
+        },
+      },
+    }),
+    // Separate s3Storage() registration for Backstage, not a second entry
+    // in the plugin call above — `clientUploads` is a top-level plugin
+    // option (applies to every collection that instance covers), not a
+    // per-collection one, so giving Backstage's video uploads
+    // `clientUploads: true` without also turning it on for Photos (and
+    // changing Photos' upload behavior) requires its own s3Storage()
+    // instance. Same bucket, same credentials — just a different upload
+    // path: the browser PUTs the video straight to R2 instead of routing
+    // through the Next.js server (see Backstage.ts's header comment), which
+    // needs the bucket's CORS config to allow that origin + PUT. `filename`
+    // collisions between the two instances aren't a concern: Payload scopes
+    // uniqueness by collection, not bucket path.
+    s3Storage({
+      collections: {
+        backstage: {
+          signedDownloads: true,
+        },
+      },
+      clientUploads: true,
       bucket: process.env.R2_BUCKET ?? "",
       config: {
         region: "auto",

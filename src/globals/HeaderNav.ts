@@ -1,8 +1,9 @@
 import type { GlobalConfig } from "payload";
 import { publicReadAdminWrite } from "#src/access/isAdmin.ts";
 import { navDestinations } from "#src/lib/nav-destinations.ts";
+import { serverURL } from "#src/lib/server-url.ts";
 
-// Mirrors navLinks + the Book button in src/components/Nav.tsx.
+// Drives navLinks + the Book button in src/components/Nav.tsx.
 export const HeaderNav: GlobalConfig = {
   slug: "header-nav",
   label: "Header / Nav",
@@ -10,6 +11,13 @@ export const HeaderNav: GlobalConfig = {
     group: "Site",
     description:
       "The menu bar at the top of every page: the links people see and the 'Book' button on the right.",
+    // Same Live Preview treatment as the other wired globals — opens
+    // automatically and scrolls to/highlights the header via
+    // LivePreviewHighlight (see Nav.tsx's id="site-header").
+    livePreview: {
+      openByDefault: true,
+      url: () => `${serverURL}/#live-preview:site-header`,
+    },
   },
   access: publicReadAdminWrite,
   versions: {

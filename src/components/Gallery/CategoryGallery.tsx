@@ -1,8 +1,7 @@
 "use client";
 
 import { Suspense, useState } from "react";
-import type { Category } from "@/lib/categories";
-import type { Event } from "@/lib/albums";
+import type { GalleryEvent } from "./types";
 import EventRow from "./EventRow";
 import CategoryLightbox from "./CategoryLightbox";
 import GalleryEmptyState from "./GalleryEmptyState";
@@ -13,8 +12,8 @@ import DevGalleryStateParam, {
 } from "./DevGalleryStateParam";
 
 type CategoryGalleryProps = {
-  category: Category;
-  events: Event[];
+  category: { name: string };
+  events: GalleryEvent[];
 };
 
 /** Photo count used to demo the sparse-grid CSS via ?galleryState=sparse. */

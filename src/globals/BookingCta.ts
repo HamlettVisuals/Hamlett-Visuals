@@ -1,5 +1,6 @@
 import type { GlobalConfig } from "payload";
 import { publicReadAdminWrite } from "#src/access/isAdmin.ts";
+import { serverURL } from "#src/lib/server-url.ts";
 
 // Contact email and Instagram handle are shared across sections and live on
 // the Site Settings global instead of being repeated here.
@@ -10,6 +11,13 @@ export const BookingCta: GlobalConfig = {
     group: "Homepage",
     description:
       "The 'Ready when you are' section on the homepage that invites people to book a session. (The email address shown there comes from Site Settings.)",
+    // Same Live Preview treatment as the other wired homepage globals —
+    // opens automatically and scrolls to/highlights the #booking-cta section
+    // via LivePreviewHighlight.
+    livePreview: {
+      openByDefault: true,
+      url: () => `${serverURL}/#live-preview:booking-cta`,
+    },
   },
   access: publicReadAdminWrite,
   versions: {

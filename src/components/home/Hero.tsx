@@ -3,10 +3,11 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { getHeroSlides } from "@/lib/site-content";
+import { generateAltText } from "@/lib/generate-alt-text";
+import { resolvePhoto } from "@/lib/resolve-photo";
 import { serverURL } from "@/lib/server-url";
 import { useScopedLivePreview } from "@/lib/use-scoped-live-preview";
-import type { Hero as HeroGlobal } from "@/payload-types";
+import type { Category, Hero as HeroGlobal } from "@/payload-types";
 
 // Cross-category filmstrip hero. One representative image per category
 // (Weddings → Portraits → Pets → Brands → Motorsports → Real Estate → repeat),
@@ -23,7 +24,13 @@ import type { Hero as HeroGlobal } from "@/payload-types";
 // --hero-fade-duration (1200ms) crossfade overlaps the tail of this window.
 const HOLD_MS = 4500;
 
-export default function Hero({ hero }: { hero: HeroGlobal }) {
+export default function Hero({
+  hero,
+  categories,
+}: {
+  hero: HeroGlobal;
+  categories: Category[];
+}) {
   // Live Preview overlays the admin's current unsaved form state on top of
   // `hero` via postMessage — no extra fetch needed for these plain text
   // fields. Outside of Payload's Live Preview iframe this is a no-op and
@@ -37,7 +44,19 @@ export default function Hero({ hero }: { hero: HeroGlobal }) {
     apiRoute: "/hv-studio/api",
   });
 
-  const heroSlides = getHeroSlides();
+  // One slide per category that has a heroPhoto set — categories without
+  // one are skipped rather than shown with a missing image.
+  const heroSlides = categories.flatMap((category) => {
+    const heroPhoto = resolvePhoto(category.heroPhoto);
+    if (!heroPhoto?.url) return [];
+    return [
+      {
+        categorySlug: category.slug,
+        src: heroPhoto.url,
+        alt: generateAltText({ kind: "category", category: category.name }),
+      },
+    ];
+  });
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);

@@ -66,9 +66,9 @@ export default function AskQuestionPanel({
   const emailRef = useRef<HTMLInputElement>(null);
   const messageRef = useRef<HTMLTextAreaElement>(null);
 
-  // Captured once, at mount — the page the panel was opened from, per the
-  // future inquiries table's source_page column. The panel is unmounted on
-  // route change (FloatingAskButton), so this never goes stale in place.
+  // Captured once, at mount — the page the panel was opened from, for the
+  // Inquiry's sourcePage field. The panel is unmounted on route change
+  // (FloatingAskButton), so this never goes stale in place.
   const pathname = usePathname();
   const sourcePageRef = useRef(pathname);
 
@@ -153,10 +153,14 @@ export default function AskQuestionPanel({
     try {
       const payload: InquiryInput = {
         type: "question",
+        // No category picker here — this form never collects one, and
+        // Inquiries.category is only required when inquiryType is
+        // "booking" (see src/collections/Inquiries.ts).
+        inquiryType: "question",
         name: name.trim(),
         email: email.trim(),
         message: message.trim(),
-        source_page: sourcePageRef.current,
+        sourcePage: sourcePageRef.current,
       };
       const result = await submitInquiry(payload);
       setStatus(result.success ? "success" : "error");
@@ -272,8 +276,9 @@ export default function AskQuestionPanel({
 
           {/* Honeypot — off-screen (not display:none) so simple bots that
               skip display:none fields still find and fill it, while real
-              users never see it. Unlike BookingForm's (still-unwired)
-              honeypot, this one backs a real focus trap, so it also carries
+              users never see it. Unlike BookingForm's honeypot (same idea,
+              same "fill it and get a silent fake success" check on submit),
+              this one backs a real focus trap, so it also carries
               tabIndex={-1} — pulled out of the tab order entirely (and out
               of FOCUSABLE_SELECTOR above) rather than just visually hidden,
               so a sighted keyboard user can never land on it. Checked on

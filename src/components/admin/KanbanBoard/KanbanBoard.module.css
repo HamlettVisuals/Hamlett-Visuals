@@ -1,0 +1,1342 @@
+/* Kanban board — deliberately built from Payload's own --theme-* tokens
+   (see admin-overrides.css and the other src/components/admin/* files) so it
+   reads as part of the admin panel, including following the light/dark theme
+   toggle, rather than a bolted-on page with its own palette. Category colors
+   are the one deliberate exception — see src/lib/category-colors.ts. */
+
+.board {
+  display: flex;
+  flex-direction: column;
+  /* Payload's own top nav is position: fixed (it doesn't reserve space in
+     the document flow), so this still has to subtract its height manually —
+     but --app-header-height is Payload's own maintained variable for
+     exactly that height (see node_modules/@payloadcms/ui/dist/scss/app.scss),
+     not a guessed pixel value. A hardcoded number here (previously 80px)
+     drifts out of sync with Payload's real header — measured at 56px in
+     this app, a 24px gap that pushed a column's last card just past the
+     bottom of the viewport, needing a small scroll to see it fully.
+     --app-header-height already tracks Payload's own responsive header
+     size too, so the mobile block below no longer needs its own guess. */
+  height: calc(100vh - var(--app-header-height));
+  padding: 24px 32px;
+  gap: 18px;
+}
+
+.topBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.titleGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.title {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--theme-text);
+}
+
+.subtitle {
+  margin: 0;
+  font-size: 13px;
+  color: var(--theme-elevation-500);
+}
+
+.topBarActions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.addButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 16px;
+  border-radius: 4px;
+  border: 1px solid var(--theme-elevation-150);
+  background: var(--theme-input-bg);
+  color: var(--theme-text);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.addButton:hover {
+  background: var(--theme-elevation-100);
+}
+
+.questionsButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 16px;
+  border-radius: 4px;
+  border: 1px solid var(--theme-elevation-150);
+  background: var(--theme-input-bg);
+  color: var(--theme-text);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.questionsButton:hover {
+  background: var(--theme-elevation-100);
+}
+
+.questionsBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: var(--theme-error-500);
+  color: var(--theme-base-0);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.viewToggle {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--theme-elevation-150);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.viewToggleButton {
+  padding: 9px 14px;
+  border: none;
+  border-right: 1px solid var(--theme-elevation-150);
+  background: var(--theme-input-bg);
+  color: var(--theme-elevation-500);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.viewToggleButton:last-child {
+  border-right: none;
+}
+
+.viewToggleButton:hover {
+  background: var(--theme-elevation-100);
+}
+
+.viewToggleButtonActive {
+  background: var(--theme-elevation-150);
+  color: var(--theme-text);
+}
+
+.viewToggleButtonActive:hover {
+  background: var(--theme-elevation-150);
+}
+
+.errorBanner {
+  padding: 10px 14px;
+  border-radius: 6px;
+  border: 1px solid var(--theme-error-300);
+  background: var(--theme-error-100);
+  color: var(--theme-error-700);
+  font-size: 13px;
+}
+
+.columns {
+  display: flex;
+  align-items: flex-start;
+  /* 6 columns at 300px/16px gaps needed 1944px total (with .board's own
+     64px horizontal padding) — 24px over a 1920px viewport, forcing
+     horizontal scroll even on a large desktop screen. Trimmed to
+     280px/12px so all 6 fit at 1920px and up (1804px total) without
+     scrolling; narrower viewports (1440px and below) still scroll
+     horizontally, which is expected given the genuine column count. */
+  gap: 12px;
+  flex: 1;
+  min-height: 0;
+  overflow-x: auto;
+  padding-bottom: 8px;
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+  flex: 0 0 280px;
+  max-height: 100%;
+  background: var(--theme-elevation-50);
+  border: 1px solid var(--theme-elevation-100);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.columnHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 14px 14px 12px;
+  border-bottom: 1px solid var(--theme-elevation-100);
+}
+
+.columnTitle {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--theme-elevation-800);
+}
+
+.columnCount {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--theme-elevation-500);
+  background: var(--theme-elevation-100);
+  border-radius: 999px;
+  padding: 2px 8px;
+  min-width: 20px;
+  text-align: center;
+}
+
+.columnBody {
+  flex: 1;
+  min-height: 90px;
+  overflow-y: auto;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  transition: background-color 0.12s ease;
+}
+
+.columnBodyOver {
+  background: var(--theme-success-100);
+}
+
+.emptyColumn {
+  margin: 4px 2px;
+  padding: 18px 10px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--theme-elevation-400);
+  border: 1px dashed var(--theme-elevation-150);
+  border-radius: 6px;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  padding: 10px 12px;
+  background: var(--theme-input-bg);
+  border: 1px solid var(--theme-elevation-150);
+  border-left-width: 4px;
+  border-left-style: solid;
+  border-radius: 6px;
+  cursor: grab;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  transition: box-shadow 0.15s ease, transform 0.15s ease;
+  touch-action: none;
+}
+
+.card:hover {
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+  transform: translateY(-1px);
+}
+
+.cardDragging {
+  opacity: 0.35;
+}
+
+.dragOverlayCard {
+  cursor: grabbing;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.22);
+  transform: rotate(1.5deg);
+}
+
+.cardTop {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.cardTopLeft {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-width: 0;
+}
+
+.categoryLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--theme-elevation-500);
+}
+
+.categoryDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.repeatBadge {
+  flex-shrink: 0;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: var(--theme-success-150);
+  color: var(--theme-success-800);
+  white-space: nowrap;
+}
+
+.clientName {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--theme-text);
+  line-height: 1.3;
+}
+
+.cardMeta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
+  font-size: 12px;
+  color: var(--theme-elevation-500);
+}
+
+/* Only shown when a repeat client currently has more than one open job —
+   tells otherwise-identical cards for the same client apart at a glance.
+   See getDistinguisherLocation in src/hooks/repeatClient.ts. */
+.cardLocation {
+  margin: -3px 0 0;
+  font-size: 12px;
+  color: var(--theme-elevation-500);
+}
+
+.pillRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 1px;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--theme-elevation-100);
+  color: var(--theme-elevation-700);
+}
+
+.pillSuccess {
+  background: var(--theme-success-150);
+  color: var(--theme-success-800);
+}
+
+.pillMuted {
+  background: var(--theme-elevation-100);
+  color: var(--theme-elevation-450);
+}
+
+/* Same pill look as .pill/.pillSuccess/.pillMuted, just on a <label>
+   wrapping a real checkbox instead of a plain <span> — the drawer's
+   testimonialReceived/addedToSite toggles (Card.tsx's read-only pills stay
+   spans; only the drawer's copies are interactive). */
+.pillCheckbox {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+}
+
+.pillCheckbox input {
+  cursor: pointer;
+}
+
+.pillWarning {
+  background: var(--theme-warning-150);
+  color: var(--theme-warning-800);
+}
+
+/* Calendar view */
+
+.calendar {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.calendarHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.calendarHeaderLeft {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.calendarMonthLabel {
+  margin: 0;
+  min-width: 160px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--theme-text);
+}
+
+.calendarNavButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 4px;
+  border: 1px solid var(--theme-elevation-150);
+  background: var(--theme-input-bg);
+  color: var(--theme-text);
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.calendarNavButton:hover {
+  background: var(--theme-elevation-100);
+}
+
+.calendarTodayButton {
+  padding: 7px 12px;
+  border-radius: 4px;
+  border: 1px solid var(--theme-elevation-150);
+  background: var(--theme-input-bg);
+  color: var(--theme-text);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.calendarTodayButton:hover {
+  background: var(--theme-elevation-100);
+}
+
+.calendarLegend {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  font-size: 12px;
+  color: var(--theme-elevation-500);
+}
+
+.legendItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.legendDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--theme-elevation-500);
+  flex-shrink: 0;
+}
+
+.legendRing {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: 2px solid var(--theme-elevation-500);
+  flex-shrink: 0;
+}
+
+.legendDiamond {
+  width: 7px;
+  height: 7px;
+  background: var(--theme-elevation-500);
+  transform: rotate(45deg);
+  flex-shrink: 0;
+}
+
+.calendarWeekdays {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+
+.calendarWeekdayLabel {
+  padding: 0 4px 6px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--theme-elevation-500);
+  text-align: left;
+}
+
+.calendarGrid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  grid-auto-rows: minmax(92px, 1fr);
+  gap: 1px;
+  background: var(--theme-elevation-150);
+  border: 1px solid var(--theme-elevation-150);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.calendarDay {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 6px 6px 8px;
+  background: var(--theme-input-bg);
+  min-width: 0;
+}
+
+.calendarDayOutside {
+  background: var(--theme-elevation-50);
+}
+
+.calendarDayOutside .calendarDayNumber {
+  color: var(--theme-elevation-350);
+}
+
+.calendarDayToday {
+  box-shadow: inset 0 0 0 2px var(--theme-success-500);
+}
+
+.calendarDayNumber {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--theme-elevation-700);
+}
+
+.calendarEvents {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+/* A day's events stack as compact rows rather than the old bare dots —
+   real text (client + category) attached to the same color-coding and
+   shoot/deadline distinction, and a much bigger click target than a 6px
+   dot. Rows just grow the day cell's height (see .calendarGrid's `1fr`
+   auto-rows) when more than a couple land on the same day, rather than
+   overflowing it. */
+.calendarEventChip {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+  padding: 2px 6px;
+  border: none;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1.5;
+  text-align: left;
+  cursor: pointer;
+}
+
+.calendarEventDot {
+  flex-shrink: 0;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+/* A shoot date seeded from preferredDate but not yet confirmed (see
+   Inquiries.ts's shootDateConfirmed) — an outline-only ring so "not locked
+   in yet" reads at a glance, without relying on hover, against both the
+   solid confirmed dot and the deadline's filled diamond. */
+.calendarEventRing {
+  flex-shrink: 0;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  border-width: 1.5px;
+  border-style: solid;
+  background: transparent;
+}
+
+/* The deadline marker — a filled diamond, shape-distinct from both shoot-date
+   circles (confirmed solid, tentative ring) rather than sharing their round
+   silhouette. */
+.calendarEventDiamond {
+  flex-shrink: 0;
+  width: 6px;
+  height: 6px;
+  transform: rotate(45deg);
+}
+
+.calendarEventLabel {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.calendarEventCategory {
+  font-weight: 500;
+  opacity: 0.75;
+}
+
+/* Mobile board list (< 768px) — replaces .columns; see the media query at
+   the bottom of this file for the breakpoint itself. Both are always
+   mounted, so this stays display: none until that query turns it on. */
+
+.mobileList {
+  display: none;
+  flex-direction: column;
+  gap: 10px;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.mobileChipRow {
+  flex-shrink: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding-bottom: 2px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--theme-elevation-150);
+  background: var(--theme-input-bg);
+  color: var(--theme-elevation-600);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.chipActive {
+  border-color: var(--theme-elevation-400);
+  background: var(--theme-elevation-150);
+  color: var(--theme-text);
+  font-weight: 600;
+}
+
+.chipDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.mobileGroup {
+  flex-shrink: 0;
+  border: 1px solid var(--theme-elevation-100);
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--theme-elevation-50);
+}
+
+.mobileGroupHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 12px 14px;
+  border: none;
+  background: none;
+  color: var(--theme-elevation-800);
+  cursor: pointer;
+  text-align: left;
+}
+
+.mobileGroupChevron {
+  display: inline-flex;
+  color: var(--theme-elevation-400);
+  font-size: 16px;
+  line-height: 1;
+  transform: rotate(0deg);
+  transition: transform 0.12s ease;
+}
+
+.mobileGroupChevronOpen {
+  transform: rotate(90deg);
+}
+
+.mobileGroupTitle {
+  flex: 1;
+  min-width: 0;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.mobileRows {
+  display: flex;
+  flex-direction: column;
+  background: var(--theme-input-bg);
+  border-top: 1px solid var(--theme-elevation-100);
+}
+
+.mobileRow {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 100%;
+  padding: 11px 14px;
+  border: none;
+  border-bottom: 1px solid var(--theme-elevation-100);
+  background: none;
+  cursor: pointer;
+  text-align: left;
+}
+
+.mobileRow:last-child {
+  border-bottom: none;
+}
+
+.mobileRow:active {
+  background: var(--theme-elevation-100);
+}
+
+/* The row's always-single-line top half — dot, name, date(+confirm mark).
+   Split out from .mobileRow so a Prep row's second line (.mobileRowPrep)
+   can stack underneath without disturbing this row's own alignment. */
+.mobileRowMain {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+
+.mobileRowDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.mobileRowName {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--theme-text);
+}
+
+.mobileRowMeta {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+  font-size: 11px;
+  color: var(--theme-elevation-500);
+  white-space: nowrap;
+}
+
+/* Prep-stage-only second line for the "X/Y prepped" echo — plain text
+   rather than a full pill (styles.pill) so it stays legible without
+   crowding the row at narrow widths; indented past the category dot so it
+   reads as attached to the name above it. */
+.mobileRowPrep {
+  margin-left: 18px;
+  font-size: 11px;
+  color: var(--theme-elevation-500);
+}
+
+.mobileRowPrepDone {
+  color: var(--theme-success-800);
+}
+
+/* Questions drawer — reuses .mobileGroup/.mobileGroupHeader/
+   .mobileGroupChevron/.mobileGroupTitle (above) for the collapsible
+   "Handled" section, the same collapsible-group look MobileList's stage
+   groups already use. */
+
+.questionsBody {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 4px 0 32px;
+}
+
+.questionsList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.questionRow {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px 16px;
+  border: 1px solid var(--theme-elevation-150);
+  border-radius: 8px;
+  background: var(--theme-input-bg);
+}
+
+.questionRowHeader {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.questionRowName {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--theme-text);
+}
+
+.questionRowDate {
+  flex-shrink: 0;
+  font-size: 12px;
+  color: var(--theme-elevation-500);
+}
+
+.questionRowEmail {
+  font-size: 13px;
+  color: var(--theme-elevation-500);
+}
+
+.questionMessage {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--theme-text);
+  white-space: pre-wrap;
+}
+
+.questionActions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.rowButton {
+  padding: 7px 12px;
+  border-radius: 4px;
+  border: 1px solid var(--theme-elevation-150);
+  background: var(--theme-input-bg);
+  color: var(--theme-text);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.rowButton:hover {
+  background: var(--theme-elevation-100);
+}
+
+.rowButton:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.linkButton {
+  padding: 4px 6px;
+  border: none;
+  background: none;
+  color: var(--theme-elevation-500);
+  font-size: 12px;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.linkButton:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.inlineCategoryPicker {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 2px;
+}
+
+.inlineCategorySelect {
+  width: auto;
+  min-width: 160px;
+  padding: 8px 10px;
+  border-radius: 4px;
+  border: 1px solid var(--theme-elevation-150);
+  background: var(--theme-input-bg);
+  color: var(--theme-text);
+  font-size: 13px;
+}
+
+.rowError {
+  margin: 0;
+  font-size: 12px;
+  color: var(--theme-error-500);
+}
+
+/* Detail drawer */
+
+.drawerBody {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  padding: 4px 0 32px;
+}
+
+.drawerHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.drawerClientName {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--theme-text);
+}
+
+.drawerBadgeRow {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.stageField {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-width: 260px;
+}
+
+/* Same field look as .stageField, but for the editable fields inside
+   .detailGrid below — there, each field should fill its grid cell like
+   every read-only .detailItem beside it, not stay capped at the standalone
+   Stage field's narrower width. */
+.detailGridField {
+  max-width: none;
+}
+
+.stageSelect {
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 4px;
+  border: 1px solid var(--theme-elevation-150);
+  background: var(--theme-input-bg);
+  color: var(--theme-text);
+  font-size: 13px;
+}
+
+.stageSelect:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Add Card form — reuses .stageField/.stageSelect above for its own
+   label+input pairs, same as DetailDrawer's stage picker, so both drawers
+   read as the same kind of form. */
+
+.addCardForm {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 4px 0 32px;
+  max-width: 360px;
+}
+
+.primaryButton {
+  padding: 10px 18px;
+  border-radius: 4px;
+  border: none;
+  background: var(--theme-success-500);
+  color: var(--theme-base-0);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.primaryButton:hover {
+  background: var(--theme-success-550);
+}
+
+.primaryButton:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.detailGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px 24px;
+}
+
+.detailItem {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.detailLabel {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--theme-elevation-500);
+}
+
+/* Shoot date's label row — holds the plain label plus the tentative-date
+   "!" + Confirm affordance (EditableDateField's labelExtra) when the date
+   is unconfirmed. */
+.dateLabelRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.tentativeIndicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Same small warning-toned badge used on the kanban card face (Card.tsx)
+   for a Prep-stage card's unconfirmed shoot date — one visual language for
+   "tentative" everywhere it shows up. */
+.tentativeMark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--theme-warning-150);
+  color: var(--theme-warning-800);
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+/* The confirmed counterpart to .tentativeMark — a positive "yes, this is
+   locked in" marker once shootDateConfirmed is true, not just the absence
+   of the warning mark. Same shape/size, success palette instead of warning,
+   non-interactive (no Confirm link needed once it's already confirmed). */
+.confirmedMark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--theme-success-150);
+  color: var(--theme-success-800);
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.confirmLink {
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--theme-warning-800);
+  font-size: 11px;
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.detailValue {
+  font-size: 14px;
+  color: var(--theme-text);
+  word-break: break-word;
+}
+
+.drawerSectionTitle {
+  margin: 0 0 8px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--theme-elevation-500);
+}
+
+.locationInputs {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.locationCityState {
+  display: flex;
+  gap: 8px;
+}
+
+.locationCityState input {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Read-only display of the client's own submitted message — a muted,
+   borderless-feeling box (no input-style border, no focus states) so it
+   reads as plainly non-editable, distinct from the Notes textarea right
+   below it that she does type into. */
+.readOnlyMessage {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 6px;
+  background: var(--theme-elevation-50);
+  border: 1px solid var(--theme-elevation-100);
+  color: var(--theme-elevation-700);
+  font-size: 13px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+.notesTextarea {
+  width: 100%;
+  min-height: 80px;
+  padding: 8px 10px;
+  border-radius: 4px;
+  border: 1px solid var(--theme-elevation-150);
+  background: var(--theme-input-bg);
+  color: var(--theme-text);
+  font-size: 13px;
+  line-height: 1.6;
+  font-family: inherit;
+  resize: vertical;
+}
+
+.checklistEditList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.checklistEditRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.checklistCheckbox {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+.checklistCheckbox:disabled {
+  cursor: default;
+}
+
+.checklistInput {
+  flex: 1;
+  min-width: 0;
+  padding: 8px 10px;
+  border-radius: 4px;
+  border: 1px solid var(--theme-elevation-150);
+  background: var(--theme-input-bg);
+  color: var(--theme-text);
+  font-size: 13px;
+}
+
+/* Completed items read at a glance without leaving the list — dimmed and
+   struck through, same idea as a plain checklist app. */
+.checklistInputCompleted {
+  color: var(--theme-elevation-400);
+  text-decoration: line-through;
+}
+
+.checklistRemoveButton {
+  flex-shrink: 0;
+  width: 30px;
+  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  border: 1px solid var(--theme-elevation-150);
+  background: var(--theme-input-bg);
+  color: var(--theme-elevation-500);
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.checklistRemoveButton:hover {
+  background: var(--theme-elevation-100);
+  color: var(--theme-error-500);
+}
+
+.checklistRemoveButton:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.checklistAddRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* .rowButton's faint elevation-150 border/input-bg fill reads fine next to
+   plain text, but next to a full-width text input it looked indistinguishable
+   from a disabled control — this gives Add a visibly solid, clickable state
+   instead. */
+.checklistAddButton {
+  flex-shrink: 0;
+  padding: 8px 14px;
+  border-radius: 4px;
+  border: 1px solid var(--theme-elevation-300);
+  background: var(--theme-elevation-100);
+  color: var(--theme-text);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.checklistAddButton:hover:not(:disabled) {
+  background: var(--theme-elevation-150);
+}
+
+.checklistAddButton:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.repeatNotice {
+  padding: 12px 14px;
+  border-radius: 6px;
+  border: 1px solid var(--theme-success-300);
+  background: var(--theme-success-100);
+  font-size: 13px;
+  color: var(--theme-success-800);
+}
+
+.repeatNotice a {
+  color: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+}
+
+.drawerFooter {
+  padding-top: 16px;
+  border-top: 1px solid var(--theme-elevation-100);
+}
+
+.drawerFooter a {
+  font-size: 13px;
+  color: var(--theme-text);
+  text-decoration: underline;
+}
+
+/* Mobile breakpoint (Phase 6) — .columns (desktop drag-and-drop) and
+   .mobileList (vertical filterable list) are both always mounted; this is
+   the only thing that decides which one is actually shown. Kept as one
+   query at the bottom of the file, rather than scattered inline, so the
+   breakpoint itself stays a single source of truth. */
+@media (max-width: 768px) {
+  .board {
+    padding: 16px 14px;
+    /* height still comes from the base .board rule above —
+       --app-header-height already shrinks itself at Payload's own
+       responsive breakpoint, so there's no separate mobile guess to keep
+       in sync here. */
+  }
+
+  .title {
+    font-size: 19px;
+  }
+
+  .columns {
+    display: none;
+  }
+
+  .mobileList {
+    display: flex;
+  }
+
+  .topBarActions {
+    flex-wrap: wrap;
+  }
+
+  .calendarMonthLabel {
+    min-width: 0;
+    font-size: 15px;
+  }
+
+  .calendarLegend {
+    gap: 12px;
+  }
+
+  .calendarGrid {
+    grid-auto-rows: minmax(56px, 1fr);
+  }
+
+  .calendarDayNumber {
+    font-size: 11px;
+  }
+
+  .calendarWeekdayLabel {
+    padding: 0 2px 4px;
+    font-size: 10px;
+  }
+
+  /* Client name alone is enough to identify the event at this size — the
+     category text is the first thing to go so the chip still fits the
+     shrunken 56px-tall day cell. */
+  .calendarEventCategory {
+    display: none;
+  }
+
+  .calendarEventChip {
+    padding: 1px 4px;
+  }
+}

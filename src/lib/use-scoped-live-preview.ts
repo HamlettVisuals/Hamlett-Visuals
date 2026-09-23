@@ -29,10 +29,11 @@ import {
 // per-instance ref instead of a shared singleton. Everything else
 // (mergeData, ready()) reuses Payload's own live-preview primitives so
 // relationship population still works exactly like the stock hook.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any -- matches
-// the stock useLivePreview's own constraint; Payload's generated interfaces
-// (Hero, About, ...) have no index signature, so Record<string, unknown>
-// rejects them structurally even though they're valid plain objects.
+// matches the stock useLivePreview's own constraint; Payload's generated
+// interfaces (Hero, About, ...) have no index signature, so
+// Record<string, unknown> rejects them structurally even though they're
+// valid plain objects.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function useScopedLivePreview<T extends Record<string, any>>({
   initialData,
   serverURL,

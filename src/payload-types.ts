@@ -74,6 +74,11 @@ export interface Config {
     testimonials: Testimonial;
     'pricing-rows': PricingRow;
     inquiries: Inquiry;
+    clients: Client;
+    'checklist-templates': ChecklistTemplate;
+    backstage: Backstage;
+    'testimonial-submissions': TestimonialSubmission;
+    'testimonial-photos': TestimonialPhoto;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -88,6 +93,11 @@ export interface Config {
     testimonials: TestimonialsSelect<false> | TestimonialsSelect<true>;
     'pricing-rows': PricingRowsSelect<false> | PricingRowsSelect<true>;
     inquiries: InquiriesSelect<false> | InquiriesSelect<true>;
+    clients: ClientsSelect<false> | ClientsSelect<true>;
+    'checklist-templates': ChecklistTemplatesSelect<false> | ChecklistTemplatesSelect<true>;
+    backstage: BackstageSelect<false> | BackstageSelect<true>;
+    'testimonial-submissions': TestimonialSubmissionsSelect<false> | TestimonialSubmissionsSelect<true>;
+    'testimonial-photos': TestimonialPhotosSelect<false> | TestimonialPhotosSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -107,6 +117,7 @@ export interface Config {
     'testimonials-teaser': TestimonialsTeaser;
     'final-cta-footer': FinalCtaFooter;
     'site-settings': SiteSetting;
+    booking: Booking;
   };
   globalsSelect: {
     'header-nav': HeaderNavSelect<false> | HeaderNavSelect<true>;
@@ -118,6 +129,7 @@ export interface Config {
     'testimonials-teaser': TestimonialsTeaserSelect<false> | TestimonialsTeaserSelect<true>;
     'final-cta-footer': FinalCtaFooterSelect<false> | FinalCtaFooterSelect<true>;
     'site-settings': SiteSettingsSelect<false> | SiteSettingsSelect<true>;
+    booking: BookingSelect<false> | BookingSelect<true>;
   };
   locale: null;
   widgets: {
@@ -319,9 +331,9 @@ export interface Testimonial {
    */
   clientName: string;
   /**
-   * Which category this testimonial relates to.
+   * Which category this testimonial relates to. Required — testimonials without one won't appear on the Testimonials page.
    */
-  category?: (number | null) | Category;
+  category: number | Category;
   /**
    * Which shoot this testimonial is about, if you'd like to link to it.
    */
@@ -412,6 +424,8 @@ export interface Inquiry {
    * Whether this came in as a general question or a booking request.
    */
   type: 'question' | 'booking';
+  inquiryType: 'booking' | 'question';
+  questionHandled?: boolean | null;
   /**
    * Where this inquiry stands. You can change this right from the list below, no need to open the entry.
    */
@@ -429,6 +443,10 @@ export interface Inquiry {
    */
   phone?: string | null;
   /**
+   * Link this inquiry to a Client record to track their history with you.
+   */
+  client?: (number | null) | Client;
+  /**
    * What the client wrote.
    */
   message: string;
@@ -436,6 +454,92 @@ export interface Inquiry {
    * The date they asked about, if any.
    */
   preferredDate?: string | null;
+  /**
+   * Where this inquiry stands in the booking pipeline.
+   */
+  stage: 'lead' | 'planning' | 'prep' | 'shoot' | 'post' | 'wrapup';
+  /**
+   * Sub-status while this is in Post-Production.
+   */
+  postProductionStatus?: ('editing' | 'edited' | 'sent') | null;
+  /**
+   * Whether the client's testimonial has come in.
+   */
+  testimonialReceived?: boolean | null;
+  /**
+   * Whether this shoot has been added to the site.
+   */
+  addedToSite?: boolean | null;
+  /**
+   * Set automatically once the wrap-up checklist is complete — not something to edit directly.
+   */
+  archived?: boolean | null;
+  /**
+   * Which category this shoot belongs to.
+   */
+  category?: (number | null) | Category;
+  /**
+   * The confirmed date of the shoot.
+   */
+  shootDate?: string | null;
+  /**
+   * Whether the shoot date is locked in, not just a placeholder from the client's requested date.
+   */
+  shootDateConfirmed?: boolean | null;
+  /**
+   * When the finished photos are due to the client.
+   */
+  deliveryDeadline?: string | null;
+  location?: {
+    street?: string | null;
+    city?: string | null;
+    state?: string | null;
+  };
+  /**
+   * The agreed price for this shoot.
+   */
+  price?: number | null;
+  /**
+   * Where payment stands for this shoot.
+   */
+  paymentStatus?: ('unpaid' | 'deposit' | 'paid') | null;
+  /**
+   * How this inquiry came in.
+   */
+  source?: ('website' | 'manual_social' | 'manual_email' | 'manual_referral') | null;
+  /**
+   * Freeform prep tasks for this shoot.
+   */
+  prepChecklist?:
+    | {
+        item?: string | null;
+        completed?: boolean | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Freeform post-production tasks for this shoot.
+   */
+  postProductionChecklist?:
+    | {
+        item?: string | null;
+        completed?: boolean | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * The shoot this inquiry turned into, once you've created it. Leave empty until then — this is what lets you request a testimonial for this client.
+   */
+  event?: (number | null) | Event;
+  /**
+   * Whether a testimonial request email has been sent to this client. Set automatically — use the "Resend" option above rather than editing this directly.
+   */
+  testimonialRequestSent?: boolean | null;
+  /**
+   * When the testimonial request email was last sent. Filled in automatically.
+   */
+  testimonialRequestSentAt?: string | null;
+  testimonialRequestToken?: string | null;
   /**
    * Which page of the site this was submitted from. Filled in automatically — not something to edit.
    */
@@ -446,6 +550,187 @@ export interface Inquiry {
   notes?: string | null;
   updatedAt: string;
   createdAt: string;
+}
+/**
+ * Everyone who's booked or inquired — link an Inquiry to a Client to track repeat business.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "clients".
+ */
+export interface Client {
+  id: number;
+  /**
+   * The client's name.
+   */
+  name: string;
+  /**
+   * The client's email address.
+   */
+  email?: string | null;
+  /**
+   * The client's phone number.
+   */
+  phone?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Item lists reused across Prep and Post-Production checklists — one Standard template per type, plus optional per-category overrides.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "checklist-templates".
+ */
+export interface ChecklistTemplate {
+  id: number;
+  /**
+   * Internal label shown in the admin list — not shown to clients.
+   */
+  name: string;
+  /**
+   * Which checklist this template fills.
+   */
+  type: 'prep' | 'postProduction';
+  /**
+   * Leave unset for the Standard template used by categories without their own.
+   */
+  category?: (number | null) | Category;
+  items?:
+    | {
+        text: string;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * The behind-the-scenes feed on /backstage — uploaded video clips and linked Instagram Reels.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "backstage".
+ */
+export interface Backstage {
+  id: number;
+  /**
+   * A short label for this item, shown on the grid tile.
+   */
+  title: string;
+  /**
+   * An uploaded video file, or a link to a Reel that's already on Instagram.
+   */
+  type: 'video' | 'reel_embed';
+  /**
+   * The Reel's Instagram permalink, e.g. https://www.instagram.com/reel/abc123/
+   */
+  reelUrl?: string | null;
+  /**
+   * The grid tile image — a poster frame for a video, or a preview image for a Reel. Needed either way.
+   */
+  thumbnail: number | Photo;
+  /**
+   * An optional caption shown when this item is opened.
+   */
+  caption?: string | null;
+  /**
+   * Controls where this item falls in the feed — lower numbers show up first.
+   */
+  order?: number | null;
+  /**
+   * Turn off to hide this item from the live site.
+   */
+  published?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+  url?: string | null;
+  thumbnailURL?: string | null;
+  filename?: string | null;
+  mimeType?: string | null;
+  filesize?: number | null;
+  width?: number | null;
+  height?: number | null;
+  focalX?: number | null;
+  focalY?: number | null;
+}
+/**
+ * Testimonials clients have submitted through their request link — review, correct, and publish the ones you'd like to show on the site.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "testimonial-submissions".
+ */
+export interface TestimonialSubmission {
+  id: number;
+  /**
+   * The inquiry this testimonial request was sent for.
+   */
+  inquiry: number | Inquiry;
+  /**
+   * Carried forward from the linked inquiry at submission time.
+   */
+  name: string;
+  /**
+   * Carried forward from the linked inquiry at submission time.
+   */
+  email: string;
+  /**
+   * Carried forward from the linked event's category at submission time, if it had one. Correct it here if needed before publishing.
+   */
+  category?: (number | null) | Category;
+  /**
+   * Carried forward from the linked inquiry at submission time. Correct it here if needed before publishing.
+   */
+  event?: (number | null) | Event;
+  /**
+   * The testimonial, word for word as the client wrote it.
+   */
+  testimonialText: string;
+  /**
+   * Photos the client attached, if any. Private until you promote one into the Photos library when publishing.
+   */
+  photos?: (number | TestimonialPhoto)[] | null;
+  /**
+   * An Instagram/Facebook link the client shared, if any. Reference only — not part of the published testimonial.
+   */
+  socialLink?: string | null;
+  /**
+   * Anything the client wanted you to know privately. Visible only to you here — never copied into a published testimonial.
+   */
+  privateNotes?: string | null;
+  /**
+   * Whether this submission has been published as a real Testimonial yet.
+   */
+  status: 'pending' | 'published';
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Photos clients attach to a testimonial submission — private until you promote one into the Photos library from the submission's review screen.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "testimonial-photos".
+ */
+export interface TestimonialPhoto {
+  id: number;
+  updatedAt: string;
+  createdAt: string;
+  url?: string | null;
+  thumbnailURL?: string | null;
+  filename?: string | null;
+  mimeType?: string | null;
+  filesize?: number | null;
+  width?: number | null;
+  height?: number | null;
+  focalX?: number | null;
+  focalY?: number | null;
+  sizes?: {
+    thumbnail?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+  };
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -498,6 +783,26 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'inquiries';
         value: number | Inquiry;
+      } | null)
+    | ({
+        relationTo: 'clients';
+        value: number | Client;
+      } | null)
+    | ({
+        relationTo: 'checklist-templates';
+        value: number | ChecklistTemplate;
+      } | null)
+    | ({
+        relationTo: 'backstage';
+        value: number | Backstage;
+      } | null)
+    | ({
+        relationTo: 'testimonial-submissions';
+        value: number | TestimonialSubmission;
+      } | null)
+    | ({
+        relationTo: 'testimonial-photos';
+        value: number | TestimonialPhoto;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -673,16 +978,157 @@ export interface PricingRowsSelect<T extends boolean = true> {
  */
 export interface InquiriesSelect<T extends boolean = true> {
   type?: T;
+  inquiryType?: T;
+  questionHandled?: T;
   status?: T;
   name?: T;
   email?: T;
   phone?: T;
+  client?: T;
   message?: T;
   preferredDate?: T;
+  stage?: T;
+  postProductionStatus?: T;
+  testimonialReceived?: T;
+  addedToSite?: T;
+  archived?: T;
+  category?: T;
+  shootDate?: T;
+  shootDateConfirmed?: T;
+  deliveryDeadline?: T;
+  location?:
+    | T
+    | {
+        street?: T;
+        city?: T;
+        state?: T;
+      };
+  price?: T;
+  paymentStatus?: T;
+  source?: T;
+  prepChecklist?:
+    | T
+    | {
+        item?: T;
+        completed?: T;
+        id?: T;
+      };
+  postProductionChecklist?:
+    | T
+    | {
+        item?: T;
+        completed?: T;
+        id?: T;
+      };
+  event?: T;
+  testimonialRequestSent?: T;
+  testimonialRequestSentAt?: T;
+  testimonialRequestToken?: T;
   sourcePage?: T;
   notes?: T;
   updatedAt?: T;
   createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "clients_select".
+ */
+export interface ClientsSelect<T extends boolean = true> {
+  name?: T;
+  email?: T;
+  phone?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "checklist-templates_select".
+ */
+export interface ChecklistTemplatesSelect<T extends boolean = true> {
+  name?: T;
+  type?: T;
+  category?: T;
+  items?:
+    | T
+    | {
+        text?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "backstage_select".
+ */
+export interface BackstageSelect<T extends boolean = true> {
+  title?: T;
+  type?: T;
+  reelUrl?: T;
+  thumbnail?: T;
+  caption?: T;
+  order?: T;
+  published?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  url?: T;
+  thumbnailURL?: T;
+  filename?: T;
+  mimeType?: T;
+  filesize?: T;
+  width?: T;
+  height?: T;
+  focalX?: T;
+  focalY?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "testimonial-submissions_select".
+ */
+export interface TestimonialSubmissionsSelect<T extends boolean = true> {
+  inquiry?: T;
+  name?: T;
+  email?: T;
+  category?: T;
+  event?: T;
+  testimonialText?: T;
+  photos?: T;
+  socialLink?: T;
+  privateNotes?: T;
+  status?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "testimonial-photos_select".
+ */
+export interface TestimonialPhotosSelect<T extends boolean = true> {
+  updatedAt?: T;
+  createdAt?: T;
+  url?: T;
+  thumbnailURL?: T;
+  filename?: T;
+  mimeType?: T;
+  filesize?: T;
+  width?: T;
+  height?: T;
+  focalX?: T;
+  focalY?: T;
+  sizes?:
+    | T
+    | {
+        thumbnail?:
+          | T
+          | {
+              url?: T;
+              width?: T;
+              height?: T;
+              mimeType?: T;
+              filesize?: T;
+              filename?: T;
+            };
+      };
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1043,6 +1489,42 @@ export interface SiteSetting {
   createdAt?: string | null;
 }
 /**
+ * The heading, intro paragraph, and "How it works" steps on the Book a session page.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "booking".
+ */
+export interface Booking {
+  id: number;
+  /**
+   * The title at the top of the Booking page.
+   */
+  heading: string;
+  /**
+   * The short paragraph under the heading.
+   */
+  intro: string;
+  /**
+   * The numbered "How it works" steps shown above the booking form.
+   */
+  steps?:
+    | {
+        /**
+         * A short step title, e.g. "Submit your request".
+         */
+        title: string;
+        /**
+         * One line explaining the step, e.g. "I'll follow up within 48 hours."
+         */
+        description: string;
+        id?: string | null;
+      }[]
+    | null;
+  _status?: ('draft' | 'published') | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "header-nav_select".
  */
@@ -1180,6 +1662,25 @@ export interface SiteSettingsSelect<T extends boolean = true> {
     | {
         handle?: T;
         url?: T;
+      };
+  _status?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "booking_select".
+ */
+export interface BookingSelect<T extends boolean = true> {
+  heading?: T;
+  intro?: T;
+  steps?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        id?: T;
       };
   _status?: T;
   updatedAt?: T;

@@ -1,17 +1,47 @@
 import Link from "next/link";
-import { backstageItems } from "@/lib/backstage-items";
+import { getPayload } from "payload";
+import config from "@payload-config";
 import BackstageGallery from "@/components/Backstage/BackstageGallery";
+import { resolvePhoto } from "@/lib/resolve-photo";
+import type { BackstageItem } from "@/lib/backstage-items";
 
 // Backstage feed — a single continuous, unbounded grid of admin-uploaded
-// photos and video, newest first, no category split. Mirrors the shell of
-// the other sub-pages (/testimonials, /terms, /privacy-policy); the grid,
-// lightbox and empty state live in src/components/Backstage/.
+// video clips and linked Instagram Reels, in manual `order`, no category
+// split. Mirrors the shell of the other sub-pages (/testimonials, /terms,
+// /privacy-policy); the grid, lightbox and empty state live in
+// src/components/Backstage/. Plain Live Preview only (see the "backstage"
+// entry in payload.config.ts's livePreview.collections) — same as
+// Categories/Events/Photos/Testimonials: RefreshRouteOnSave (mounted in
+// (site)/layout.tsx) refreshes this page with fresh server data on save,
+// no scroll-to-highlight or per-record targeting.
 
 export const metadata = {
   title: "Backstage — Hamlett Visuals",
 };
 
-export default function BackstagePage() {
+export default async function BackstagePage() {
+  const payload = await getPayload({ config });
+  const { docs } = await payload.find({
+    collection: "backstage",
+    where: { published: { equals: true } },
+    sort: "order",
+    depth: 1,
+    limit: 0,
+  });
+
+  const items: BackstageItem[] = docs.map((doc) => {
+    const thumbnail = resolvePhoto(doc.thumbnail);
+    return {
+      id: String(doc.id),
+      type: doc.type,
+      mediaUrl: doc.type === "video" ? (doc.url ?? null) : null,
+      thumbnailUrl: thumbnail?.url ?? "",
+      reelUrl: doc.type === "reel_embed" ? (doc.reelUrl ?? null) : null,
+      title: doc.title,
+      caption: doc.caption,
+    };
+  });
+
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col px-gutter py-section">
       <header>
@@ -23,7 +53,7 @@ export default function BackstagePage() {
       </header>
 
       <div className="mt-12">
-        <BackstageGallery items={backstageItems} />
+        <BackstageGallery items={items} />
       </div>
 
       <p className="mt-16">

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import type { Photo } from "@/lib/albums";
+import type { GalleryPhoto } from "./types";
 import HoverZoomImage from "@/components/HoverZoomImage";
 import { DEFAULT_LOCATION, generateAltText } from "@/lib/generate-alt-text";
 import GalleryEmptyState from "./GalleryEmptyState";
@@ -11,14 +11,15 @@ type EventRowProps = {
   /** Display name of the category this event belongs to, e.g. "Weddings". */
   category: string;
   /**
-   * Stable slug (from `slugify()` in `@/lib/albums`), set as this row's `id`
-   * so it can be deep-linked as /portfolio/[category]#[slug] — from
-   * /testimonials, for one. `scroll-padding-top` on `html` (globals.css)
-   * keeps the sticky header clear of the target on both same-page jumps and a
-   * fresh page load with the hash already in the URL.
+   * Stable slug (the Event doc's own `slug`, filled in by Payload's
+   * formatSlug hook), set as this row's `id` so it can be deep-linked as
+   * /portfolio/[category]#[slug] — from /testimonials, for one.
+   * `scroll-padding-top` on `html` (globals.css) keeps the sticky header
+   * clear of the target on both same-page jumps and a fresh page load with
+   * the hash already in the URL.
    */
   slug: string;
-  photos: Photo[];
+  photos: GalleryPhoto[];
   /** Suppresses the hairline top border for the first row on the page. */
   isFirst?: boolean;
   /** Index of the clicked photo within this event's own photos array. */
@@ -268,12 +269,15 @@ export default function EventRow({
               >
                 <HoverZoomImage
                   src={photo.url}
-                  alt={generateAltText({
-                    kind: "event",
-                    eventName: name,
-                    category,
-                    location: DEFAULT_LOCATION,
-                  })}
+                  alt={
+                    photo.alt ||
+                    generateAltText({
+                      kind: "event",
+                      eventName: name,
+                      category,
+                      location: DEFAULT_LOCATION,
+                    })
+                  }
                   sizes="(max-width: 640px) 68vw, 280px"
                   className="aspect-[3/4] w-[68vw] sm:w-[280px]"
                 />

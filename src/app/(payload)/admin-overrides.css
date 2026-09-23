@@ -1,0 +1,97 @@
+/* Touch-target overrides for Payload's own default admin chrome.
+   Scoped to the four worst offenders found by the mobile/tablet audit —
+   not a general resize of every small control in the admin.
+
+   These rules are deliberately NOT wrapped in `@layer` — Payload's own
+   styles all live inside `@layer payload-default` (see
+   node_modules/@payloadcms/ui/dist/**\/*.scss), and per the CSS cascade
+   spec, any unlayered rule beats a layered one regardless of selector
+   specificity or source order. That means plain overrides here win
+   without needing !important or fragile specificity-matching. */
+
+/* Nav hamburger/toggle (.nav-toggler, @payloadcms/ui Nav/NavToggler) —
+   was a bare 22x22 icon with padding:0. Padding expands the hit area to
+   44x44; the matching negative margin keeps the icon's visual position
+   and the header row's layout unchanged. */
+.nav-toggler {
+  padding: 11px;
+  margin: -11px;
+}
+
+/* The open-drawer close button (.nav__mobile-close, @payloadcms/next
+   Default template) is a *separate* element from .nav-toggler above —
+   Payload swaps in a different close control once the mobile drawer is
+   open, confirmed via elementFromPoint() rather than assumed from class
+   names alone (two differently-classed nav togglers overlap in the DOM
+   here, and only one is actually hit-tested at a given time). Its base
+   rule is `padding: 16px 0` — already tall enough (~54px) but only
+   ~22px wide, so only horizontal padding needs adding. */
+.nav__mobile-close {
+  padding-left: 11px;
+  padding-right: 11px;
+}
+
+/* Nested-tree group expand/collapse rows (.nav-group__toggle,
+   @payloadcms/ui NavGroup) — already full width, was only ~20px tall
+   because padding was 0. Real vertical padding gets it to ~44px; centering
+   keeps the label/chevron balanced in the taller row instead of stuck to
+   the top (the default align-items: flex-start). */
+.nav-group__toggle {
+  padding-top: 12px;
+  padding-bottom: 12px;
+  align-items: center;
+}
+
+/* Live Preview show/hide toggle (.live-preview-toggler, @payloadcms/ui
+   LivePreview/Toggler) — was ~29.5x29.5 (calc(var(--base) * 1.6)).
+   Fixed px size is simpler and more predictable than fighting the calc(). */
+.live-preview-toggler {
+  width: 44px;
+  height: 44px;
+}
+
+/* Live Preview discoverability hint — this is the third audit item.
+   `.live-preview-toggler--active` means the preview is showing and the
+   form is hidden behind this toggle (see LivePreviewToggler's
+   isLivePreviewing state) — exactly the state where there's currently no
+   visible cue a form exists at all. Purely decorative generated content:
+   the toggle's own aria-label already covers screen readers, this is a
+   sighted-user affordance only.
+
+   The pseudo-element is attached to .doc-controls__controls-wrapper (via
+   :has(), not directly to .live-preview-toggler): the button's immediate
+   parent, .doc-controls__controls, has `overflow: auto; height: 44px` —
+   confirmed by inspecting the ancestor chain live, after a first attempt
+   anchored to the button itself rendered nothing because that overflow
+   silently clipped it. .doc-controls__controls-wrapper is the next
+   ancestor up, is `overflow: visible`, and is still `position: relative`,
+   so anchoring there escapes the clip without touching Payload's own
+   layout. */
+.doc-controls__controls-wrapper:has(.live-preview-toggler--active)::after {
+  content: "Edit fields";
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 6px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  background: var(--theme-elevation-800);
+  color: var(--theme-elevation-0);
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.4;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 10;
+}
+
+/* Upload dropzone "Select a file" / "Paste URL" buttons
+   (.file-field__dropzoneButtons .btn--size-small, @payloadcms/ui Upload) —
+   scoped to the dropzone specifically, not every small button in the
+   admin (list-row actions, quick-create "+", etc. are deliberately left
+   alone — resizing those wasn't asked for and would cramp dense table
+   rows). Was ~22px tall. */
+.file-field__dropzoneButtons .btn--size-small {
+  padding-top: 12px;
+  padding-bottom: 12px;
+}

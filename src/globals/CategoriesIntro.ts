@@ -13,10 +13,11 @@ export const CategoriesIntro: GlobalConfig = {
       "The heading above the row of category photos (Weddings, Portraits, etc.) on the homepage.",
     // Same Live Preview treatment as Hero/About — opens automatically and
     // scrolls to/highlights the #categories section via
-    // LivePreviewHighlight. Only the heading is wired here — the grid
-    // itself still reads from the Categories collection's static
-    // placeholder (src/lib/categories.ts), not Payload, so editing it here
-    // won't move the tiles.
+    // LivePreviewHighlight. Only the heading is wired for live-as-you-type
+    // preview here — the grid itself reads from the real Categories
+    // collection (see payload.config.ts: collections get plain Live Preview
+    // only, refreshed on save via RefreshRouteOnSave), so it won't move as
+    // you type, but a saved category change does show up.
     livePreview: {
       openByDefault: true,
       url: () => `${serverURL}/#live-preview:categories`,

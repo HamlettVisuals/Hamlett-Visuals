@@ -37,18 +37,43 @@ export default function LivePreviewHighlight() {
     target.classList.add(HIGHLIGHT_CLASS);
 
     // Clears the marker so it can't re-trigger on back/forward navigation
-    // and doesn't linger in the (invisible, iframed) address bar.
-    window.history.replaceState(
-      null,
-      "",
-      window.location.pathname + window.location.search,
-    );
+    // and doesn't linger in the (invisible, iframed) address bar. Deferred
+    // to a macrotask rather than called synchronously here: instrumenting
+    // window.history.replaceState showed Next's own App Router re-asserts
+    // its internally-tracked canonical URL (hash included) back onto the
+    // history entry from its own commit-phase effects — confirmed happening
+    // right after a same-tick replaceState call here cleared it, under dev
+    // Strict Mode's second effect pass. (router.replace() doesn't avoid
+    // this either — tried it, and it goes further: replacing to the same
+    // path still runs Next through a soft navigation, which re-fetches and
+    // remounts the tree, undoing the scroll/highlight above entirely.)
+    // setTimeout(0) runs after that synchronous commit work has settled, so
+    // this is the one that actually sticks.
+    const clearHash = () => {
+      if (!window.location.hash.startsWith(HASH_PREFIX)) return;
+      window.history.replaceState(
+        null,
+        "",
+        window.location.pathname + window.location.search,
+      );
+    };
+    const clearHashTimeout = window.setTimeout(clearHash, 0);
 
-    const timeout = window.setTimeout(() => {
+    const removeTimeout = window.setTimeout(() => {
       target.classList.remove(HIGHLIGHT_CLASS);
     }, HIGHLIGHT_DURATION_MS);
 
-    return () => window.clearTimeout(timeout);
+    // Symmetric with the mount above — undoes exactly what it did (the
+    // class and both pending timeouts) — so if dev Strict Mode's
+    // mount -> cleanup -> mount runs this twice, the second mount redoes
+    // the work cleanly (reading the still-untouched hash straight off
+    // window.location, same as the first) instead of leaving a class with
+    // no timer left to remove it.
+    return () => {
+      window.clearTimeout(clearHashTimeout);
+      window.clearTimeout(removeTimeout);
+      target.classList.remove(HIGHLIGHT_CLASS);
+    };
   }, []);
 
   return null;
