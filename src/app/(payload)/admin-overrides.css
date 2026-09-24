@@ -723,35 +723,52 @@ button.category-status:focus-visible {
   display: none;
 }
 
-.albums-toolbar {
+/* The category dropdown (AlbumsListToolbar) sits to the right of the
+   search bar: Payload renders it after the search row, so the list's wrap
+   becomes a wrapping flex row where everything else stays full width.
+   The two share a line while there's room (search ≥ 320px) and the
+   dropdown drops below the search bar on phones. */
+.collection-list--events .collection-list__wrap {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
-  gap: 8px 12px;
-  margin-bottom: 16px;
+  align-items: flex-start;
+  column-gap: 12px;
 }
 
-.albums-toolbar__label {
-  font-weight: 500;
-  color: var(--theme-elevation-800);
-}
-
-.albums-toolbar__select {
-  min-height: 40px;
+.collection-list--events .collection-list__wrap > * {
+  flex: 1 1 100%;
   min-width: 0;
-  max-width: 100%;
-  padding: 0 32px 0 12px;
-  border: 1px solid var(--theme-elevation-150);
-  border-radius: var(--style-radius-s, 4px);
-  background-color: var(--theme-input-bg, var(--theme-elevation-0));
-  color: var(--theme-elevation-1000);
-  font: inherit;
-  cursor: pointer;
 }
 
-.albums-toolbar__select:focus-visible {
-  outline: 2px solid var(--theme-elevation-800);
-  outline-offset: 1px;
+.collection-list--events .collection-list__wrap > .list-controls {
+  flex: 1 1 320px;
+}
+
+.collection-list--events .collection-list__wrap > .albums-toolbar {
+  flex: 0 1 240px;
+  margin-bottom: 20px;
+}
+
+/* Stacked under the search bar on phones: full width, like the search. */
+@media (max-width: 680px) {
+  .collection-list--events .collection-list__wrap > .albums-toolbar {
+    flex-basis: 100%;
+  }
+}
+
+/* The label is for screen readers; "All categories" says it on screen. */
+.albums-toolbar__label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* Payload's ReactSelect, matched to the search bar's height. */
+.albums-toolbar__select .rs__control {
+  min-height: 46px;
 }
 
 .albums-empty {
@@ -856,4 +873,21 @@ button.category-status:focus-visible {
 .render-field-diffs__field[data-field-path="updatedAt"],
 .render-field-diffs__field[data-field-path="deletedAt"] {
   display: none;
+}
+
+/* New Album / Category: Payload's "Creating new Album" line in the
+   document controls repeats the "New album" heading, so it goes.
+   NewDocumentTitle.tsx leaves the marker only before the first save;
+   these collections have no drafts, so that line is all the block holds,
+   and the whole block goes so it doesn't leave an empty strip on phones. */
+.doc-controls:has(.new-document-marker) .doc-controls__content {
+  display: none;
+}
+
+/* Above Payload's 1024px breakpoint the controls share a row with that
+   block, which pushed them right; keep them there. */
+@media (min-width: 1025px) {
+  .doc-controls:has(.new-document-marker) .doc-controls__controls-wrapper {
+    margin-left: auto;
+  }
 }

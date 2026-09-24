@@ -2,7 +2,7 @@
 
 import { useEffect, useId, useState } from "react";
 import { usePathname } from "next/navigation";
-import { Button, DefaultCell, useConfig, useListQuery } from "@payloadcms/ui";
+import { Button, DefaultCell, ReactSelect, useConfig, useListQuery } from "@payloadcms/ui";
 import type { DefaultCellComponentProps, Where } from "payload";
 import { formatAdminURL } from "payload/shared";
 import { OTHER_SESSION_TYPE } from "@/lib/booking-session-type";
@@ -113,10 +113,19 @@ function selectedCategory(where: Where | undefined): string {
   return "";
 }
 
-// Sits between the search bar and the table: a simple "All categories"
-// dropdown in place of Payload's Filters builder, and the empty states.
-// The filter goes through Payload's own list query (the URL's
-// where[category][equals]), so it combines with search, sort and paging.
+// Payload's search box labels itself "Search by Title" from the searchable
+// field's label, with no per-collection override. React only writes the
+// placeholder when that label changes, so setting it after each render
+// sticks.
+const SEARCH_PLACEHOLDER = "Search albums";
+
+// A simple "All categories" dropdown in place of Payload's Filters builder
+// (Payload's own ReactSelect, so it looks like every other dropdown in the
+// admin), and the empty states. Rendered just after the search row;
+// admin-overrides.css lays the dropdown out to the right of the search
+// bar, stacking below it on phones. The filter goes through Payload's own
+// list query (the URL's where[category][equals]), so it combines with
+// search, sort and paging.
 export function AlbumsListToolbar() {
   const { config } = useConfig();
   const pathname = usePathname() ?? "";
@@ -128,9 +137,22 @@ export function AlbumsListToolbar() {
   const category = selectedCategory(query?.where);
   const search = typeof query?.search === "string" ? query.search.trim() : "";
 
+  useEffect(() => {
+    const input = document.getElementById("search-filter-input");
+    if (input && input.getAttribute("placeholder") !== SEARCH_PLACEHOLDER) {
+      input.setAttribute("placeholder", SEARCH_PLACEHOLDER);
+      input.setAttribute("aria-label", SEARCH_PLACEHOLDER);
+    }
+  });
+
   const onCategoryChange = (value: string) => {
     void refineListData({ where: value ? { category: { equals: value } } : {}, page: 1 });
   };
+
+  const categoryOptions = [
+    { label: "All categories", value: "" },
+    ...categories.map((c) => ({ label: c.name, value: String(c.id) })),
+  ];
 
   const isEmpty = data?.totalDocs === 0;
   const filtered = Boolean(search || category);
@@ -142,19 +164,18 @@ export function AlbumsListToolbar() {
         <label htmlFor={selectId} className="albums-toolbar__label">
           Category
         </label>
-        <select
-          id={selectId}
+        <ReactSelect
           className="albums-toolbar__select"
-          value={category}
-          onChange={(e) => onCategoryChange(e.target.value)}
-        >
-          <option value="">All categories</option>
-          {categories.map((c) => (
-            <option key={c.id} value={String(c.id)}>
-              {c.name}
-            </option>
-          ))}
-        </select>
+          inputId={selectId}
+          isClearable={false}
+          isSearchable={false}
+          options={categoryOptions}
+          value={categoryOptions.find((o) => o.value === category) ?? categoryOptions[0]}
+          onChange={(option) => {
+            const picked = Array.isArray(option) ? option[0] : option;
+            onCategoryChange(typeof picked?.value === "string" ? picked.value : "");
+          }}
+        />
       </div>
 
       {isEmpty && !isTrash && (

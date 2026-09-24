@@ -7,8 +7,12 @@ import { useConfig, useDocumentInfo, useDocumentTitle, useTranslation } from "@p
 // Payload's "[Untitled]". Payload sets the heading from the title field in
 // a few places (on load and as the field changes), so this watches the
 // heading and swaps only that placeholder, only before the first save.
-// Typing a title replaces it as usual. Renders nothing; mounted through
-// the collection's edit.beforeDocumentControls.
+// Typing a title replaces it as usual. Mounted through the collection's
+// edit.beforeDocumentControls (Albums, Categories).
+//
+// Before the first save it also leaves a hidden marker inside Payload's
+// document controls, which admin-overrides.css uses to drop Payload's
+// "Creating new Album" line there: the heading already says it.
 export default function NewDocumentTitle() {
   const { id, collectionSlug } = useDocumentInfo();
   const { title, setDocumentTitle } = useDocumentTitle();
@@ -24,5 +28,5 @@ export default function NewDocumentTitle() {
     return () => cancelAnimationFrame(frame);
   }, [id, title, untitled, newTitle, setDocumentTitle]);
 
-  return null;
+  return id ? null : <span className="new-document-marker" hidden />;
 }
