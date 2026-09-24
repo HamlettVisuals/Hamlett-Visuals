@@ -3,6 +3,8 @@ import { isAdmin } from "#src/access/isAdmin.ts";
 
 export const Photos: CollectionConfig = {
   slug: "photos",
+  // Deletes go to this collection's Trash view first, restorable from there.
+  trash: true,
   admin: {
     hideAPIURL: true,
     useAsTitle: "alt",

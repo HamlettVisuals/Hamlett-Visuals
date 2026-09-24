@@ -95,3 +95,25 @@
   padding-top: 12px;
   padding-bottom: 12px;
 }
+
+/* Trashed-document meta row (.doc-controls__meta, @payloadcms/ui
+   DocumentControls). On a trashed document it holds both "Deleted: …" and
+   "Created: …" as full dates, and Payload never lets it wrap — at phone
+   width that pushed the whole page ~70px wider than the screen. Wrapping
+   lets the second date drop to its own line; normal (non-trashed) edit
+   views already fit and are unaffected. */
+.doc-controls__meta {
+  flex-wrap: wrap;
+  row-gap: 4px;
+}
+
+/* Breadcrumb row (.app-header__step-nav-wrapper, @payloadcms/ui AppHeader).
+   A long trail — e.g. "Events / Albums / Trash / <title>" on a trashed
+   document — couldn't shrink (min-width: auto) and pushed the account
+   avatar past the right edge at phone width. Letting the wrapper shrink and
+   scroll sideways keeps the trail readable without widening the page. */
+.app-header__step-nav-wrapper {
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}

@@ -1,4 +1,5 @@
 import type { AdminViewServerProps } from "payload";
+import type { Category } from "@/payload-types";
 import { redirect } from "next/navigation";
 import { formatAdminURL } from "payload/shared";
 import { DefaultTemplate } from "@payloadcms/next/templates";
@@ -41,7 +42,13 @@ export default async function KanbanBoardView(props: AdminViewServerProps) {
     redirect(adminLoginURL(query ? `${boardURL}?${query}` : boardURL));
   }
 
-  const [{ docs: inquiries }, { docs: categories }, { docs: questions }, { docs: templates }] = await Promise.all([
+  const [
+    { docs: inquiries },
+    { docs: inquiryCategoryIds },
+    { docs: allCategories },
+    { docs: questions },
+    { docs: templates },
+  ] = await Promise.all([
     payload.find({
       collection: "inquiries",
       // The kanban board (Lead column onward) is booking-track pipeline
@@ -55,14 +62,28 @@ export default async function KanbanBoardView(props: AdminViewServerProps) {
       limit: 0,
       sort: "-updatedAt",
     }),
+    // Same inquiries, raw category ids only. Payload populates a
+    // relationship to a trashed doc as null (dropping the id too), so this
+    // is how a job whose category is in the Trash keeps its category on
+    // the board instead of crashing every `inquiry.category.id` read.
+    payload.find({
+      collection: "inquiries",
+      where: { archived: { not_equals: true }, inquiryType: { equals: "booking" } },
+      depth: 0,
+      limit: 0,
+      select: { category: true },
+    }),
     // Every category, not just ones already represented among active
     // inquiries — unlike MobileList's filter chips, AddCardDrawer's and
     // QuestionsDrawer's "Move to Leads" category pickers both need to offer
-    // a brand-new category too.
+    // a brand-new category too. trash: true so trashed ones can still label
+    // the jobs/templates that use them (see withCategory below); the
+    // pickers only get the live ones.
     payload.find({
       collection: "categories",
       limit: 0,
       sort: "order",
+      trash: true,
     }),
     // For the Questions drawer (Board.tsx's "Questions" button). depth: 0 —
     // name/email/message live directly on the Inquiry, and the drawer never
@@ -74,27 +95,50 @@ export default async function KanbanBoardView(props: AdminViewServerProps) {
       limit: 0,
       sort: "-createdAt",
     }),
-    // For the Templates drawer (Board.tsx's "Templates" button). depth: 1 so
-    // `category` resolves to a full object (for its name label) rather than
-    // just an id — see TemplateWithCategory in types.ts.
+    // For the Templates drawer (Board.tsx's "Templates" button). depth: 0 —
+    // `category` is resolved from allCategories below instead, since at
+    // depth 1 a trashed category would populate as null and make that
+    // category's templates indistinguishable from the Standard one (the
+    // only template with genuinely no category).
     payload.find({
       collection: "checklist-templates",
-      depth: 1,
+      depth: 0,
       limit: 0,
       sort: "name",
     }),
   ]);
 
-  // depth: 1 already resolves `category` to a full object on every doc
-  // (it's a required field), but the base Inquiry type still allows the raw
-  // id — narrow it here so the client board doesn't have to.
-  const boardInquiries = inquiries as BoardInquiry[];
+  const categoryById = new Map(
+    allCategories.map((category) => [
+      category.id,
+      category.deletedAt ? { ...category, name: `${category.name} (in Trash)` } : category,
+    ]),
+  );
+  const withCategory = (value: number | Category | null | undefined): Category | null => {
+    const id = typeof value === "object" ? value?.id : value;
+    return id == null ? null : (categoryById.get(id) ?? null);
+  };
+  const rawCategoryIdByInquiry = new Map(inquiryCategoryIds.map((doc) => [doc.id, doc.category]));
 
-  const templatesWithCategory: TemplateWithCategory[] = templates.map((template) => ({
-    ...template,
-    category: typeof template.category === "object" ? template.category : null,
-  }));
+  // `category` is required on booking inquiries, so every doc here has one;
+  // withCategory resolves it (trashed or not) to the full object the board
+  // expects. A job with no resolvable category at all (shouldn't happen —
+  // Categories.ts blocks permanently deleting one that's in use) is left
+  // off rather than crashing the board.
+  const boardInquiries: BoardInquiry[] = inquiries.flatMap((inquiry) => {
+    const category = withCategory(rawCategoryIdByInquiry.get(inquiry.id));
+    return category ? [{ ...inquiry, category }] : [];
+  });
 
+  const templatesWithCategory = templates.flatMap((template): TemplateWithCategory[] => {
+    if (template.category == null) return [{ ...template, category: null }];
+    const category = withCategory(template.category);
+    return category ? [{ ...template, category }] : [];
+  });
+
+  // A trashed client populates as null above, so it drops out of both the
+  // repeat badge and each card's same-client siblings; isRepeatClient's
+  // count likewise skips trashed inquiries (Payload excludes them by default).
   const clientIds = Array.from(
     new Set(
       boardInquiries
@@ -131,7 +175,9 @@ export default async function KanbanBoardView(props: AdminViewServerProps) {
       <KanbanBoard
         inquiries={boardInquiries}
         repeatClientIds={repeatClientIds}
-        categories={categories.map((category) => ({ id: category.id, name: category.name }))}
+        categories={allCategories
+          .filter((category) => !category.deletedAt)
+          .map((category) => ({ id: category.id, name: category.name }))}
         questions={questions}
         templates={templatesWithCategory}
       />

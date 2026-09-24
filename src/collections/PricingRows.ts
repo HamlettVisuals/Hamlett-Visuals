@@ -10,6 +10,8 @@ export const PricingRows: CollectionConfig = {
     singular: "Pricing / Offer Row",
     plural: "Pricing / Offer Rows",
   },
+  // Deletes go to this collection's Trash view first, restorable from there.
+  trash: true,
   admin: {
     hideAPIURL: true,
     useAsTitle: "title",

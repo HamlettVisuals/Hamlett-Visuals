@@ -6,6 +6,8 @@ import { isAdmin } from "#src/access/isAdmin.ts";
 // and the isRepeatClient hook that uses it to flag repeat business.
 export const Clients: CollectionConfig = {
   slug: "clients",
+  // Deletes go to this collection's Trash view first, restorable from there.
+  trash: true,
   admin: {
     hideAPIURL: true,
     useAsTitle: "name",

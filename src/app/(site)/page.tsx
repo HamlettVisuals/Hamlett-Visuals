@@ -8,6 +8,7 @@ import Offers from "@/components/home/Offers";
 import BookingCta from "@/components/home/BookingCta";
 import Instagram from "@/components/home/Instagram";
 import Testimonials from "@/components/home/Testimonials";
+import { resolveCategory } from "@/lib/pricing-rows";
 
 // Single flowing homepage. Sections render in this exact order:
 //  1. Hero            (<Hero />)
@@ -35,12 +36,16 @@ export default async function Home() {
   const about = await payload.findGlobal({ slug: "about" });
   const categoriesIntro = await payload.findGlobal({ slug: "categories-intro" });
   const featuredOffer = await payload.findGlobal({ slug: "featured-offer" });
-  const { docs: pricingRows } = await payload.find({
+  const { docs: allPricingRows } = await payload.find({
     collection: "pricing-rows",
     depth: 1,
     sort: "order",
     limit: 0,
   });
+  // `category` is required, so a null here means it's in the Trash (Payload
+  // populates trashed relations as null) — hide the package rather than
+  // show "View gallery" / "Book" links to a category that no longer exists.
+  const pricingRows = allPricingRows.filter((row) => resolveCategory(row.category));
   const testimonialsTeaser = await payload.findGlobal({
     slug: "testimonials-teaser",
   });

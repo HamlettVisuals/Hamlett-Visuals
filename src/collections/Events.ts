@@ -12,6 +12,8 @@ export const Events: CollectionConfig = {
     singular: "Event / Album",
     plural: "Events / Albums",
   },
+  // Deletes go to this collection's Trash view first, restorable from there.
+  trash: true,
   admin: {
     hideAPIURL: true,
     useAsTitle: "title",

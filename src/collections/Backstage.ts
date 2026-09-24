@@ -18,6 +18,8 @@ export const Backstage: CollectionConfig = {
     singular: "Backstage Item",
     plural: "Backstage",
   },
+  // Deletes go to this collection's Trash view first, restorable from there.
+  trash: true,
   admin: {
     hideAPIURL: true,
     useAsTitle: "title",

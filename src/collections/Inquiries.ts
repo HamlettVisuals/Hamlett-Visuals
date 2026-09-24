@@ -36,6 +36,8 @@ const seedShootDateFromPreferred: CollectionBeforeChangeHook = ({ data, operatio
 // first, can reach it on a visitor's behalf.
 export const Inquiries: CollectionConfig = {
   slug: "inquiries",
+  // Deletes go to this collection's Trash view first, restorable from there.
+  trash: true,
   admin: {
     hideAPIURL: true,
     useAsTitle: "name",

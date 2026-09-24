@@ -228,6 +228,7 @@ export interface Category {
   published?: boolean | null;
   updatedAt: string;
   createdAt: string;
+  deletedAt?: string | null;
 }
 /**
  * Every photo you upload — the library that events, testimonials, and the homepage draw from.
@@ -259,6 +260,7 @@ export interface Photo {
   featured?: boolean | null;
   updatedAt: string;
   createdAt: string;
+  deletedAt?: string | null;
   url?: string | null;
   thumbnailURL?: string | null;
   filename?: string | null;
@@ -313,6 +315,7 @@ export interface Event {
   published?: boolean | null;
   updatedAt: string;
   createdAt: string;
+  deletedAt?: string | null;
 }
 /**
  * Client quotes and reviews, shown on the Testimonials page and (for the ones you feature) on the homepage.
@@ -356,6 +359,7 @@ export interface Testimonial {
   published?: boolean | null;
   updatedAt: string;
   createdAt: string;
+  deletedAt?: string | null;
 }
 /**
  * Your packages and pricing, shown in the Offers & Pricing section. Check 'featured' on one row to also spotlight it in the 'Popular right now' section.
@@ -411,6 +415,7 @@ export interface PricingRow {
   order?: number | null;
   updatedAt: string;
   createdAt: string;
+  deletedAt?: string | null;
 }
 /**
  * Every question and booking request submitted through the site's contact forms — your inbox for new client inquiries.
@@ -550,6 +555,7 @@ export interface Inquiry {
   notes?: string | null;
   updatedAt: string;
   createdAt: string;
+  deletedAt?: string | null;
 }
 /**
  * Everyone who's booked or inquired — link an Inquiry to a Client to track repeat business.
@@ -573,6 +579,7 @@ export interface Client {
   phone?: string | null;
   updatedAt: string;
   createdAt: string;
+  deletedAt?: string | null;
 }
 /**
  * Item lists reused across Prep and Post-Production checklists — one Standard template per type, plus optional per-category overrides.
@@ -641,6 +648,7 @@ export interface Backstage {
   published?: boolean | null;
   updatedAt: string;
   createdAt: string;
+  deletedAt?: string | null;
   url?: string | null;
   thumbnailURL?: string | null;
   filename?: string | null;
@@ -883,6 +891,7 @@ export interface CategoriesSelect<T extends boolean = true> {
   published?: T;
   updatedAt?: T;
   createdAt?: T;
+  deletedAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -897,6 +906,7 @@ export interface EventsSelect<T extends boolean = true> {
   published?: T;
   updatedAt?: T;
   createdAt?: T;
+  deletedAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -910,6 +920,7 @@ export interface PhotosSelect<T extends boolean = true> {
   featured?: T;
   updatedAt?: T;
   createdAt?: T;
+  deletedAt?: T;
   url?: T;
   thumbnailURL?: T;
   filename?: T;
@@ -949,6 +960,7 @@ export interface TestimonialsSelect<T extends boolean = true> {
   published?: T;
   updatedAt?: T;
   createdAt?: T;
+  deletedAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -971,6 +983,7 @@ export interface PricingRowsSelect<T extends boolean = true> {
   order?: T;
   updatedAt?: T;
   createdAt?: T;
+  deletedAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1028,6 +1041,7 @@ export interface InquiriesSelect<T extends boolean = true> {
   notes?: T;
   updatedAt?: T;
   createdAt?: T;
+  deletedAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1039,6 +1053,7 @@ export interface ClientsSelect<T extends boolean = true> {
   phone?: T;
   updatedAt?: T;
   createdAt?: T;
+  deletedAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1071,6 +1086,7 @@ export interface BackstageSelect<T extends boolean = true> {
   published?: T;
   updatedAt?: T;
   createdAt?: T;
+  deletedAt?: T;
   url?: T;
   thumbnailURL?: T;
   filename?: T;

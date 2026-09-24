@@ -152,6 +152,19 @@ export default buildConfig({
           versionCount_other: "{{count}} saves found",
           viewingVersions: "History for the {{entityLabel}} {{documentTitle}}",
           viewingVersionsGlobal: "History for {{entityLabel}}",
+          // Single-entry view + restore modal, same "History" vocabulary.
+          version: "History entry",
+          viewingVersion: "History entry for the {{entityLabel}} {{documentTitle}}",
+          viewingVersionGlobal: "History entry for {{entityLabel}}",
+          selectVersionToCompare: "Select an entry to compare",
+          previouslyPublished: "Previous entry",
+          restoreThisVersion: "Restore this entry",
+          confirmVersionRestoration: "Confirm restore",
+          aboutToRestore:
+            "You are about to restore this {{label}} to how it was on {{versionDate}}.",
+          aboutToRestoreGlobal:
+            "You are about to restore {{label}} to how it was on {{versionDate}}. This goes live immediately.",
+          problemRestoringVersion: "There was a problem restoring this entry",
         },
       },
     },
