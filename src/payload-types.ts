@@ -1262,17 +1262,11 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
 export interface HeaderNav {
   id: number;
   /**
-   * The menu items shown across the top of the site, in order. Add, remove, reorder, or rename any of them, and pick where each one goes from the dropdown.
+   * The links across the top of your site. Drag to reorder.
    */
   navLinks?:
     | {
-        /**
-         * The word or short phrase shown in the menu.
-         */
         label: string;
-        /**
-         * Where this link goes. Pick from the real pages and sections on the site — this can't be typed in, so it can't end up pointing somewhere that doesn't exist.
-         */
         href:
           | '/'
           | '/#categories'
@@ -1290,9 +1284,6 @@ export interface HeaderNav {
         id?: string | null;
       }[]
     | null;
-  /**
-   * The text on the 'Book' button in the top-right corner.
-   */
   bookLabel?: string | null;
   /**
    * Where the 'Book' button sends people. Locked to the booking page.
@@ -1310,6 +1301,10 @@ export interface HeaderNav {
 export interface Hero {
   id: number;
   /**
+   * Optional. Pick the photos that rotate behind your headline, then drag them into order (up to 8). Leave empty to use your category cover photos. Each photo is cropped around its focal point — set that on the photo itself.
+   */
+  heroPhotos?: (number | Photo)[] | null;
+  /**
    * The large title text over the homepage photos.
    */
   headline: string;
@@ -1318,7 +1313,7 @@ export interface Hero {
    */
   subhead?: string | null;
   /**
-   * The text on the button under the headline.
+   * The text on the button under the headline. Up to 24 characters, so it stays on one line on phones.
    */
   ctaLabel?: string | null;
   /**
@@ -1624,6 +1619,7 @@ export interface HeaderNavSelect<T extends boolean = true> {
  * via the `definition` "hero_select".
  */
 export interface HeroSelect<T extends boolean = true> {
+  heroPhotos?: T;
   headline?: T;
   subhead?: T;
   ctaLabel?: T;

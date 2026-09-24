@@ -66,23 +66,30 @@
    silently clipped it. .doc-controls__controls-wrapper is the next
    ancestor up, is `overflow: visible`, and is still `position: relative`,
    so anchoring there escapes the clip without touching Payload's own
-   layout. */
-.doc-controls__controls-wrapper:has(.live-preview-toggler--active)::after {
-  content: "Edit fields";
-  position: absolute;
-  top: 100%;
-  left: 0;
-  margin-top: 6px;
-  padding: 3px 8px;
-  border-radius: 4px;
-  background: var(--theme-elevation-800);
-  color: var(--theme-elevation-0);
-  font-size: 11px;
-  font-weight: 500;
-  line-height: 1.4;
-  white-space: nowrap;
-  pointer-events: none;
-  z-index: 10;
+   layout.
+
+   Only at Payload's mid-break (≤1024px), where the preview goes full width
+   and covers the form. On wider screens the form stays beside the preview,
+   so the pill was just a stray black label floating by the preview
+   toolbar. */
+@media (max-width: 1024px) {
+  .doc-controls__controls-wrapper:has(.live-preview-toggler--active)::after {
+    content: "Edit fields";
+    position: absolute;
+    top: 100%;
+    left: 0;
+    margin-top: 6px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    background: var(--theme-elevation-800);
+    color: var(--theme-elevation-0);
+    font-size: 11px;
+    font-weight: 500;
+    line-height: 1.4;
+    white-space: nowrap;
+    pointer-events: none;
+    z-index: 10;
+  }
 }
 
 /* Upload dropzone "Select a file" / "Paste URL" buttons

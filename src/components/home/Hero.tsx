@@ -7,11 +7,14 @@ import { generateAltText } from "@/lib/generate-alt-text";
 import { resolvePhoto } from "@/lib/resolve-photo";
 import { serverURL } from "@/lib/server-url";
 import { useScopedLivePreview } from "@/lib/use-scoped-live-preview";
-import type { Category, Hero as HeroGlobal } from "@/payload-types";
+import { HERO_PHOTOS_MAX } from "@/lib/hero-limits";
+import type { Category, Hero as HeroGlobal, Photo } from "@/payload-types";
 
-// Cross-category filmstrip hero. One representative image per category
-// (Weddings → Portraits → Pets → Brands → Motorsports → Real Estate → repeat),
-// crossfading on the --hero-fade-duration token. The photo carries the section;
+// Filmstrip hero. The slides are the Hero global's "Hero photos", in the
+// order she picked; left empty, it falls back to one representative image
+// per category (in category order), crossfading on the --hero-fade-duration
+// token. Every slide is cropped around its photo's focal point, so the
+// subject stays in frame at desktop, tablet and phone aspect ratios. The photo carries the section;
 // the scrim is kept to a soft patch behind the text only, so the image stays
 // bright and true everywhere else.
 //
@@ -23,6 +26,26 @@ import type { Category, Hero as HeroGlobal } from "@/payload-types";
 // How long each image is held fully visible before advancing, in ms. The
 // --hero-fade-duration (1200ms) crossfade overlaps the tail of this window.
 const HOLD_MS = 4500;
+
+// object-position that centres the photo's focal point in the frame, as far
+// as the crop allows. Pure CSS so it's right on first paint at any size: the
+// slide's frame is a size container (see below), so cqw/cqh are its width
+// and height, and the object-cover image's rendered size is
+// max(frame, frame scaled to the photo's aspect ratio). The offset is then
+// clamped so the image never pulls away from an edge. Photos without stored
+// dimensions fall back to the plain percentage (focal point in frame, just
+// not centred). No focal point set means 50/50 — the centre, as before.
+function focalPosition(photo: Photo) {
+  const fx = (photo.focalX ?? 50) / 100;
+  const fy = (photo.focalY ?? 50) / 100;
+  if (!photo.width || !photo.height) return `${fx * 100}% ${fy * 100}%`;
+  const ratio = photo.width / photo.height;
+  const renderedWidth = `max(100cqw, 100cqh * ${ratio})`;
+  const renderedHeight = `max(100cqh, 100cqw / ${ratio})`;
+  const x = `clamp(100cqw - ${renderedWidth}, 50cqw - ${fx} * ${renderedWidth}, 0px)`;
+  const y = `clamp(100cqh - ${renderedHeight}, 50cqh - ${fy} * ${renderedHeight}, 0px)`;
+  return `${x} ${y}`;
+}
 
 export default function Hero({
   hero,
@@ -44,19 +67,44 @@ export default function Hero({
     apiRoute: "/hv-studio/api",
   });
 
-  // One slide per category that has a heroPhoto set — categories without
-  // one are skipped rather than shown with a missing image.
-  const heroSlides = categories.flatMap((category) => {
-    const heroPhoto = resolvePhoto(category.heroPhoto);
-    if (!heroPhoto?.url) return [];
+  // The picked photos, in order — any that can't be resolved (e.g. moved to
+  // the Trash, which Payload populates as null) are skipped, as is a repeat
+  // of one already in the list.
+  const pickedIds = new Set<number>();
+  const pickedSlides = (data.heroPhotos ?? [])
+    .flatMap((value) => {
+      const photo = resolvePhoto(value);
+      if (!photo?.url || pickedIds.has(photo.id)) return [];
+      pickedIds.add(photo.id);
+      return [
+        {
+          key: `photo-${photo.id}`,
+          src: photo.url,
+          alt: photo.alt,
+          objectPosition: focalPosition(photo),
+        },
+      ];
+    })
+    .slice(0, HERO_PHOTOS_MAX);
+
+  // Fallback: one slide per category — its banner photo, else its tile
+  // cover photo. Categories with neither are skipped rather than shown with
+  // a missing image.
+  const categorySlides = categories.flatMap((category) => {
+    const photo =
+      resolvePhoto(category.heroPhoto) ?? resolvePhoto(category.coverPhoto);
+    if (!photo?.url) return [];
     return [
       {
-        categorySlug: category.slug,
-        src: heroPhoto.url,
+        key: `category-${category.slug}`,
+        src: photo.url,
         alt: generateAltText({ kind: "category", category: category.name }),
+        objectPosition: focalPosition(photo),
       },
     ];
   });
+
+  const heroSlides = pickedSlides.length > 0 ? pickedSlides : categorySlides;
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
@@ -71,19 +119,22 @@ export default function Hero({
   }, []);
 
   // Auto-advance, unless reduced motion is preferred or the viewer paused it.
+  // The slide count can change under Live Preview (photos added, removed or
+  // reordered), so it restarts the timer and the index wraps against it.
+  const slideCount = heroSlides.length;
   useEffect(() => {
-    if (prefersReducedMotion || paused || heroSlides.length <= 1) return;
+    if (prefersReducedMotion || paused || slideCount <= 1) return;
     const id = setInterval(() => {
-      setIndex((current) => (current + 1) % heroSlides.length);
+      setIndex((current) => (current + 1) % slideCount);
     }, HOLD_MS);
     return () => clearInterval(id);
-  }, [prefersReducedMotion, paused]);
+  }, [prefersReducedMotion, paused, slideCount]);
 
   // Reduced motion: render a single static image (first category), no stacked
   // layers, and force the active layer back to that first image regardless of
   // where the rotation had reached before the preference was turned on.
   const slides = prefersReducedMotion ? heroSlides.slice(0, 1) : heroSlides;
-  const activeIndex = prefersReducedMotion ? 0 : index;
+  const activeIndex = prefersReducedMotion ? 0 : index % Math.max(slideCount, 1);
 
   return (
     <section
@@ -98,10 +149,13 @@ export default function Hero({
       <div className="absolute inset-0 -z-10">
         {slides.map((slide, i) => (
           <div
-            key={slide.categorySlug}
+            key={slide.key}
             className="absolute inset-0"
             aria-hidden={i === activeIndex ? undefined : true}
             style={{
+              // Makes cqw/cqh in the image's object-position this frame's
+              // size — see focalPosition().
+              containerType: "size",
               opacity: i === activeIndex ? 1 : 0,
               // Token-driven; the globals.css reduced-motion safety net also
               // collapses this to ~0ms when the preference is set.
@@ -116,6 +170,7 @@ export default function Hero({
               sizes="100vw"
               quality={90}
               className="object-cover"
+              style={{ objectPosition: slide.objectPosition }}
             />
           </div>
         ))}

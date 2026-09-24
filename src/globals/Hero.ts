@@ -1,10 +1,12 @@
 import type { GlobalConfig } from "payload";
 import { publicReadAdminWrite } from "#src/access/isAdmin.ts";
 import { serverURL } from "#src/lib/server-url.ts";
+import { CTA_LABEL_MAX, HERO_PHOTOS_MAX } from "#src/lib/hero-limits.ts";
 
-// The hero's rotating slides are derived from the Categories collection
-// (one representative photo per category — see src/components/home/Hero.tsx),
-// so this global only holds the fixed text/CTA overlay.
+// The hero's rotating slides are the photos picked in "Hero photos" below,
+// in the order she drags them into. Left empty, they fall back to one photo
+// per published category (see src/components/home/Hero.tsx). Either way each
+// slide is cropped around the photo's own focal point (set on the photo).
 export const Hero: GlobalConfig = {
   slug: "hero",
   label: "Hero",
@@ -42,6 +44,17 @@ export const Hero: GlobalConfig = {
   versions: true,
   fields: [
     {
+      name: "heroPhotos",
+      type: "upload",
+      relationTo: "photos",
+      hasMany: true,
+      maxRows: HERO_PHOTOS_MAX,
+      label: "Hero photos",
+      admin: {
+        description: `Optional. Pick the photos that rotate behind your headline, then drag them into order (up to ${HERO_PHOTOS_MAX}). Leave empty to use your category cover photos. Each photo is cropped around its focal point — set that on the photo itself.`,
+      },
+    },
+    {
       name: "headline",
       type: "text",
       required: true,
@@ -62,9 +75,11 @@ export const Hero: GlobalConfig = {
     {
       name: "ctaLabel",
       type: "text",
+      label: "Button text",
       defaultValue: "Book a session",
+      maxLength: CTA_LABEL_MAX,
       admin: {
-        description: "The text on the button under the headline.",
+        description: `The text on the button under the headline. Up to ${CTA_LABEL_MAX} characters, so it stays on one line on phones.`,
       },
     },
     {
