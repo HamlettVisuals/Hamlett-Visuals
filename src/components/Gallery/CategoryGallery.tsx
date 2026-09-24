@@ -2,7 +2,7 @@
 
 import { Suspense, useState } from "react";
 import type { GalleryEvent } from "./types";
-import EventRow from "./EventRow";
+import LiveEventRow from "./LiveEventRow";
 import CategoryLightbox from "./CategoryLightbox";
 import GalleryEmptyState from "./GalleryEmptyState";
 import GallerySkeleton from "./GallerySkeleton";
@@ -69,12 +69,10 @@ export default function CategoryGallery({
             aria-label={`${category.name} gallery`}
           >
             {events.map((event, eventIndex) => (
-              <EventRow
-                key={event.slug}
-                name={event.name}
+              <LiveEventRow
+                key={event.id}
+                event={event}
                 category={category.name}
-                slug={event.slug}
-                photos={event.photos}
                 isFirst={eventIndex === 0}
                 onPhotoClick={(photoIndex) =>
                   handlePhotoClick(eventIndex, photoIndex)

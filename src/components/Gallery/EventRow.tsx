@@ -6,7 +6,7 @@ import HoverZoomImage from "@/components/HoverZoomImage";
 import { DEFAULT_LOCATION, generateAltText } from "@/lib/generate-alt-text";
 import GalleryEmptyState from "./GalleryEmptyState";
 
-type EventRowProps = {
+export type EventRowProps = {
   name: string;
   /** Display name of the category this event belongs to, e.g. "Weddings". */
   category: string;
@@ -20,11 +20,26 @@ type EventRowProps = {
    */
   slug: string;
   photos: GalleryPhoto[];
+  /** Optional one-line description under the title; nothing shows when blank. */
+  description?: string | null;
+  /** Optional shoot date (ISO); its month and year show when set. */
+  date?: string | null;
   /** Suppresses the hairline top border for the first row on the page. */
   isFirst?: boolean;
   /** Index of the clicked photo within this event's own photos array. */
   onPhotoClick: (index: number) => void;
 };
+
+/**
+ * "June 2026". Payload stores a day-only date as that day at 12:00 UTC, so
+ * it's formatted in UTC to keep the month right in every time zone.
+ */
+function formatAlbumDate(value: string | null | undefined): string | null {
+  if (!value) return null;
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return null;
+  return date.toLocaleDateString("en-US", { month: "long", year: "numeric", timeZone: "UTC" });
+}
 
 /** Net pointer movement below this, in px, still counts as a click rather than a drag. */
 const DRAG_CLICK_THRESHOLD = 5;
@@ -42,9 +57,13 @@ export default function EventRow({
   category,
   slug,
   photos,
+  description,
+  date,
   isFirst = false,
   onPhotoClick,
 }: EventRowProps) {
+  const dateLabel = formatAlbumDate(date);
+  const descriptionText = description?.trim();
   const rowRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
 
@@ -228,7 +247,7 @@ export default function EventRow({
   }
 
   return (
-    <div id={slug}>
+    <div id={slug} className="scroll-mt-20">
       <div
         className={`flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1 ${
           isFirst ? "" : "border-t border-hairline pt-6"
@@ -238,9 +257,19 @@ export default function EventRow({
           {name}
         </h2>
         <span className="text-caption text-muted">
+          {dateLabel && (
+            <>
+              <time dateTime={date ?? undefined}>{dateLabel}</time>
+              <span aria-hidden="true"> · </span>
+            </>
+          )}
           {photos.length} {photos.length === 1 ? "photo" : "photos"}
         </span>
       </div>
+
+      {descriptionText && (
+        <p className="mt-1 text-body text-muted">{descriptionText}</p>
+      )}
 
       <div className="mt-4">
         {photos.length === 0 ? (

@@ -13,19 +13,21 @@ import { OTHER_SESSION_TYPE } from "@/lib/booking-session-type";
 // Columns/Filters/Per Page controls, the "Other" row's drag handle) live in
 // app/(payload)/admin-overrides.css under .collection-list--categories.
 
-const isOther = (rowData: DefaultCellComponentProps["rowData"]) =>
-  rowData?.slug === OTHER_SESSION_TYPE;
+// Only the Categories list: an album titled "Other" gets the same slug.
+const isOther = (rowData: DefaultCellComponentProps["rowData"], collectionSlug = "categories") =>
+  collectionSlug === "categories" && rowData?.slug === OTHER_SESSION_TYPE;
 
-// The collection description, plus (on the main list only) the primary
-// "+ Add category" button that stands in for Payload's small "Create New"
-// pill. Payload renders this same Description on the edit view and the
-// Trash tab too, where the button doesn't belong.
-export function CategoriesListDescription() {
+// The collection description, plus (on the main list only) a primary
+// "+ Add …" button that stands in for Payload's small "Create New" pill.
+// Payload renders this same Description on the edit view and the Trash tab
+// too, where the button doesn't belong. Shared with the Albums list
+// (AlbumCells.tsx).
+export function ListIntro({ collectionSlug, addLabel }: { collectionSlug: string; addLabel: string }) {
   const { config } = useConfig();
   const pathname = usePathname();
-  const listPath = formatAdminURL({ adminRoute: config.routes.admin, path: "/collections/categories" });
+  const listPath = formatAdminURL({ adminRoute: config.routes.admin, path: `/collections/${collectionSlug}` });
   const isList = pathname?.replace(/\/$/, "") === listPath;
-  const collection = config.collections.find((c) => c.slug === "categories");
+  const collection = config.collections.find((c) => c.slug === collectionSlug);
   const description = collection?.admin?.description;
 
   return (
@@ -36,20 +38,21 @@ export function CategoriesListDescription() {
       {isList && (
         <Button
           el="link"
-          to={formatAdminURL({
-            adminRoute: config.routes.admin,
-            path: "/collections/categories/create",
-          })}
+          to={`${listPath}/create`}
           buttonStyle="primary"
           size="medium"
           margin={false}
           className="categories-list-intro__add"
         >
-          + Add category
+          {addLabel}
         </Button>
       )}
     </div>
   );
+}
+
+export function CategoriesListDescription() {
+  return <ListIntro collectionSlug="categories" addLabel="+ Add category" />;
 }
 
 // The linked name, with a note on the protected "Other" row.
@@ -108,15 +111,16 @@ export function CategoryThumbnailCell({ cellData }: DefaultCellComponentProps) {
   );
 }
 
-// "Live" / "Hidden" pill that toggles `published` in place. "Other" gets a
-// fixed label instead (the server refuses to publish it anyway).
+// "Live" / "Hidden" pill that toggles `published` in place, on the
+// Categories and Albums lists. "Other" gets a fixed label instead (the
+// server refuses to publish it anyway).
 export function CategoryStatusCell({ cellData, rowData, collectionSlug }: DefaultCellComponentProps) {
   const { config } = useConfig();
   const [published, setPublished] = useState(cellData === true);
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
-  if (isOther(rowData)) {
+  if (isOther(rowData, collectionSlug)) {
     return <span className="category-status category-status--crm">CRM only</span>;
   }
 
@@ -148,7 +152,8 @@ export function CategoryStatusCell({ cellData, rowData, collectionSlug }: Defaul
     });
   };
 
-  const name = typeof rowData?.name === "string" ? rowData.name : "this category";
+  const title = rowData?.name ?? rowData?.title;
+  const name = typeof title === "string" && title ? title : "this item";
   return (
     <span className="category-status-cell">
       <button

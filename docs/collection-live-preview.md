@@ -1,8 +1,13 @@
 # Collection Live Preview: showing unsaved edits
 
-Status: **built for Categories** (Categories.ts livePreview.url, components/home/CategoryTile.tsx,
-lib/use-scoped-collection-live-preview.ts). Add it per collection as each page
-comes up in the cleanup.
+Status: **built for Categories and Albums** (lib/use-scoped-collection-live-preview.ts).
+Categories: Categories.ts livePreview.url, components/home/CategoryTile.tsx —
+the homepage tile follows name, blurb and cover photo. Albums (`events`):
+Events.ts livePreview.url, components/Gallery/LiveEventRow.tsx — the album's
+row on its category page follows title, description and date; it falls back
+to the top of the album list (`#albums`) when the row isn't there, and to the
+homepage's categories when the category is hidden. Add it per collection as
+each page comes up in the cleanup.
 
 ## Why collections only refresh on save today
 

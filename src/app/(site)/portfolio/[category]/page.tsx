@@ -6,11 +6,13 @@ import CategoryGallery from "@/components/Gallery/CategoryGallery";
 import GalleryEmptyState from "@/components/Gallery/GalleryEmptyState";
 import type { GalleryEvent } from "@/components/Gallery/types";
 
-// Category landing page. Category -> Events -> Photos, all from Payload:
+// Category landing page. Category -> Albums (the `events` collection) ->
+// Photos, all from Payload:
 // two queries (this category's Events, then Photos where event is one of
 // those Events' ids) grouped by event id in application code below, rather
-// than one query per event — see payload.config.ts for why these two
-// collections only get plain (unscoped) Live Preview.
+// than one query per event. Albums are newest first: by shoot date, or when
+// the album was added if it has no date (`sortDate`, see Events.ts). Each
+// album row follows the Albums editor in Live Preview (CategoryGallery.tsx).
 
 export async function generateStaticParams() {
   const payload = await getPayload({ config });
@@ -42,7 +44,7 @@ export default async function CategoryPage({
   const { docs: categoryEvents } = await payload.find({
     collection: "events",
     where: { category: { equals: category.id }, published: { equals: true } },
-    sort: "-date",
+    sort: ["-sortDate", "-createdAt"],
     depth: 0,
     limit: 0,
   });
@@ -76,8 +78,11 @@ export default async function CategoryPage({
   }
 
   const events: GalleryEvent[] = categoryEvents.map((event) => ({
+    id: event.id,
     slug: event.slug,
     name: event.title,
+    description: event.description,
+    date: event.date,
     photos: photosByEventId.get(event.id) ?? [],
   }));
 
@@ -97,11 +102,15 @@ export default async function CategoryPage({
         <h1 className="font-display text-page text-ink">{category.name}</h1>
       </div>
 
-      {events.length === 0 ? (
-        <GalleryEmptyState />
-      ) : (
-        <CategoryGallery category={category} events={events} />
-      )}
+      {/* `albums` is where the Albums editor's Live Preview lands when the
+          album itself isn't on the page (Events.ts livePreview.url). */}
+      <div id="albums" className="scroll-mt-20">
+        {events.length === 0 ? (
+          <GalleryEmptyState />
+        ) : (
+          <CategoryGallery category={category} events={events} />
+        )}
+      </div>
     </div>
   );
 }

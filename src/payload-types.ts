@@ -279,7 +279,7 @@ export interface Photo {
   };
 }
 /**
- * A single shoot or photo set — e.g. a specific wedding or portrait session. Each one belongs to a category and holds its own set of photos.
+ * Each album is one shoot (a wedding, a portrait session) and holds its photos. Albums show on their category's page, newest first.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "events".
@@ -291,25 +291,23 @@ export interface Event {
    */
   title: string;
   /**
-   * The link used to jump straight to this shoot on its category page. Fills in automatically from the title above — you don't need to touch this.
+   * Turn off to hide this album from your site.
    */
+  published?: boolean | null;
   slug: string;
   /**
-   * Which category this shoot belongs to.
+   * Which category this album belongs to. It shows on that category's page.
    */
   category: number | Category;
   /**
-   * The date of the shoot (optional).
-   */
-  date?: string | null;
-  /**
-   * A short note about this shoot (optional).
+   * Optional. One short line shown under the album's title. Up to 36 characters, so it stays on one line on phones.
    */
   description?: string | null;
   /**
-   * Turn off to hide this shoot from the live site.
+   * Optional. The day of the shoot; its month and year show next to the album's title. Albums are listed newest first.
    */
-  published?: boolean | null;
+  date?: string | null;
+  sortDate?: string | null;
   updatedAt: string;
   createdAt: string;
   deletedAt?: string | null;
@@ -931,11 +929,12 @@ export interface CategoriesSelect<T extends boolean = true> {
  */
 export interface EventsSelect<T extends boolean = true> {
   title?: T;
+  published?: T;
   slug?: T;
   category?: T;
-  date?: T;
   description?: T;
-  published?: T;
+  date?: T;
+  sortDate?: T;
   updatedAt?: T;
   createdAt?: T;
   deletedAt?: T;

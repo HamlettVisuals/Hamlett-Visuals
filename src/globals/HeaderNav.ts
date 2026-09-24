@@ -89,6 +89,9 @@ export const HeaderNav: GlobalConfig = {
         // it reads as part of the same menu bar.
         hidden: true,
       },
+      // Hidden only because NavLinksField draws it, so History still lists
+      // it (see lib/hide-internal-history.ts).
+      custom: { showInHistory: true },
     },
     {
       name: "bookHref",

@@ -1,27 +1,49 @@
-import type { CollectionConfig } from "payload";
+import type { CollectionBeforeChangeHook, CollectionConfig } from "payload";
 import { isAdmin } from "#src/access/isAdmin.ts";
 import { formatSlug } from "#src/hooks/formatSlug.ts";
+import { DESCRIPTION_MAX } from "#src/lib/album-limits.ts";
+import { OTHER_SESSION_TYPE } from "#src/lib/booking-session-type.ts";
+import { serverURL } from "#src/lib/server-url.ts";
 import { CLOSE_EDITOR_BUTTON } from "#src/lib/admin-components.ts";
 
-// An "Event" is a single shoot/album within a category (e.g. the
-// "Priya & Daniel" wedding within the Weddings category) — see
-// /portfolio/[category]/page.tsx for how Category -> Event -> Photo is
-// queried and grouped for the gallery.
+// Newest first means by the shoot date, or when the album was added if it
+// has no date. Postgres can't sort by "date, else createdAt" through
+// Payload's sort, and a plain `-date` puts every undated album first, so
+// this hidden field carries that value for the admin list and the category
+// page to sort by. Recomputed on every save, so it follows the date.
+const setSortDate: CollectionBeforeChangeHook = ({ data, originalDoc }) => {
+  const date = "date" in data ? data.date : originalDoc?.date;
+  data.sortDate = date || originalDoc?.createdAt || data.createdAt || new Date().toISOString();
+  return data;
+};
+
+// An album is a single shoot within a category (e.g. the "Priya & Daniel"
+// wedding within Weddings). The collection and its tables are still called
+// `events`; only the labels say "Album". See /portfolio/[category]/page.tsx
+// for how Category -> Album -> Photo is queried and grouped for the gallery.
 export const Events: CollectionConfig = {
   slug: "events",
   labels: {
-    singular: "Event / Album",
-    plural: "Events / Albums",
+    singular: "Album",
+    plural: "Albums",
   },
   // Deletes go to this collection's Trash view first, restorable from there.
   trash: true,
+  defaultSort: "-sortDate",
   admin: {
-    // Undo / Redo / Discard next to Save — see components/admin/EditHistory.tsx.
     components: {
+      // The list description plus the "+ Add album" button (Payload's own
+      // "Create New" pill is hidden in admin-overrides.css).
+      Description: "/components/admin/AlbumCells#AlbumsListDescription",
+      // Category filter, and the friendly empty states in place of
+      // Payload's "No results".
+      beforeListTable: ["/components/admin/AlbumCells#AlbumsListToolbar"],
       edit: {
+        // Undo / Redo / Discard next to Save — see components/admin/EditHistory.tsx.
         beforeDocumentControls: [
           "/components/admin/EditHistory#default",
           "/components/admin/PreviewSizeButtons#default",
+          "/components/admin/NewDocumentTitle#default",
         ],
       },
       // ✕ back to this list, in the top bar of the Edit and History tabs.
@@ -36,9 +58,40 @@ export const Events: CollectionConfig = {
     },
     hideAPIURL: true,
     useAsTitle: "title",
-    defaultColumns: ["title", "category", "date", "published"],
+    defaultColumns: ["cover", "title", "category", "date", "published"],
+    // Albums will run into the hundreds, so they page. Search is by title.
+    pagination: { defaultLimit: 25, limits: [25, 50, 100] },
+    listSearchableFields: ["title"],
+    // Item-scoped Live Preview (docs/collection-live-preview.md): the
+    // album's category page, scrolled to this album's row, with `lpDoc`
+    // telling that one row (components/Gallery/CategoryGallery.tsx) to
+    // follow the unsaved title, description and date. Falls back to the top
+    // of the album list when the row isn't on the page (hidden, not saved
+    // yet, or no album in the category has photos), and to the homepage's
+    // categories when there's no category or it's hidden (its page 404s).
+    // Show/hide, category and order only change after saving.
+    livePreview: {
+      url: async ({ data, req }) => {
+        const categoryId =
+          data?.category && typeof data.category === "object" ? data.category.id : data?.category;
+        if (!categoryId) return `${serverURL}/#live-preview:categories`;
+
+        const category = await req.payload
+          .findByID({ collection: "categories", id: categoryId, depth: 0, disableErrors: true, req })
+          .catch(() => null);
+        if (!category?.published || category.deletedAt) {
+          return `${serverURL}/#live-preview:categories`;
+        }
+
+        const page = `${serverURL}/portfolio/${category.slug}`;
+        const id = data?.id;
+        const slug = typeof data?.slug === "string" ? data.slug : "";
+        if (!id || !slug) return `${page}#live-preview:albums`;
+        return `${page}?lpDoc=${encodeURIComponent(String(id))}#live-preview:${slug},albums`;
+      },
+    },
     description:
-      "A single shoot or photo set — e.g. a specific wedding or portrait session. Each one belongs to a category and holds its own set of photos.",
+      "Each album is one shoot (a wedding, a portrait session) and holds its photos. Albums show on their category's page, newest first.",
   },
   access: {
     read: () => true,
@@ -46,17 +99,52 @@ export const Events: CollectionConfig = {
     update: isAdmin,
     delete: isAdmin,
   },
+  hooks: {
+    beforeChange: [setSortDate],
+  },
   // Powers the History tab (restore an earlier save). No drafts — Save
   // writes straight through, same as before.
   versions: true,
   fields: [
     {
+      // List column only: the album's first photo (the same one that leads
+      // its row on the site), or a placeholder. Not stored. A proper album
+      // cover is planned for the Photo Library build.
+      name: "cover",
+      type: "ui",
+      label: "Photo",
+      admin: {
+        components: {
+          Field: "/components/admin/AlbumCells#EmptyField",
+          Cell: "/components/admin/AlbumThumbnailCell#default",
+        },
+      },
+    },
+    {
       name: "title",
       type: "text",
       required: true,
       admin: {
-        description:
-          "The name of this shoot, e.g. \"Priya & Daniel's Wedding\".",
+        description: "The name of this shoot, e.g. \"Priya & Daniel's Wedding\".",
+        components: {
+          Cell: "/components/admin/AlbumCells#AlbumTitleCell",
+        },
+      },
+    },
+    {
+      // Directly under Title in the main column, not Payload's sidebar,
+      // same as Categories: the sidebar drops below the form whenever Live
+      // Preview is open, so the switch would move with the preview toggle.
+      name: "published",
+      type: "checkbox",
+      defaultValue: true,
+      label: "Show on website",
+      admin: {
+        description: "Turn off to hide this album from your site.",
+        components: {
+          Field: "/components/admin/ShowOnWebsiteField#default",
+          Cell: "/components/admin/CategoryCells#CategoryStatusCell",
+        },
       },
     },
     {
@@ -64,10 +152,15 @@ export const Events: CollectionConfig = {
       type: "text",
       required: true,
       unique: true,
+      // Hidden everywhere in the admin, same as Categories. Set once from
+      // the title on the first save and never changed after
+      // (formatSlug.ts), so renaming an album doesn't break links to it
+      // (/portfolio/<category>#<slug>, e.g. from a testimonial).
       admin: {
+        hidden: true,
         readOnly: true,
-        description:
-          "The link used to jump straight to this shoot on its category page. Fills in automatically from the title above — you don't need to touch this.",
+        disableListColumn: true,
+        disableListFilter: true,
       },
       hooks: {
         beforeValidate: [formatSlug("title")],
@@ -79,32 +172,44 @@ export const Events: CollectionConfig = {
       relationTo: "categories",
       required: true,
       hasMany: false,
+      // Categories are only made on the Categories page, in their drag
+      // order, and never "Other" (CRM-only). Trashed ones are left out by
+      // Payload already.
+      filterOptions: { slug: { not_equals: OTHER_SESSION_TYPE } },
       admin: {
-        description: "Which category this shoot belongs to.",
+        description: "Which category this album belongs to. It shows on that category's page.",
+        placeholder: "Choose a category",
+        allowCreate: false,
+        allowEdit: false,
+        sortOptions: "_order",
+      },
+    },
+    {
+      name: "description",
+      type: "textarea",
+      maxLength: DESCRIPTION_MAX,
+      admin: {
+        description: `Optional. One short line shown under the album's title. Up to ${DESCRIPTION_MAX} characters, so it stays on one line on phones.`,
       },
     },
     {
       name: "date",
       type: "date",
       admin: {
-        description: "The date of the shoot (optional).",
-        position: "sidebar",
+        description: "Optional. The day of the shoot; its month and year show next to the album's title. Albums are listed newest first.",
+        date: { pickerAppearance: "dayOnly", displayFormat: "d MMM yyyy" },
       },
     },
     {
-      name: "description",
-      type: "textarea",
+      // Sort key for "newest first": the date, else when it was added. Set
+      // by setSortDate above; never edited.
+      name: "sortDate",
+      type: "date",
+      index: true,
       admin: {
-        description: "A short note about this shoot (optional).",
-      },
-    },
-    {
-      name: "published",
-      type: "checkbox",
-      defaultValue: true,
-      admin: {
-        description: "Turn off to hide this shoot from the live site.",
-        position: "sidebar",
+        hidden: true,
+        disableListColumn: true,
+        disableListFilter: true,
       },
     },
   ],

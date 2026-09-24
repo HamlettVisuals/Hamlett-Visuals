@@ -54,6 +54,7 @@ import { SiteSettings } from "#src/globals/SiteSettings.ts";
 import { Booking } from "#src/globals/Booking.ts";
 import { serverURL } from "#src/lib/server-url.ts";
 import { addCharacterCounters } from "#src/lib/character-counters.ts";
+import { hideInternalFieldsFromHistory } from "#src/lib/hide-internal-history.ts";
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -107,8 +108,8 @@ export default buildConfig({
       // other row's displayed content. RefreshRouteOnSave (already mounted
       // in (site)/layout.tsx) covers reactivity here instead: saving a
       // document refreshes the page with fresh server data, just not on
-      // every keystroke the way wired globals do. Categories is the first
-      // collection with item-scoped preview on top of that (its own
+      // every keystroke the way wired globals do. Categories and Events (Albums)
+      // have item-scoped preview on top of that (their own
       // admin.livePreview.url adds ?lpDoc=<id>; see
       // docs/collection-live-preview.md); the rest follow as each is cleaned up.
       collections: ["pricing-rows", "categories", "events", "photos", "testimonials", "backstage"],
@@ -174,9 +175,10 @@ export default buildConfig({
       },
     },
   },
-  // Every text field with a maxLength gets a live character counter — see
-  // lib/character-counters.ts.
-  collections: addCharacterCounters([
+  // Every text field with a maxLength gets a live character counter (see
+  // lib/character-counters.ts), and fields hidden in the editor are left out
+  // of History's comparisons (lib/hide-internal-history.ts).
+  collections: hideInternalFieldsFromHistory(addCharacterCounters([
     Users,
     Categories,
     Events,
@@ -190,8 +192,8 @@ export default buildConfig({
     TestimonialSubmissions,
     TestimonialPhotos,
     Logos,
-  ]),
-  globals: addCharacterCounters([
+  ])),
+  globals: hideInternalFieldsFromHistory(addCharacterCounters([
     HeaderNav,
     Hero,
     CategoriesIntro,
@@ -202,7 +204,7 @@ export default buildConfig({
     FinalCtaFooter,
     SiteSettings,
     Booking,
-  ]),
+  ])),
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET ?? "",
   typescript: {

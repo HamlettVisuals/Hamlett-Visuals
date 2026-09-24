@@ -75,7 +75,7 @@ const siteTree: TreeNode[] = [
         children: [
           { kind: "global", slug: "categories-intro", label: "Categories Intro" },
           { kind: "collection", slug: "categories", label: "Categories" },
-          { kind: "collection", slug: "events", label: "Events / Albums" },
+          { kind: "collection", slug: "events", label: "Albums" },
           { kind: "collection", slug: "photos", label: "Photos" },
         ],
       },

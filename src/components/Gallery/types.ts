@@ -12,7 +12,13 @@ export type GalleryPhoto = {
 };
 
 export type GalleryEvent = {
+  /** The album's id, so Live Preview can follow the one being edited. */
+  id: number;
   slug: string;
   name: string;
+  /** Optional one-line description, shown under the title when set. */
+  description?: string | null;
+  /** Optional shoot date (ISO); its month and year show when set. */
+  date?: string | null;
   photos: GalleryPhoto[];
 };
