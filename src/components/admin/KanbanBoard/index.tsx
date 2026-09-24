@@ -82,7 +82,7 @@ export default async function KanbanBoardView(props: AdminViewServerProps) {
     payload.find({
       collection: "categories",
       limit: 0,
-      sort: "order",
+      sort: "_order",
       trash: true,
     }),
     // For the Questions drawer (Board.tsx's "Questions" button). depth: 0 —

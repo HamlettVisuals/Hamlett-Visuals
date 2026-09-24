@@ -8,7 +8,7 @@ import type { Category, Event, Testimonial } from "@/payload-types";
 
 // Full testimonials page. The teaser (src/components/home/Testimonials.tsx)
 // stays text-only and untouched by design; this page is the whole set,
-// grouped by category (in Payload's category `order`), each entry paired
+// grouped by category (in the Categories list's drag order), each entry paired
 // with its photo and — when a testimonial has one — a deep link back to the
 // actual session (/portfolio/[category]#[eventSlug], landing on the matching
 // EventRow — see src/components/Gallery/EventRow.tsx and the
@@ -48,8 +48,9 @@ export default async function TestimonialsPage() {
     limit: 0,
   });
 
-  // Group by category (skipping testimonials with no category set), ordered
-  // by the Categories collection's own `order` field.
+  // Group by category (skipping testimonials with no category set), in the
+  // Categories list's drag order (`_order`: fractional-index keys, so a
+  // plain string comparison sorts them).
   const groupsByCategory = new Map<
     number,
     { category: Category; items: Testimonial[] }
@@ -62,7 +63,7 @@ export default async function TestimonialsPage() {
     else groupsByCategory.set(category.id, { category, items: [testimonial] });
   }
   const groups = Array.from(groupsByCategory.values()).sort(
-    (a, b) => (a.category.order ?? 0) - (b.category.order ?? 0),
+    (a, b) => ((a.category._order ?? "") < (b.category._order ?? "") ? -1 : 1),
   );
 
   return (

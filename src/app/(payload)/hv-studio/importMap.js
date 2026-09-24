@@ -1,3 +1,7 @@
+import { CategoryNameCell as CategoryNameCell_34f53f145c1dd1973f992a6af63ac90d } from '../../../components/admin/CategoryCells'
+import { CategoryThumbnailCell as CategoryThumbnailCell_34f53f145c1dd1973f992a6af63ac90d } from '../../../components/admin/CategoryCells'
+import { CategoryStatusCell as CategoryStatusCell_34f53f145c1dd1973f992a6af63ac90d } from '../../../components/admin/CategoryCells'
+import { CategoriesListDescription as CategoriesListDescription_34f53f145c1dd1973f992a6af63ac90d } from '../../../components/admin/CategoryCells'
 import { default as default_49f4009bbc7bc7fd7fd116764fa09aa1 } from '../../../components/admin/EditHistory'
 import { default as default_a779bcd001681498b9df2066a3cdc326 } from '../../../components/admin/PreviewSizeButtons'
 import { default as default_f0b47ff3ed1c349a2095a4c32239e4c7 } from '../../../components/admin/InquiryStatusCell'
@@ -38,6 +42,10 @@ import { CollectionCards as CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1 } f
 
 /** @type import('payload').ImportMap */
 export const importMap = {
+  "/components/admin/CategoryCells#CategoryNameCell": CategoryNameCell_34f53f145c1dd1973f992a6af63ac90d,
+  "/components/admin/CategoryCells#CategoryThumbnailCell": CategoryThumbnailCell_34f53f145c1dd1973f992a6af63ac90d,
+  "/components/admin/CategoryCells#CategoryStatusCell": CategoryStatusCell_34f53f145c1dd1973f992a6af63ac90d,
+  "/components/admin/CategoryCells#CategoriesListDescription": CategoriesListDescription_34f53f145c1dd1973f992a6af63ac90d,
   "/components/admin/EditHistory#default": default_49f4009bbc7bc7fd7fd116764fa09aa1,
   "/components/admin/PreviewSizeButtons#default": default_a779bcd001681498b9df2066a3cdc326,
   "/components/admin/InquiryStatusCell#default": default_f0b47ff3ed1c349a2095a4c32239e4c7,

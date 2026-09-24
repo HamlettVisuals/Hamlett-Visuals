@@ -200,6 +200,7 @@ export interface User {
  */
 export interface Category {
   id: number;
+  _order?: string | null;
   /**
    * The category name, e.g. "Weddings".
    */
@@ -220,9 +221,6 @@ export interface Category {
    * The large banner photo shown at the top of this category's own page.
    */
   heroPhoto?: (number | null) | Photo;
-  /**
-   * Controls the order categories appear in — lower numbers show up first.
-   */
   order?: number | null;
   /**
    * Turn off to hide this category from the live site.
@@ -918,6 +916,7 @@ export interface UsersSelect<T extends boolean = true> {
  * via the `definition` "categories_select".
  */
 export interface CategoriesSelect<T extends boolean = true> {
+  _order?: T;
   name?: T;
   slug?: T;
   blurb?: T;
@@ -1332,7 +1331,7 @@ export interface Hero {
 export interface CategoriesIntro {
   id: number;
   /**
-   * The title text above the category photos.
+   * The title text above the category photos. Up to 20 characters, so it stays on one line on phones.
    */
   heading: string;
   updatedAt?: string | null;

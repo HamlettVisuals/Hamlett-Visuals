@@ -453,3 +453,156 @@
   height: auto;
   min-height: 0;
 }
+
+/* Categories list view (collections/Categories.ts, components/admin/
+   CategoryCells.tsx). Six to eight rows, reordered by dragging, so the
+   generic list chrome goes: bulk-select checkboxes and their bar, the
+   search/Columns/Filters row, per-page and page controls. Payload's small
+   "Create New" pill is replaced by the primary "+ Add category" button in
+   the description. The Trash tab stays. */
+.collection-list--categories .list-create-new-doc__create-new-button,
+.collection-list--categories .list-controls,
+.collection-list--categories .list-selection,
+.collection-list--categories .page-controls,
+.collection-list--categories .collection-list__list-selection,
+.collection-list--categories .cell-_select,
+.collection-list--categories #heading-_select {
+  display: none;
+}
+
+/* Column-header sort buttons: sorting by anything but the drag order would
+   just make dragging refuse ("sort by the Order column first"). */
+.collection-list--categories thead .sort-column__buttons,
+.collection-list--categories #heading-_dragHandle > * {
+  display: none;
+}
+
+.categories-list-intro {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 24px;
+}
+
+.categories-list-intro__text {
+  margin: 0;
+  max-width: 60ch;
+}
+
+.categories-list-intro__add {
+  flex-shrink: 0;
+}
+
+/* Payload gives every column a 150px minimum, which pushes the status pill
+   off-screen on a phone. The thumbnail and status columns only need their
+   content's width; the name takes the rest. */
+.collection-list--categories #heading-name,
+.collection-list--categories #heading-coverPhoto,
+.collection-list--categories #heading-published,
+.collection-list--categories .cell-name,
+.collection-list--categories .cell-coverPhoto,
+.collection-list--categories .cell-published {
+  min-width: 0;
+}
+
+.collection-list--categories #heading-coverPhoto,
+.collection-list--categories #heading-published {
+  width: 1%;
+}
+
+/* "Other" is pinned last: no drag handle on its row. */
+.collection-list--categories tr:has([data-category-other]) .sort-row {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.category-name-cell {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.category-name-cell__note {
+  font-size: 12px;
+  color: var(--theme-elevation-500);
+}
+
+.category-thumb {
+  display: block;
+  width: 44px;
+  height: 44px;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+.category-thumb--empty {
+  background: var(--theme-elevation-100);
+  border: 1px dashed var(--theme-elevation-250);
+}
+
+.category-status-cell {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
+
+.category-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 32px;
+  padding: 0 12px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+button.category-status {
+  cursor: pointer;
+}
+
+button.category-status:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+button.category-status:focus-visible {
+  outline: 2px solid var(--theme-elevation-800);
+  outline-offset: 2px;
+}
+
+.category-status::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.category-status--live {
+  background: var(--theme-success-100);
+  color: var(--theme-success-750);
+  border-color: var(--theme-success-250);
+}
+
+.category-status--hidden,
+.category-status--crm {
+  background: var(--theme-elevation-50);
+  color: var(--theme-elevation-600);
+  border-color: var(--theme-elevation-200);
+}
+
+.category-status--crm::before {
+  display: none;
+}
+
+.category-status-cell__error {
+  font-size: 12px;
+  color: var(--theme-error-600);
+  max-width: 24ch;
+}

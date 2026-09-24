@@ -1,7 +1,110 @@
-import type { CollectionAfterChangeHook, CollectionBeforeDeleteHook, CollectionConfig } from "payload";
+import type {
+  CollectionAfterChangeHook,
+  CollectionBeforeChangeHook,
+  CollectionBeforeDeleteHook,
+  CollectionConfig,
+  PayloadRequest,
+} from "payload";
 import { APIError } from "payload";
+import { generateKeyBetween } from "payload/shared";
 import { isAdmin } from "#src/access/isAdmin.ts";
 import { formatSlug } from "#src/hooks/formatSlug.ts";
+import { OTHER_SESSION_TYPE } from "#src/lib/booking-session-type.ts";
+
+// An error the admin shows as-is (the `true` exposes the message).
+const refuse = (message: string) => new APIError(message, 400, null, true);
+
+// The unpublished "Other" category (slug OTHER_SESSION_TYPE) is the CRM's
+// catch-all: BookingForm points "Something else" at it and the kanban board
+// files anything unmapped under it. So it can't be trashed, deleted, renamed,
+// re-slugged or published, and it always sorts last. The list view hides
+// those controls (components/admin/CategoryCells.tsx); these hooks are the
+// real guard, since the REST API and bulk actions bypass the UI.
+async function findOtherCategory(req: PayloadRequest) {
+  const { docs } = await req.payload.find({
+    collection: "categories",
+    where: { slug: { equals: OTHER_SESSION_TYPE } },
+    trash: true,
+    depth: 0,
+    limit: 1,
+    select: { _order: true },
+    req,
+  });
+  return docs[0];
+}
+
+// `_order` is the fractional sort key `orderable: true` adds. Only the list
+// view's drag-to-reorder (Payload's POST /reorder) and scripts that opt in
+// via context.allowOrderChange may move it. Everything else (a History
+// restore, Undo, the REST API) keeps the current position, so restoring an
+// old version never reshuffles the list.
+function isReorderRequest(req: PayloadRequest, context: Record<string, unknown>) {
+  return context.allowOrderChange === true || Boolean(req.pathname?.endsWith("/reorder"));
+}
+
+const guardOrderAndOther: CollectionBeforeChangeHook = async ({
+  context,
+  data,
+  operation,
+  originalDoc,
+  req,
+}) => {
+  if (operation === "create") {
+    if (data.slug === OTHER_SESSION_TYPE) return data;
+    // Payload's own orderable hook appends after the last key, which would
+    // land below "Other". Slot new categories in just above it instead.
+    const other = await findOtherCategory(req);
+    if (other?._order) {
+      const { docs } = await req.payload.find({
+        collection: "categories",
+        where: { _order: { less_than: other._order } },
+        sort: "-_order",
+        trash: true,
+        depth: 0,
+        limit: 1,
+        select: { _order: true },
+        req,
+      });
+      data._order = generateKeyBetween(docs[0]?._order ?? null, other._order);
+    }
+    return data;
+  }
+
+  if (!originalDoc) return data;
+
+  if (!isReorderRequest(req, context) && originalDoc._order) {
+    data._order = originalDoc._order;
+  }
+
+  if (originalDoc.slug === OTHER_SESSION_TYPE) {
+    const label = `"${originalDoc.name}" is used by your CRM`;
+    if (data.name !== undefined && data.name !== originalDoc.name) {
+      throw refuse(`${label} and can't be renamed.`);
+    }
+    if (data.slug !== undefined && data.slug !== originalDoc.slug) {
+      throw refuse(`${label}, so its web address can't change.`);
+    }
+    if (data.published) {
+      throw refuse(`${label} and isn't shown on the site, so it can't be published.`);
+    }
+    if (data.deletedAt) {
+      throw refuse(`${label} and can't be moved to the Trash.`);
+    }
+    if (data._order !== originalDoc._order && context.allowOrderChange !== true) {
+      throw refuse(`${label} and always stays at the bottom of the list.`);
+    }
+    return data;
+  }
+
+  if (data._order && data._order !== originalDoc._order) {
+    const other = await findOtherCategory(req);
+    if (other?._order && data._order >= other._order) {
+      throw refuse(`"Other" always stays at the bottom of the list.`);
+    }
+  }
+
+  return data;
+};
 
 // Gives every new category its own blank Prep and Post-Production checklist
 // templates to customize, rather than leaving it to fall back to the
@@ -41,6 +144,11 @@ const createBlankChecklistTemplates: CollectionAfterChangeHook = async ({
 // templates with it otherwise. beforeDelete only runs on permanent deletes;
 // moving to the Trash is an update.
 const guardPermanentDelete: CollectionBeforeDeleteHook = async ({ id, req }) => {
+  const other = await findOtherCategory(req);
+  if (other && other.id === id) {
+    throw refuse(`"Other" is used by your CRM and can't be deleted.`);
+  }
+
   const { totalDocs } = await req.payload.count({
     collection: "inquiries",
     where: { category: { equals: id } },
@@ -72,9 +180,17 @@ export const Categories: CollectionConfig = {
   slug: "categories",
   // Deletes go to this collection's Trash view first, restorable from there.
   trash: true,
+  // Drag-to-reorder in the list view. Payload adds a hidden `_order` text
+  // field (fractional-index keys) and sorts the list by it; every reader of
+  // category order sorts by `_order` too. The old numeric `order` field is
+  // kept below, hidden, only so its column isn't dropped.
+  orderable: true,
   admin: {
     // Undo / Redo / Discard next to Save — see components/admin/EditHistory.tsx.
     components: {
+      // The list description plus the "+ Add category" button (Payload's
+      // own "Create New" pill is hidden in admin-overrides.css).
+      Description: "/components/admin/CategoryCells#CategoriesListDescription",
       edit: {
         beforeDocumentControls: [
           "/components/admin/EditHistory#default",
@@ -84,7 +200,10 @@ export const Categories: CollectionConfig = {
     },
     hideAPIURL: true,
     useAsTitle: "name",
-    defaultColumns: ["name", "slug", "order", "published"],
+    defaultColumns: ["name", "coverPhoto", "published"],
+    // Only a handful of categories, so show them all on one page and any row
+    // can be dragged anywhere. The per-page control is hidden.
+    pagination: { defaultLimit: 100, limits: [100] },
     description:
       "The types of photography you offer (Weddings, Portraits, Pets, etc.) — these show up as the tiles on the homepage and each one gets its own portfolio page.",
   },
@@ -95,6 +214,7 @@ export const Categories: CollectionConfig = {
     delete: isAdmin,
   },
   hooks: {
+    beforeChange: [guardOrderAndOther],
     afterChange: [createBlankChecklistTemplates],
     beforeDelete: [guardPermanentDelete],
   },
@@ -108,6 +228,9 @@ export const Categories: CollectionConfig = {
       required: true,
       admin: {
         description: "The category name, e.g. \"Weddings\".",
+        components: {
+          Cell: "/components/admin/CategoryCells#CategoryNameCell",
+        },
       },
     },
     {
@@ -117,6 +240,8 @@ export const Categories: CollectionConfig = {
       unique: true,
       admin: {
         readOnly: true,
+        disableListColumn: true,
+        disableListFilter: true,
         description:
           "The web address for this category's portfolio page. Fills in automatically from the name above — you don't need to touch this.",
       },
@@ -138,6 +263,9 @@ export const Categories: CollectionConfig = {
       relationTo: "photos",
       admin: {
         description: "The photo used for this category's tile on the homepage.",
+        components: {
+          Cell: "/components/admin/CategoryCells#CategoryThumbnailCell",
+        },
       },
     },
     {
@@ -150,22 +278,29 @@ export const Categories: CollectionConfig = {
       },
     },
     {
+      // Superseded by drag-to-reorder (`_order`, see `orderable` above).
+      // Hidden rather than removed so the dev schema push doesn't drop the
+      // column. Nothing reads it any more.
       name: "order",
       type: "number",
       defaultValue: 0,
       admin: {
-        description:
-          "Controls the order categories appear in — lower numbers show up first.",
-        position: "sidebar",
+        hidden: true,
+        disableListColumn: true,
+        disableListFilter: true,
       },
     },
     {
       name: "published",
       type: "checkbox",
       defaultValue: true,
+      label: "Status",
       admin: {
         description: "Turn off to hide this category from the live site.",
         position: "sidebar",
+        components: {
+          Cell: "/components/admin/CategoryCells#CategoryStatusCell",
+        },
       },
     },
   ],

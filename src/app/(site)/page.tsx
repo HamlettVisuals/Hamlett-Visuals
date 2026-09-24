@@ -28,7 +28,7 @@ export default async function Home() {
   const { docs: categories } = await payload.find({
     collection: "categories",
     where: { published: { equals: true } },
-    sort: "order",
+    sort: "_order", // drag order from the admin list (Categories.ts `orderable`)
     depth: 1,
     limit: 0,
   });
