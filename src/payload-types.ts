@@ -300,7 +300,7 @@ export interface Event {
    */
   category: number | Category;
   /**
-   * Optional. One short line shown under the album's title. Up to 36 characters, so it stays on one line on phones.
+   * Optional. A short note shown under the album's title. Up to 70 characters, so it fits on two lines on phones.
    */
   description?: string | null;
   /**
@@ -1334,7 +1334,7 @@ export interface CategoriesIntro {
   createdAt?: string | null;
 }
 /**
- * The 'About' section on the homepage — your photo and your bio.
+ * The 'About' section on the homepage — your photo, your bio and the quick links below it.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "about".
@@ -1367,6 +1367,27 @@ export interface About {
     };
     [k: string]: unknown;
   } | null;
+  quickLinks?:
+    | {
+        label: string;
+        title: string;
+        href:
+          | '/'
+          | '/#categories'
+          | '/#about'
+          | '/#offers'
+          | '/#hot-offer'
+          | '/#booking-cta'
+          | '/#instagram'
+          | '/#testimonials'
+          | '/booking'
+          | '/backstage'
+          | '/testimonials'
+          | '/privacy-policy'
+          | '/terms';
+        id?: string | null;
+      }[]
+    | null;
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -1641,6 +1662,14 @@ export interface AboutSelect<T extends boolean = true> {
   heading?: T;
   portrait?: T;
   bio?: T;
+  quickLinks?:
+    | T
+    | {
+        label?: T;
+        title?: T;
+        href?: T;
+        id?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

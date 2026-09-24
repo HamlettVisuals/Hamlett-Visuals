@@ -309,6 +309,12 @@
     font-weight: 500;
     color: var(--color-ink);
   }
+  /* The About cards' text is editable (globals/About.ts → quickLinks), so a
+     single very long word breaks inside the card rather than widening it. */
+  .link-chip-label,
+  .link-chip-title {
+    overflow-wrap: anywhere;
+  }
   .link-chip-arrow {
     color: var(--color-muted);
     font-size: 1rem;

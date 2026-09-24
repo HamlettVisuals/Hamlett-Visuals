@@ -273,6 +273,39 @@
   }
 }
 
+/* About's quick links (AboutQuickLinksField.tsx) use the same rows with a
+   title as well: label, title and "Goes to" on one line when the pane is
+   wide; below ~640px of pane "Goes to" drops under the two text inputs;
+   below 440px (the rule above) everything stacks. */
+.nav-links--quick .nav-links__fields {
+  grid-template-columns: minmax(0, 2fr) minmax(0, 3fr) minmax(0, 3fr);
+}
+
+@container (max-width: 640px) {
+  .nav-links--quick .nav-links__fields {
+    grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+  }
+
+  .nav-links--quick .nav-links__href {
+    grid-column: 1 / -1;
+  }
+
+  .nav-links--quick .nav-links__row {
+    padding: 8px 0;
+    border-bottom: 1px solid var(--theme-elevation-100);
+  }
+
+  .nav-links--quick .nav-links__row:last-child {
+    border-bottom: 0;
+  }
+}
+
+@container (max-width: 440px) {
+  .nav-links--quick .nav-links__fields {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
 /* Payload caps its error bubble at 75% of the input and truncates the
    text, which cut "This field is required." short in the narrow label box. */
 .nav-links .field-error.tooltip {
