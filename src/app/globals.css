@@ -86,14 +86,13 @@
 
   /* ---- Breakpoints -------------------------------------------------------
      Header nav (src/components/Nav.tsx): the desktop link row + Book button
-     needs ~757px of natural width (measured: Wordmark ~144px + link row/Book
-     group ~565px + 48px of header padding, with no room in either to shrink
-     since every label is a single word that can't soft-wrap — six links now
-     that Backstage was added). `header:` collapses to the hamburger just
-     above that hard limit, at 800px, so the row still has breathing room
-     next to the Wordmark rather than bottoming out right at the overflow
-     point. */
-  --breakpoint-header: 50rem; /* 800px */
+     shows from 1024px up; below that (phones and portrait tablets) the
+     header collapses to the hamburger. The six current links need ~757px
+     of natural width with the text wordmark, so 1024px leaves room for a
+     wider uploaded logo and a seventh link. The editor's link-count and
+     label-length caps (src/lib/nav-limits.ts) were measured at exactly this
+     width — remeasure them if it changes. */
+  --breakpoint-header: 64rem; /* 1024px */
 }
 
 :root {

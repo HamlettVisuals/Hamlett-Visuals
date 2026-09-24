@@ -1,6 +1,7 @@
 import type { GlobalConfig } from "payload";
 import { publicReadAdminWrite } from "#src/access/isAdmin.ts";
 import { navDestinations } from "#src/lib/nav-destinations.ts";
+import { BOOK_LABEL_MAX, NAV_LABEL_MAX, NAV_MAX_LINKS } from "#src/lib/nav-limits.ts";
 import { serverURL } from "#src/lib/server-url.ts";
 
 // Drives navLinks + the Book button in src/components/Nav.tsx.
@@ -12,7 +13,10 @@ export const HeaderNav: GlobalConfig = {
     components: {
       elements: {
         SaveButton: "/components/admin/PublishButton#default",
-        beforeDocumentControls: ["/components/admin/EditHistory#default"],
+        beforeDocumentControls: [
+          "/components/admin/EditHistory#default",
+          "/components/admin/PreviewSizeButtons#default",
+        ],
       },
     },
     group: "Site",
@@ -34,10 +38,18 @@ export const HeaderNav: GlobalConfig = {
     {
       name: "navLinks",
       type: "array",
+      label: "Menu links",
       labels: { singular: "Link", plural: "Links" },
+      maxRows: NAV_MAX_LINKS,
       admin: {
-        description:
-          "The menu items shown across the top of the site, in order. Add, remove, reorder, or rename any of them, and pick where each one goes from the dropdown.",
+        description: "The links across the top of your site. Drag to reorder.",
+        components: {
+          // Compact one-line rows (plus the Book button text) instead of
+          // Payload's collapsible array rows — see NavLinksField.tsx.
+          Field: "/components/admin/NavLinksField#default",
+          // History's comparison otherwise labels rows "Item 01", "Item 02".
+          Diff: "/components/admin/NavLinksDiff#default",
+        },
       },
       defaultValue: [
         { label: "Portfolio", href: "/#categories" },
@@ -51,29 +63,31 @@ export const HeaderNav: GlobalConfig = {
         {
           name: "label",
           type: "text",
+          label: "Label",
           required: true,
-          admin: {
-            description: "The word or short phrase shown in the menu.",
-          },
+          maxLength: NAV_LABEL_MAX,
         },
         {
           name: "href",
           type: "select",
+          label: "Goes to",
           required: true,
+          // Picked from the real pages and sections only — can't be typed
+          // in, so it can't point somewhere that doesn't exist.
           options: [...navDestinations],
-          admin: {
-            description:
-              "Where this link goes. Pick from the real pages and sections on the site — this can't be typed in, so it can't end up pointing somewhere that doesn't exist.",
-          },
         },
       ],
     },
     {
       name: "bookLabel",
       type: "text",
+      label: "Book button text",
       defaultValue: "Book",
+      maxLength: BOOK_LABEL_MAX,
       admin: {
-        description: "The text on the 'Book' button in the top-right corner.",
+        // Rendered inside NavLinksField, directly under the link list, so
+        // it reads as part of the same menu bar.
+        hidden: true,
       },
     },
     {

@@ -9,7 +9,10 @@ export const Testimonials: CollectionConfig = {
     // Undo / Redo / Discard next to Save — see components/admin/EditHistory.tsx.
     components: {
       edit: {
-        beforeDocumentControls: ["/components/admin/EditHistory#default"],
+        beforeDocumentControls: [
+          "/components/admin/EditHistory#default",
+          "/components/admin/PreviewSizeButtons#default",
+        ],
       },
     },
     hideAPIURL: true,

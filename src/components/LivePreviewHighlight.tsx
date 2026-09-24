@@ -30,9 +30,14 @@ export default function LivePreviewHighlight() {
       "(prefers-reduced-motion: reduce)",
     ).matches;
 
-    target.scrollIntoView({
+    // window.scrollTo rather than target.scrollIntoView(): inside the
+    // same-origin preview iframe, scrollIntoView also scrolls every
+    // scrollable ancestor in the admin page around it — it was pushing the
+    // admin's Live Preview toolbar and the whole edit screen out of view.
+    const scrollMargin = parseFloat(getComputedStyle(target).scrollMarginTop) || 0;
+    window.scrollTo({
+      top: target.getBoundingClientRect().top + window.scrollY - scrollMargin,
       behavior: prefersReducedMotion ? "auto" : "smooth",
-      block: "start",
     });
     target.classList.add(HIGHLIGHT_CLASS);
 

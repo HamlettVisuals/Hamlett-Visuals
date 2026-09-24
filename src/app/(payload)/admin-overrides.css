@@ -168,3 +168,267 @@
   opacity: 0.3;
   cursor: default;
 }
+
+/* Header / Nav link list (components/admin/NavLinksField.tsx): one line per
+   link — drag handle, label, "Goes to" dropdown, ⋯ menu — then the Book
+   button text in the same bordered group. Sized by container query, not
+   viewport, because the edit pane's width depends on whether Live Preview
+   is open: below ~440px of pane the label sits above its dropdown. */
+.nav-links {
+  padding: 16px;
+  border: 1px solid var(--theme-elevation-150);
+  border-radius: 4px;
+}
+
+.nav-links__title {
+  margin: 0 0 4px;
+}
+
+.nav-links__intro {
+  margin: 0 0 12px;
+  color: var(--theme-elevation-500);
+  font-size: 13px;
+}
+
+.nav-links__rows {
+  container-type: inline-size;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.nav-links__row {
+  position: relative;
+  padding: 4px 0;
+  background: var(--theme-bg);
+}
+
+.nav-links__row--dragging {
+  z-index: 2;
+  box-shadow: 0 4px 12px rgb(0 0 0 / 0.15);
+}
+
+.nav-links__line {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.nav-links__handle {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 40px;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: grab;
+  touch-action: none;
+}
+
+.nav-links__handle:active {
+  cursor: grabbing;
+}
+
+.nav-links__handle .icon--drag-handle .fill {
+  fill: var(--theme-elevation-400);
+}
+
+.nav-links__fields {
+  display: grid;
+  flex: 1;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+  gap: 8px;
+  min-width: 0;
+}
+
+/* Payload's inputs carry their own bottom margin and label row; neither
+   belongs on a one-line row. */
+.nav-links__fields .field-type {
+  margin: 0;
+}
+
+@container (max-width: 440px) {
+  .nav-links__fields {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 4px;
+  }
+
+  .nav-links__row {
+    padding: 8px 0;
+    border-bottom: 1px solid var(--theme-elevation-100);
+  }
+
+  .nav-links__row:last-child {
+    border-bottom: 0;
+  }
+}
+
+/* Character counter, pinned inside the right edge of the label box. */
+.nav-links .field-type.text .field-type__wrap {
+  position: relative;
+}
+
+.nav-links .field-type.text input {
+  padding-right: 48px;
+}
+
+/* Payload caps its error bubble at 75% of the input and truncates the
+   text, which cut "This field is required." short in the narrow label box. */
+.nav-links .field-error.tooltip {
+  max-width: none;
+}
+
+.nav-links__counter {
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  transform: translateY(-50%);
+  color: var(--theme-elevation-400);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  pointer-events: none;
+}
+
+.nav-links__counter--full {
+  color: var(--theme-warning-600, #b45309);
+}
+
+.nav-links__menu {
+  flex-shrink: 0;
+}
+
+.nav-links__menu-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 40px;
+}
+
+.nav-links__action {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.nav-links__action .icon {
+  width: 14px;
+  height: 14px;
+}
+
+.nav-links__note {
+  margin: 4px 0 0 36px;
+  color: var(--theme-warning-700, #92400e);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.nav-links__add + .nav-links__note {
+  margin-left: 0;
+}
+
+.nav-links__add {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 12px;
+  margin-top: 8px;
+}
+
+.nav-links__add .btn {
+  margin: 0;
+}
+
+.nav-links__hint {
+  color: var(--theme-elevation-500);
+  font-size: 12px;
+}
+
+.nav-links__book {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--theme-elevation-100);
+}
+
+.nav-links__book .field-type {
+  margin: 0;
+  max-width: 320px;
+}
+
+.nav-links__book .nav-links__intro {
+  margin: 6px 0 0;
+}
+
+/* History comparison for the same list (NavLinksDiff.tsx): one line per link. */
+.nav-links-diff p {
+  margin: 0 0 4px;
+}
+
+/* Live Preview size buttons (components/admin/PreviewSizeButtons.tsx),
+   portaled into Payload's toolbar in place of its breakpoint dropdown,
+   width × height boxes and zoom menu, which are hidden here. The "open in
+   a new window" link stays. */
+.live-preview-toolbar-controls__breakpoint,
+.live-preview-toolbar-controls__device-size,
+.live-preview-toolbar-controls__zoom {
+  display: none;
+}
+
+.live-preview-toolbar {
+  gap: 12px;
+}
+
+.preview-size {
+  display: inline-flex;
+  order: -1;
+  padding: 2px;
+  border-radius: 6px;
+  background: var(--theme-elevation-100);
+}
+
+.preview-size__btn {
+  min-width: 72px;
+  height: 32px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 4px;
+  background: none;
+  color: var(--theme-elevation-700);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.preview-size__btn:hover {
+  color: var(--theme-elevation-1000);
+}
+
+.preview-size__btn--active {
+  background: var(--theme-bg);
+  color: var(--theme-elevation-1000);
+  font-weight: 600;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.12);
+}
+
+.preview-size__btn:focus-visible {
+  outline: 2px solid var(--theme-elevation-800);
+  outline-offset: 1px;
+}
+
+/* Payload gives the preview pane (.live-preview-window__main) height: 100%
+   under a toolbar, so the pane overflows the window by the toolbar's
+   height. The window is overflow: hidden but still scrollable from script,
+   and the preview's own scroll-to-highlight (LivePreviewHighlight) scrolled
+   it — pushing the toolbar out of sight. Letting the pane take only the
+   leftover height removes the overflow, and `clip` stops any scrolling. */
+.live-preview-window {
+  overflow: clip;
+}
+
+.live-preview-window__main {
+  flex: 1 1 0;
+  height: auto;
+  min-height: 0;
+}

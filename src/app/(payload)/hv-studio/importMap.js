@@ -1,8 +1,11 @@
 import { default as default_49f4009bbc7bc7fd7fd116764fa09aa1 } from '../../../components/admin/EditHistory'
+import { default as default_a779bcd001681498b9df2066a3cdc326 } from '../../../components/admin/PreviewSizeButtons'
 import { default as default_f0b47ff3ed1c349a2095a4c32239e4c7 } from '../../../components/admin/InquiryStatusCell'
 import { default as default_e64e3227e8fc271149c5bbc76b35348c } from '../../../components/admin/TestimonialRequestBanner'
 import { default as default_0858cef9b5d1128067511307e25157f9 } from '../../../components/admin/BackToBoardLink'
 import { default as default_1b650ef99724fbd75de054d026e34ba4 } from '../../../components/admin/TestimonialPublishPanel'
+import { default as default_3ff6a48a77222379c05feba297b20132 } from '../../../components/admin/NavLinksField'
+import { default as default_45f306dc284acabb8024fc7078f1d047 } from '../../../components/admin/NavLinksDiff'
 import { default as default_85c066c9e85977a669a8719b5844b2d5 } from '../../../components/admin/PublishButton'
 import { RscEntryLexicalCell as RscEntryLexicalCell_44fe37237e0ebf4470c9990d8cb7b07e } from '@payloadcms/richtext-lexical/rsc'
 import { RscEntryLexicalField as RscEntryLexicalField_44fe37237e0ebf4470c9990d8cb7b07e } from '@payloadcms/richtext-lexical/rsc'
@@ -35,10 +38,13 @@ import { CollectionCards as CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1 } f
 /** @type import('payload').ImportMap */
 export const importMap = {
   "/components/admin/EditHistory#default": default_49f4009bbc7bc7fd7fd116764fa09aa1,
+  "/components/admin/PreviewSizeButtons#default": default_a779bcd001681498b9df2066a3cdc326,
   "/components/admin/InquiryStatusCell#default": default_f0b47ff3ed1c349a2095a4c32239e4c7,
   "/components/admin/TestimonialRequestBanner#default": default_e64e3227e8fc271149c5bbc76b35348c,
   "/components/admin/BackToBoardLink#default": default_0858cef9b5d1128067511307e25157f9,
   "/components/admin/TestimonialPublishPanel#default": default_1b650ef99724fbd75de054d026e34ba4,
+  "/components/admin/NavLinksField#default": default_3ff6a48a77222379c05feba297b20132,
+  "/components/admin/NavLinksDiff#default": default_45f306dc284acabb8024fc7078f1d047,
   "/components/admin/PublishButton#default": default_85c066c9e85977a669a8719b5844b2d5,
   "@payloadcms/richtext-lexical/rsc#RscEntryLexicalCell": RscEntryLexicalCell_44fe37237e0ebf4470c9990d8cb7b07e,
   "@payloadcms/richtext-lexical/rsc#RscEntryLexicalField": RscEntryLexicalField_44fe37237e0ebf4470c9990d8cb7b07e,

@@ -12,7 +12,10 @@ export const BookingCta: GlobalConfig = {
     components: {
       elements: {
         SaveButton: "/components/admin/PublishButton#default",
-        beforeDocumentControls: ["/components/admin/EditHistory#default"],
+        beforeDocumentControls: [
+          "/components/admin/EditHistory#default",
+          "/components/admin/PreviewSizeButtons#default",
+        ],
       },
     },
     group: "Homepage",
