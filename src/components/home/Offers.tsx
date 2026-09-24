@@ -8,7 +8,9 @@ import OfferBadge from "@/components/home/OfferBadge";
 import OfferPrice from "@/components/home/OfferPrice";
 import OfferTerms from "@/components/home/OfferTerms";
 import { resolveCategory } from "@/lib/pricing-rows";
-import type { PricingRow } from "@/payload-types";
+import { serverURL } from "@/lib/server-url";
+import { useScopedLivePreview } from "@/lib/use-scoped-live-preview";
+import type { FeaturedOffer as FeaturedOfferGlobal, PricingRow } from "@/payload-types";
 
 // Offers & pricing section (#offers). Every offer, in category order — the
 // featured one included. Plain rows are hairline-divided; the featured row is
@@ -30,11 +32,14 @@ import type { PricingRow } from "@/payload-types";
 // (always shown). The reveal is a plain CSS height/opacity transition
 // (.offer-disclosure) — no animation library, still under
 // prefers-reduced-motion.
+//
+// "Featured" is the package picked in the Featured Offer global, followed
+// live while that global is open in Live Preview. With no rows to show the
+// whole section is left out rather than leaving a bare heading.
 
-function OfferRow({ offer }: { offer: PricingRow }) {
+function OfferRow({ offer, isFeatured }: { offer: PricingRow; isFeatured: boolean }) {
   const [open, setOpen] = useState(false);
   const detailsId = `offer-details-${offer.id}`;
-  const isFeatured = offer.featured === true;
   const category = resolveCategory(offer.category);
   const categorySlug = category?.slug ?? "";
   const features = (offer.features ?? []).map((feature) => feature.text);
@@ -118,7 +123,25 @@ function OfferRow({ offer }: { offer: PricingRow }) {
   );
 }
 
-export default function Offers({ pricingRows }: { pricingRows: PricingRow[] }) {
+export default function Offers({
+  pricingRows,
+  featuredOffer,
+}: {
+  pricingRows: PricingRow[];
+  featuredOffer: FeaturedOfferGlobal;
+}) {
+  const { data } = useScopedLivePreview<FeaturedOfferGlobal>({
+    initialData: featuredOffer,
+    serverURL,
+    globalSlug: "featured-offer",
+    apiRoute: "/hv-studio/api",
+    depth: 0,
+  });
+  const picked = data.featuredPackage;
+  const featuredId = typeof picked === "object" && picked !== null ? picked.id : picked;
+
+  if (pricingRows.length === 0) return null;
+
   return (
     <section id="offers" className="border-t border-hairline">
       <div className="mx-auto max-w-7xl px-gutter py-section">
@@ -127,7 +150,7 @@ export default function Offers({ pricingRows }: { pricingRows: PricingRow[] }) {
         </h2>
         <ul className="mt-8">
           {pricingRows.map((offer) => (
-            <OfferRow key={offer.id} offer={offer} />
+            <OfferRow key={offer.id} offer={offer} isFeatured={offer.id === featuredId} />
           ))}
         </ul>
       </div>

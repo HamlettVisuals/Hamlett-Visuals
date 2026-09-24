@@ -3,8 +3,9 @@ import { isAdmin } from "#src/access/isAdmin.ts";
 import { CLOSE_EDITOR_BUTTON } from "#src/lib/admin-components.ts";
 
 // Mirrors the `Offer` shape in src/lib/site-content.ts — one row per
-// category, rendered by the Offers & pricing section and (for the row
-// flagged `featured`) the standalone Hot offer block.
+// category, rendered by the Offers & pricing section and (for the row picked
+// in the Featured Offer global's "Featured package") the standalone Hot offer
+// block.
 export const PricingRows: CollectionConfig = {
   slug: "pricing-rows",
   labels: {
@@ -34,9 +35,9 @@ export const PricingRows: CollectionConfig = {
     },
     hideAPIURL: true,
     useAsTitle: "title",
-    defaultColumns: ["title", "category", "priceAmount", "featured"],
+    defaultColumns: ["title", "category", "priceAmount"],
     description:
-      "Your packages and pricing, shown in the Offers & Pricing section. Check 'featured' on one row to also spotlight it in the 'Popular right now' section.",
+      "Your packages and pricing, shown in the Offers & Pricing section. To spotlight one in the 'Popular right now' section, pick it on the Featured Offer page.",
   },
   access: {
     read: () => true,
@@ -124,13 +125,17 @@ export const PricingRows: CollectionConfig = {
       },
     },
     {
+      // Retired: the Featured Offer global's "Featured package" dropdown
+      // picks the spotlighted package now (globals/FeaturedOffer.ts). Kept,
+      // hidden and unread, so the column isn't dropped; the one-time
+      // carry-over is src/scripts/carryOverFeaturedPackage.ts.
       name: "featured",
       type: "checkbox",
       defaultValue: false,
       admin: {
-        description:
-          "Check this to spotlight this package in the 'Popular right now' section. Only one package should be featured at a time.",
-        position: "sidebar",
+        hidden: true,
+        disableListColumn: true,
+        disableListFilter: true,
       },
     },
     {

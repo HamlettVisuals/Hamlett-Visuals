@@ -35,7 +35,9 @@ export default async function Home() {
   const hero = await payload.findGlobal({ slug: "hero" });
   const about = await payload.findGlobal({ slug: "about" });
   const categoriesIntro = await payload.findGlobal({ slug: "categories-intro" });
-  const featuredOffer = await payload.findGlobal({ slug: "featured-offer" });
+  // Depth 2: the featured package, then its category (for the link and the
+  // hidden/trashed check in components/home/FeaturedOffer.tsx).
+  const featuredOffer = await payload.findGlobal({ slug: "featured-offer", depth: 2 });
   const { docs: allPricingRows } = await payload.find({
     collection: "pricing-rows",
     depth: 1,
@@ -43,9 +45,11 @@ export default async function Home() {
     limit: 0,
   });
   // `category` is required, so a null here means it's in the Trash (Payload
-  // populates trashed relations as null) — hide the package rather than
-  // show "View gallery" / "Book" links to a category that no longer exists.
-  const pricingRows = allPricingRows.filter((row) => resolveCategory(row.category));
+  // populates trashed relations as null); a hidden category's portfolio page
+  // 404s. Either way, hide the package rather than show "View gallery" /
+  // "Book" links to a category visitors can't open — the same rule as the
+  // Featured Offer's package picker (lib/featured-package.ts).
+  const pricingRows = allPricingRows.filter((row) => resolveCategory(row.category)?.published);
   const testimonialsTeaser = await payload.findGlobal({
     slug: "testimonials-teaser",
   });
@@ -70,10 +74,10 @@ export default async function Home() {
       <About about={about} />
 
       {/* 4. Hot offer */}
-      <FeaturedOffer featuredOffer={featuredOffer} pricingRows={pricingRows} />
+      <FeaturedOffer featuredOffer={featuredOffer} />
 
       {/* 5. Offers & pricing */}
-      <Offers pricingRows={pricingRows} />
+      <Offers pricingRows={pricingRows} featuredOffer={featuredOffer} />
 
       {/* 6. General booking CTA */}
       <BookingCta bookingCta={bookingCta} siteSettings={siteSettings} />

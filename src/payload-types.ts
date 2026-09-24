@@ -357,7 +357,7 @@ export interface Testimonial {
   deletedAt?: string | null;
 }
 /**
- * Your packages and pricing, shown in the Offers & Pricing section. Check 'featured' on one row to also spotlight it in the 'Popular right now' section.
+ * Your packages and pricing, shown in the Offers & Pricing section. To spotlight one in the 'Popular right now' section, pick it on the Featured Offer page.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "pricing-rows".
@@ -400,9 +400,6 @@ export interface PricingRow {
    * A small set of sample photos shown with this package.
    */
   gallery?: (number | Photo)[] | null;
-  /**
-   * Check this to spotlight this package in the 'Popular right now' section. Only one package should be featured at a time.
-   */
   featured?: boolean | null;
   /**
    * Controls the order packages appear in — lower numbers show up first.
@@ -1392,7 +1389,7 @@ export interface About {
   createdAt?: string | null;
 }
 /**
- * The 'Popular right now' spotlight section. To change WHICH package is featured here, go to Pricing / Offer Rows and check 'featured' on the one you want — this page only controls the heading and badge text around it.
+ * The 'Popular right now' spotlight on your homepage. Pick which package to feature below.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "featured-offer".
@@ -1400,11 +1397,15 @@ export interface About {
 export interface FeaturedOffer {
   id: number;
   /**
-   * The title above the featured package.
+   * Pick the package to spotlight, or None to hide this section.
+   */
+  featuredPackage?: (number | null) | PricingRow;
+  /**
+   * The title above the featured package. Up to 20 characters, so it stays on one line on phones.
    */
   heading: string;
   /**
-   * The small highlighted tag on the featured package.
+   * The small highlighted tag on the featured package. Up to 20 characters.
    */
   badgeLabel?: string | null;
   updatedAt?: string | null;
@@ -1679,6 +1680,7 @@ export interface AboutSelect<T extends boolean = true> {
  * via the `definition` "featured-offer_select".
  */
 export interface FeaturedOfferSelect<T extends boolean = true> {
+  featuredPackage?: T;
   heading?: T;
   badgeLabel?: T;
   updatedAt?: T;

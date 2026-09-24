@@ -18,6 +18,22 @@ const HIGHLIGHT_DURATION_MS = 1800;
 // and briefly outlines it via the .live-preview-highlight class (see
 // globals.css). Only ever set by Payload's own Live Preview URL function —
 // not a real, navigable link anywhere on the site.
+// How far below the viewport top the target should land: clear of the
+// sticky header (components/Nav.tsx, #site-header), measured live since it's
+// taller on phones than on desktop, so the section's top edge (and the
+// highlight outline drawn inside it) sits just under it. window.scrollTo ignores html's scroll-padding-top (that
+// only applies to anchor jumps), so it's added here. A target's own
+// scroll-margin-top still wins if larger. The header itself, or anything
+// inside it, needs no offset.
+function headerOffset(target: HTMLElement): number {
+  const ownMargin = parseFloat(getComputedStyle(target).scrollMarginTop) || 0;
+  const header = document.getElementById("site-header");
+  if (!header || header.contains(target) || target.contains(header)) return ownMargin;
+  const { position } = getComputedStyle(header);
+  if (position !== "sticky" && position !== "fixed") return ownMargin;
+  return Math.max(ownMargin, header.getBoundingClientRect().height);
+}
+
 export default function LivePreviewHighlight() {
   useEffect(() => {
     const { hash } = window.location;
@@ -41,9 +57,8 @@ export default function LivePreviewHighlight() {
     // same-origin preview iframe, scrollIntoView also scrolls every
     // scrollable ancestor in the admin page around it — it was pushing the
     // admin's Live Preview toolbar and the whole edit screen out of view.
-    const scrollMargin = parseFloat(getComputedStyle(target).scrollMarginTop) || 0;
     window.scrollTo({
-      top: target.getBoundingClientRect().top + window.scrollY - scrollMargin,
+      top: target.getBoundingClientRect().top + window.scrollY - headerOffset(target),
       behavior: prefersReducedMotion ? "auto" : "smooth",
     });
     target.classList.add(HIGHLIGHT_CLASS);

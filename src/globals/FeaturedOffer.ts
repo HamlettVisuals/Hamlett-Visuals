@@ -1,10 +1,13 @@
 import type { GlobalConfig } from "payload";
 import { publicReadAdminWrite } from "#src/access/isAdmin.ts";
+import { BADGE_TEXT_MAX, HEADING_MAX } from "#src/lib/featured-offer-limits.ts";
+import { AVAILABLE_PACKAGE_WHERE } from "#src/lib/featured-package.ts";
 import { serverURL } from "#src/lib/server-url.ts";
 
-// The offer shown here is whichever row in the Pricing / Offer Rows
-// collection has `featured` checked — this global is just the section
-// heading and badge text around it (src/components/home/FeaturedOffer.tsx).
+// The "Popular right now" spotlight (src/components/home/FeaturedOffer.tsx):
+// which Pricing / Offer Row it features, plus the heading and badge text
+// around it. With no package picked, or one that's since been trashed or
+// whose category is hidden or trashed, the section isn't shown at all.
 export const FeaturedOffer: GlobalConfig = {
   slug: "featured-offer",
   label: "Featured Offer",
@@ -21,16 +24,16 @@ export const FeaturedOffer: GlobalConfig = {
     },
     group: "Homepage",
     description:
-      "The 'Popular right now' spotlight section. To change WHICH package is featured here, go to Pricing / Offer Rows and check 'featured' on the one you want — this page only controls the heading and badge text around it.",
+      "The 'Popular right now' spotlight on your homepage. Pick which package to feature below.",
     // Same Live Preview treatment as Hero/About/CategoriesIntro — opens
     // automatically and scrolls to/highlights the #hot-offer section via
-    // LivePreviewHighlight. Only heading/badgeLabel are wired here — the
-    // featured package's own title/price/etc. come from whichever Pricing /
-    // Offer Row has `featured` checked, which doesn't live-sync (see that
-    // collection's note in payload.config.ts).
+    // LivePreviewHighlight, falling back to the Offers & pricing section
+    // while no package is featured (#hot-offer isn't rendered then). All
+    // three fields follow the form as you type, the picked package's own
+    // details included (FeaturedOffer.tsx fetches it at depth 2).
     livePreview: {
       openByDefault: true,
-      url: () => `${serverURL}/#live-preview:hot-offer`,
+      url: () => `${serverURL}/#live-preview:hot-offer,offers`,
     },
   },
   access: publicReadAdminWrite,
@@ -39,20 +42,42 @@ export const FeaturedOffer: GlobalConfig = {
   versions: true,
   fields: [
     {
+      // Replaces the old per-row `featured` checkbox on Pricing / Offer Rows
+      // (kept there, hidden, so the column isn't dropped). A dropdown with a
+      // "None" choice (components/admin/FeaturedPackageField.tsx) listing
+      // only packages the site can show; filterOptions is the same rule,
+      // enforced on save.
+      name: "featuredPackage",
+      type: "relationship",
+      relationTo: "pricing-rows",
+      hasMany: false,
+      label: "Featured package",
+      filterOptions: AVAILABLE_PACKAGE_WHERE,
+      admin: {
+        description: "Pick the package to spotlight, or None to hide this section.",
+        components: {
+          Field: "/components/admin/FeaturedPackageField#default",
+        },
+      },
+    },
+    {
       name: "heading",
       type: "text",
       required: true,
       defaultValue: "Popular right now",
+      maxLength: HEADING_MAX,
       admin: {
-        description: "The title above the featured package.",
+        description: `The title above the featured package. Up to ${HEADING_MAX} characters, so it stays on one line on phones.`,
       },
     },
     {
       name: "badgeLabel",
       type: "text",
+      label: "Badge text",
       defaultValue: "Hot offer",
+      maxLength: BADGE_TEXT_MAX,
       admin: {
-        description: "The small highlighted tag on the featured package.",
+        description: `The small highlighted tag on the featured package. Up to ${BADGE_TEXT_MAX} characters.`,
       },
     },
   ],
