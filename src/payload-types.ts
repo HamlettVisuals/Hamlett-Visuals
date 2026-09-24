@@ -79,6 +79,7 @@ export interface Config {
     backstage: Backstage;
     'testimonial-submissions': TestimonialSubmission;
     'testimonial-photos': TestimonialPhoto;
+    logos: Logo;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -98,6 +99,7 @@ export interface Config {
     backstage: BackstageSelect<false> | BackstageSelect<true>;
     'testimonial-submissions': TestimonialSubmissionsSelect<false> | TestimonialSubmissionsSelect<true>;
     'testimonial-photos': TestimonialPhotosSelect<false> | TestimonialPhotosSelect<true>;
+    logos: LogosSelect<false> | LogosSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -741,6 +743,36 @@ export interface TestimonialPhoto {
   };
 }
 /**
+ * Logo files uploaded from Site Settings. Only the one picked there is shown on the site.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "logos".
+ */
+export interface Logo {
+  id: number;
+  updatedAt: string;
+  createdAt: string;
+  url?: string | null;
+  thumbnailURL?: string | null;
+  filename?: string | null;
+  mimeType?: string | null;
+  filesize?: number | null;
+  width?: number | null;
+  height?: number | null;
+  focalX?: number | null;
+  focalY?: number | null;
+  sizes?: {
+    display?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+  };
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
@@ -811,6 +843,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'testimonial-photos';
         value: number | TestimonialPhoto;
+      } | null)
+    | ({
+        relationTo: 'logos';
+        value: number | Logo;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -1148,6 +1184,37 @@ export interface TestimonialPhotosSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "logos_select".
+ */
+export interface LogosSelect<T extends boolean = true> {
+  updatedAt?: T;
+  createdAt?: T;
+  url?: T;
+  thumbnailURL?: T;
+  filename?: T;
+  mimeType?: T;
+  filesize?: T;
+  width?: T;
+  height?: T;
+  focalX?: T;
+  focalY?: T;
+  sizes?:
+    | T
+    | {
+        display?:
+          | T
+          | {
+              url?: T;
+              width?: T;
+              height?: T;
+              mimeType?: T;
+              filesize?: T;
+              filename?: T;
+            };
+      };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv_select".
  */
 export interface PayloadKvSelect<T extends boolean = true> {
@@ -1187,7 +1254,7 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
   createdAt?: T;
 }
 /**
- * The menu bar at the top of every page: the links people see and the 'Book' button on the right.
+ * The menu bar at the top of every page: the links people see and the 'Book' button on the right. Your logo on the left is set in Site Settings.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "header-nav".
@@ -1439,7 +1506,7 @@ export interface FinalCtaFooter {
   createdAt?: string | null;
 }
 /**
- * Studio name, contact details, Instagram, and the small icon/preview image used when the site is shared or shows up in a browser tab. These values are reused in several places across the site.
+ * Studio name, logo, contact details, Instagram, and the small icon/preview image used when the site is shared or shows up in a browser tab. These values are reused in several places across the site.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "site-settings".
@@ -1450,6 +1517,10 @@ export interface SiteSetting {
    * Your studio's name, used across the site.
    */
   siteName: string;
+  /**
+   * Your logo, shown at the top-left of every page and in the footer. Best as a PNG with a transparent background. Leave empty to show your studio name as text instead.
+   */
+  logo?: (number | null) | Logo;
   /**
    * The small icon shown in a browser tab. Works best as a simple square image.
    */
@@ -1645,6 +1716,7 @@ export interface FinalCtaFooterSelect<T extends boolean = true> {
  */
 export interface SiteSettingsSelect<T extends boolean = true> {
   siteName?: T;
+  logo?: T;
   favicon?: T;
   ogImage?: T;
   ogImageAlt?: T;

@@ -68,7 +68,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
       className={`${fraunces.variable} ${inter.variable} h-full`}
     >
       <body className="flex min-h-full flex-col">
-        <Nav headerNav={headerNav} />
+        <Nav headerNav={headerNav} siteSettings={siteSettings} />
         <main className="flex flex-1 flex-col">{children}</main>
         <Footer
           finalCtaFooter={finalCtaFooter}

@@ -5,7 +5,10 @@ import Link from "next/link";
 import Wordmark from "@/components/Wordmark";
 import { serverURL } from "@/lib/server-url";
 import { useScopedLivePreview } from "@/lib/use-scoped-live-preview";
-import type { HeaderNav as HeaderNavGlobal } from "@/payload-types";
+import type {
+  HeaderNav as HeaderNavGlobal,
+  SiteSetting,
+} from "@/payload-types";
 
 // Single-page site: most nav items are anchors into the homepage sections;
 // Testimonials and Book are their own routed pages.
@@ -17,12 +20,14 @@ import type { HeaderNav as HeaderNavGlobal } from "@/payload-types";
 // always present at 1px (transparent -> hairline) so toggling it never shifts
 // layout. This scroll/border behaviour is unchanged from the previous pass.
 //
-// The logo is the shared <Wordmark> (also used in the footer).
+// The logo is the shared <Wordmark> (also used in the footer): the Site
+// Settings logo upload, or the studio name as text when none is set.
 //
 // navLinks and the Book button come from the Header/Nav global (see
 // globals/HeaderNav.ts) — passed in as `headerNav` from
 // (site)/layout.tsx, then kept live via useScopedLivePreview the same way
-// Footer.tsx does for its two globals.
+// Footer.tsx does for its two globals. The logo and studio name come from
+// the Site Settings global (`siteSettings`), subscribed separately.
 
 // A few pixels — enough to mean "we've left the top" without flickering on
 // sub-pixel scroll jitter or elastic overscroll.
@@ -52,11 +57,23 @@ function MenuIcon({ open }: { open: boolean }) {
   );
 }
 
-export default function Nav({ headerNav }: { headerNav: HeaderNavGlobal }) {
+export default function Nav({
+  headerNav,
+  siteSettings,
+}: {
+  headerNav: HeaderNavGlobal;
+  siteSettings: SiteSetting;
+}) {
   const { data } = useScopedLivePreview<HeaderNavGlobal>({
     initialData: headerNav,
     serverURL,
     globalSlug: "header-nav",
+    apiRoute: "/hv-studio/api",
+  });
+  const { data: settings } = useScopedLivePreview<SiteSetting>({
+    initialData: siteSettings,
+    serverURL,
+    globalSlug: "site-settings",
     apiRoute: "/hv-studio/api",
   });
   const navLinks = data.navLinks ?? [];
@@ -150,7 +167,11 @@ export default function Nav({ headerNav }: { headerNav: HeaderNavGlobal }) {
       }`}
     >
       <nav className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-        <Wordmark onClick={() => setMenuOpen(false)} />
+        <Wordmark
+          siteName={settings.siteName || "Hamlett Visuals"}
+          logo={settings.logo}
+          onClick={() => setMenuOpen(false)}
+        />
 
         {/* Desktop: quiet .link items, then the one solid Book button. */}
         <div className="hidden items-center gap-8 header:flex">

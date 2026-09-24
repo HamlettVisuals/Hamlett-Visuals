@@ -16,7 +16,7 @@ export const HeaderNav: GlobalConfig = {
     },
     group: "Site",
     description:
-      "The menu bar at the top of every page: the links people see and the 'Book' button on the right.",
+      "The menu bar at the top of every page: the links people see and the 'Book' button on the right. Your logo on the left is set in Site Settings.",
     // Same Live Preview treatment as the other wired globals — opens
     // automatically and scrolls to/highlights the header via
     // LivePreviewHighlight (see Nav.tsx's id="site-header").

@@ -51,7 +51,11 @@ export default function Footer({
   return (
     <footer id="footer" className="border-t border-hairline bg-canvas-tint">
       <div className="mx-auto flex max-w-md flex-col items-center px-gutter pt-section pb-16 text-center">
-        <Wordmark />
+        <Wordmark
+          siteName={settings.siteName || "Hamlett Visuals"}
+          logo={settings.logo}
+          variant="footer"
+        />
 
         <p className="mt-5 font-display text-title text-ink">
           {data.signOffLine}

@@ -40,6 +40,7 @@ import { ChecklistTemplates } from "#src/collections/ChecklistTemplates.ts";
 import { Backstage } from "#src/collections/Backstage.ts";
 import { TestimonialSubmissions } from "#src/collections/TestimonialSubmissions.ts";
 import { TestimonialPhotos } from "#src/collections/TestimonialPhotos.ts";
+import { Logos } from "#src/collections/Logos.ts";
 
 import { HeaderNav } from "#src/globals/HeaderNav.ts";
 import { Hero } from "#src/globals/Hero.ts";
@@ -182,6 +183,7 @@ export default buildConfig({
     Backstage,
     TestimonialSubmissions,
     TestimonialPhotos,
+    Logos,
   ],
   globals: [
     HeaderNav,
@@ -227,6 +229,7 @@ export default buildConfig({
       collections: {
         photos: true,
         "testimonial-photos": true,
+        logos: true,
       },
       bucket: process.env.R2_BUCKET ?? "",
       config: {

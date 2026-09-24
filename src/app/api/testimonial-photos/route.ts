@@ -1,5 +1,6 @@
 import { getPayload } from "payload";
 import config from "@payload-config";
+import { RASTER_IMAGE_MIME_TYPES } from "@/lib/raster-image-types";
 
 // Public, token-gated upload target for the testimonial submission form
 // (/testimonial-request/[token]) — one photo per request, rather than
@@ -32,8 +33,8 @@ export async function POST(request: Request) {
     return Response.json({ error: "Invalid upload." }, { status: 400 });
   }
 
-  if (!file.type.startsWith("image/")) {
-    return Response.json({ error: "Only image files are allowed." }, { status: 400 });
+  if (!RASTER_IMAGE_MIME_TYPES.includes(file.type)) {
+    return Response.json({ error: "Only photo files (JPEG, PNG, WebP, HEIC) are allowed." }, { status: 400 });
   }
 
   if (file.size > MAX_PHOTO_BYTES) {

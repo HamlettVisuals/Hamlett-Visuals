@@ -1,5 +1,6 @@
 import type { CollectionConfig } from "payload";
 import { isAdmin } from "#src/access/isAdmin.ts";
+import { RASTER_IMAGE_MIME_TYPES } from "#src/lib/raster-image-types.ts";
 
 // Photos a client attaches to a testimonial submission (see
 // TestimonialSubmissions.ts). Deliberately a separate upload collection from
@@ -27,7 +28,7 @@ export const TestimonialPhotos: CollectionConfig = {
     delete: isAdmin,
   },
   upload: {
-    mimeTypes: ["image/*"],
+    mimeTypes: RASTER_IMAGE_MIME_TYPES,
     imageSizes: [
       {
         name: "thumbnail",

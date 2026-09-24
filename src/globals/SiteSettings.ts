@@ -18,7 +18,7 @@ export const SiteSettings: GlobalConfig = {
     },
     group: "Site",
     description:
-      "Studio name, contact details, Instagram, and the small icon/preview image used when the site is shared or shows up in a browser tab. These values are reused in several places across the site.",
+      "Studio name, logo, contact details, Instagram, and the small icon/preview image used when the site is shared or shows up in a browser tab. These values are reused in several places across the site.",
     // Same Live Preview treatment as the other wired globals (openByDefault
     // + scroll-to-highlight), but this data isn't one homepage section —
     // it's cross-cutting (Footer, Booking CTA, and the homepage Instagram
@@ -45,6 +45,18 @@ export const SiteSettings: GlobalConfig = {
       defaultValue: "Hamlett Visuals",
       admin: {
         description: "Your studio's name, used across the site.",
+      },
+    },
+    {
+      // Rendered by components/Wordmark.tsx in both the header (Nav.tsx)
+      // and the footer. Alt text is derived from siteName above, and an
+      // empty field falls back to siteName as text — see Wordmark.tsx.
+      name: "logo",
+      type: "upload",
+      relationTo: "logos",
+      admin: {
+        description:
+          "Your logo, shown at the top-left of every page and in the footer. Best as a PNG with a transparent background. Leave empty to show your studio name as text instead.",
       },
     },
     {

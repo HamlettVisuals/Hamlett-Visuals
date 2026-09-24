@@ -1,5 +1,6 @@
 import type { CollectionConfig } from "payload";
 import { isAdmin } from "#src/access/isAdmin.ts";
+import { RASTER_IMAGE_MIME_TYPES } from "#src/lib/raster-image-types.ts";
 
 export const Photos: CollectionConfig = {
   slug: "photos",
@@ -19,7 +20,7 @@ export const Photos: CollectionConfig = {
     delete: isAdmin,
   },
   upload: {
-    mimeTypes: ["image/*"],
+    mimeTypes: RASTER_IMAGE_MIME_TYPES,
     imageSizes: [
       {
         name: "thumbnail",
