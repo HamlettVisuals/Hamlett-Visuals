@@ -32,7 +32,8 @@ const typingGroupMs = 1000;
 // On upload collections (Photos, Backstage) the pending file and its crop /
 // focal-point edits live in Payload's UploadEdits provider, outside form
 // state, so a snapshot can't bring them back. These fields are left out of
-// undo/redo (always kept as they currently are); Discard still restores them.
+// undo/redo (always kept as they currently are). Discard handles a pending
+// file change by reloading the page — see discard() below.
 const uploadMetaPaths = new Set([
   "file",
   "filename",
@@ -305,10 +306,19 @@ export default function EditHistory() {
   const discard = useCallback(() => {
     const baseline = history.baseline();
     if (!baseline) return;
+    // Payload's Upload field keeps its own "file removed" flag and preview
+    // (elements/Upload's removedFile / fileSrc state), which no form-state
+    // restore can reach — the saved file stays hidden behind the pending
+    // one. So when a file change is pending, reset the form (so the
+    // leave-page warning stays quiet) and reload to show the saved record.
+    const pendingFile = getFields().file?.value;
+    const fileChanged =
+      pendingFile instanceof File || !same(pendingFile ?? null, baseline.state.file?.value ?? null);
     restore(0, { includeUploadMeta: true });
     setModified(false);
     history.reset(baseline.state);
-  }, [history, restore, setModified]);
+    if (fileChanged) setTimeout(() => window.location.reload(), 100);
+  }, [getFields, history, restore, setModified]);
 
   // Ctrl+Z / Ctrl+Shift+Z / Ctrl+Y (Cmd on Mac), only outside text boxes and
   // only while no drawer or modal (which may hold its own form) is open.
