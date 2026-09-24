@@ -112,6 +112,29 @@ export function stageDateSortValue(inquiry: StageDateSource): number {
   return Number.isNaN(time) ? Number.POSITIVE_INFINITY : time;
 }
 
+// Column order, shared by Board.tsx and MobileList.tsx: stage date first
+// (see stageDateSortValue above), then — for ties, which includes every
+// undated card and the whole Wrap-Up column (no stage date at all) — when
+// the inquiry came in, oldest first, then id. Explicit rather than leaning
+// on sort stability: the server fetch is ordered by last-updated, so a tie
+// used to fall back to that and any edit (even a trash + restore) could
+// reshuffle undated cards. Equality is checked before subtracting because
+// two undated cards are Infinity - Infinity = NaN, not 0.
+export function compareByStageDate(
+  a: StageDateSource & { id: number },
+  b: StageDateSource & { id: number },
+): number {
+  const aStage = stageDateSortValue(a);
+  const bStage = stageDateSortValue(b);
+  if (aStage !== bStage) return aStage - bStage;
+
+  const aCreated = a.createdAt ? new Date(a.createdAt).getTime() : Number.POSITIVE_INFINITY;
+  const bCreated = b.createdAt ? new Date(b.createdAt).getTime() : Number.POSITIVE_INFINITY;
+  if (aCreated !== bCreated) return aCreated - bCreated;
+
+  return a.id - b.id;
+}
+
 // Populates a plain <input type="date">'s value from a stored date-only
 // field. Deliberately a raw string slice, not a Date round-trip through
 // parseCalendarDate: Payload always stores these as "YYYY-MM-DDT00:00:00.000Z"

@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { getCategoryColor } from "@/lib/category-colors";
 import styles from "./KanbanBoard.module.css";
-import { stageDateLabel, stageDateSortValue } from "./format";
+import { compareByStageDate, stageDateLabel } from "./format";
 import { inquiryClient, STAGES, type BoardInquiry, type CategoryOption, type StageValue } from "./types";
 
 // The mobile (< 768px, see KanbanBoard.module.css) replacement for the
@@ -78,7 +78,7 @@ export default function MobileBoardList({
       {STAGES.map((stageMeta) => {
         const stageItems = filtered
           .filter((item) => item.stage === stageMeta.value)
-          .sort((a, b) => stageDateSortValue(a) - stageDateSortValue(b));
+          .sort(compareByStageDate);
         const isCollapsed = collapsedStages.has(stageMeta.value);
 
         return (

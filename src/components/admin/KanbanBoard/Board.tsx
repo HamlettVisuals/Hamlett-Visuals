@@ -25,7 +25,7 @@ import TemplatesDrawer, { TEMPLATES_DRAWER_SLUG } from "./TemplatesDrawer";
 import { getCategoryColor } from "@/lib/category-colors";
 import type { Inquiry } from "@/payload-types";
 import styles from "./KanbanBoard.module.css";
-import { stageDateSortValue } from "./format";
+import { compareByStageDate } from "./format";
 import {
   inquiryClient,
   isStageValue,
@@ -36,12 +36,12 @@ import {
   type TemplateWithCategory,
 } from "./types";
 
-// Oldest/soonest-first within a column — see stageDateSortValue's own
-// comment for why that's the right direction for every stage, not just
-// Lead. A fresh array each call (Array.prototype.sort mutates in place),
-// since the inputs here are always a just-built .filter() result anyway.
+// Oldest/soonest-first within a column, ties by created date — see
+// compareByStageDate. A fresh array each call (Array.prototype.sort mutates
+// in place), since the inputs here are always a just-built .filter() result
+// anyway.
 function sortByStageDate(inquiries: BoardInquiry[]): BoardInquiry[] {
-  return [...inquiries].sort((a, b) => stageDateSortValue(a) - stageDateSortValue(b));
+  return [...inquiries].sort(compareByStageDate);
 }
 
 type ViewMode = "board" | "calendar";
