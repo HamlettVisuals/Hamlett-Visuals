@@ -1,6 +1,7 @@
 import type { CollectionConfig } from "payload";
 import { isAdmin } from "#src/access/isAdmin.ts";
 import { RASTER_IMAGE_MIME_TYPES } from "#src/lib/raster-image-types.ts";
+import { CLOSE_EDITOR_BUTTON } from "#src/lib/admin-components.ts";
 
 export const Photos: CollectionConfig = {
   slug: "photos",
@@ -14,6 +15,15 @@ export const Photos: CollectionConfig = {
           "/components/admin/EditHistory#default",
           "/components/admin/PreviewSizeButtons#default",
         ],
+      },
+      // ✕ back to this list, in the top bar of the Edit and History tabs.
+      // See components/admin/CloseEditorButton.tsx.
+      views: {
+        edit: {
+          default: { actions: [CLOSE_EDITOR_BUTTON] },
+          versions: { actions: [CLOSE_EDITOR_BUTTON] },
+          version: { actions: [CLOSE_EDITOR_BUTTON] },
+        },
       },
     },
     hideAPIURL: true,

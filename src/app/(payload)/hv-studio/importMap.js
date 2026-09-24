@@ -1,14 +1,16 @@
 import { CategoryNameCell as CategoryNameCell_34f53f145c1dd1973f992a6af63ac90d } from '../../../components/admin/CategoryCells'
-import { CategoryThumbnailCell as CategoryThumbnailCell_34f53f145c1dd1973f992a6af63ac90d } from '../../../components/admin/CategoryCells'
 import { CategoryStatusCell as CategoryStatusCell_34f53f145c1dd1973f992a6af63ac90d } from '../../../components/admin/CategoryCells'
+import { default as default_4318ce57f942bf59d91183db3cbd0fbb } from '../../../components/admin/ShowOnWebsiteField'
+import { default as default_05d63ad5a72bb5528538c90265118706 } from '../../../components/admin/CharacterCounter'
+import { CategoryThumbnailCell as CategoryThumbnailCell_34f53f145c1dd1973f992a6af63ac90d } from '../../../components/admin/CategoryCells'
 import { CategoriesListDescription as CategoriesListDescription_34f53f145c1dd1973f992a6af63ac90d } from '../../../components/admin/CategoryCells'
 import { default as default_49f4009bbc7bc7fd7fd116764fa09aa1 } from '../../../components/admin/EditHistory'
 import { default as default_a779bcd001681498b9df2066a3cdc326 } from '../../../components/admin/PreviewSizeButtons'
+import { default as default_6aeb1fbc8f89ed5df824f9ed2a8ef3f4 } from '../../../components/admin/CloseEditorButton'
 import { default as default_f0b47ff3ed1c349a2095a4c32239e4c7 } from '../../../components/admin/InquiryStatusCell'
 import { default as default_e64e3227e8fc271149c5bbc76b35348c } from '../../../components/admin/TestimonialRequestBanner'
 import { default as default_0858cef9b5d1128067511307e25157f9 } from '../../../components/admin/BackToBoardLink'
 import { default as default_1b650ef99724fbd75de054d026e34ba4 } from '../../../components/admin/TestimonialPublishPanel'
-import { default as default_05d63ad5a72bb5528538c90265118706 } from '../../../components/admin/CharacterCounter'
 import { default as default_3ff6a48a77222379c05feba297b20132 } from '../../../components/admin/NavLinksField'
 import { default as default_45f306dc284acabb8024fc7078f1d047 } from '../../../components/admin/NavLinksDiff'
 import { default as default_85c066c9e85977a669a8719b5844b2d5 } from '../../../components/admin/PublishButton'
@@ -43,16 +45,18 @@ import { CollectionCards as CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1 } f
 /** @type import('payload').ImportMap */
 export const importMap = {
   "/components/admin/CategoryCells#CategoryNameCell": CategoryNameCell_34f53f145c1dd1973f992a6af63ac90d,
-  "/components/admin/CategoryCells#CategoryThumbnailCell": CategoryThumbnailCell_34f53f145c1dd1973f992a6af63ac90d,
   "/components/admin/CategoryCells#CategoryStatusCell": CategoryStatusCell_34f53f145c1dd1973f992a6af63ac90d,
+  "/components/admin/ShowOnWebsiteField#default": default_4318ce57f942bf59d91183db3cbd0fbb,
+  "/components/admin/CharacterCounter#default": default_05d63ad5a72bb5528538c90265118706,
+  "/components/admin/CategoryCells#CategoryThumbnailCell": CategoryThumbnailCell_34f53f145c1dd1973f992a6af63ac90d,
   "/components/admin/CategoryCells#CategoriesListDescription": CategoriesListDescription_34f53f145c1dd1973f992a6af63ac90d,
   "/components/admin/EditHistory#default": default_49f4009bbc7bc7fd7fd116764fa09aa1,
   "/components/admin/PreviewSizeButtons#default": default_a779bcd001681498b9df2066a3cdc326,
+  "/components/admin/CloseEditorButton#default": default_6aeb1fbc8f89ed5df824f9ed2a8ef3f4,
   "/components/admin/InquiryStatusCell#default": default_f0b47ff3ed1c349a2095a4c32239e4c7,
   "/components/admin/TestimonialRequestBanner#default": default_e64e3227e8fc271149c5bbc76b35348c,
   "/components/admin/BackToBoardLink#default": default_0858cef9b5d1128067511307e25157f9,
   "/components/admin/TestimonialPublishPanel#default": default_1b650ef99724fbd75de054d026e34ba4,
-  "/components/admin/CharacterCounter#default": default_05d63ad5a72bb5528538c90265118706,
   "/components/admin/NavLinksField#default": default_3ff6a48a77222379c05feba297b20132,
   "/components/admin/NavLinksDiff#default": default_45f306dc284acabb8024fc7078f1d047,
   "/components/admin/PublishButton#default": default_85c066c9e85977a669a8719b5844b2d5,

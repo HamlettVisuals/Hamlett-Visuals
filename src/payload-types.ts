@@ -206,11 +206,12 @@ export interface Category {
    */
   name: string;
   /**
-   * The web address for this category's portfolio page. Fills in automatically from the name above — you don't need to touch this.
+   * Turn off to hide this category from your site.
    */
+  published?: boolean | null;
   slug: string;
   /**
-   * One short line shown under the category name on the homepage.
+   * One short line shown under the category name on the homepage. Up to 36 characters, so it stays on one line on phones.
    */
   blurb?: string | null;
   /**
@@ -222,10 +223,6 @@ export interface Category {
    */
   heroPhoto?: (number | null) | Photo;
   order?: number | null;
-  /**
-   * Turn off to hide this category from the live site.
-   */
-  published?: boolean | null;
   updatedAt: string;
   createdAt: string;
   deletedAt?: string | null;
@@ -918,12 +915,12 @@ export interface UsersSelect<T extends boolean = true> {
 export interface CategoriesSelect<T extends boolean = true> {
   _order?: T;
   name?: T;
+  published?: T;
   slug?: T;
   blurb?: T;
   coverPhoto?: T;
   heroPhoto?: T;
   order?: T;
-  published?: T;
   updatedAt?: T;
   createdAt?: T;
   deletedAt?: T;

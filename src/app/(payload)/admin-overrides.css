@@ -606,3 +606,94 @@ button.category-status:focus-visible {
   color: var(--theme-error-600);
   max-width: 24ch;
 }
+
+/* ✕ back to the list in the top bar of website-collection editors
+   (components/admin/CloseEditorButton.tsx). 44px hit area, icon only; the
+   hover label comes from its title attribute. */
+.close-editor-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  margin: -6px 0;
+  border-radius: 50%;
+  color: var(--theme-elevation-800);
+  text-decoration: none;
+}
+
+.close-editor-button:hover {
+  background: var(--theme-elevation-100);
+  color: var(--theme-elevation-1000);
+}
+
+.close-editor-button:focus-visible {
+  outline: 2px solid var(--theme-elevation-800);
+  outline-offset: 1px;
+}
+
+/* "Show on website" switch in the Categories editor
+   (components/admin/ShowOnWebsiteField.tsx). The Live / Hidden pill next
+   to it reuses .category-status from the list above. */
+.show-on-website__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+}
+
+.show-on-website__switch {
+  position: relative;
+  flex-shrink: 0;
+  width: 44px;
+  height: 26px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: var(--theme-elevation-250);
+  cursor: pointer;
+  transition: background-color 150ms ease;
+}
+
+.show-on-website__switch--on {
+  background: var(--theme-success-500);
+}
+
+.show-on-website__switch:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.show-on-website__switch:focus-visible {
+  outline: 2px solid var(--theme-elevation-800);
+  outline-offset: 2px;
+}
+
+.show-on-website__knob {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.25);
+  transition: transform 150ms ease;
+}
+
+.show-on-website__switch--on .show-on-website__knob {
+  transform: translateX(18px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .show-on-website__switch,
+  .show-on-website__knob {
+    transition: none;
+  }
+}
+
+.show-on-website__label {
+  font-weight: 500;
+  color: var(--theme-elevation-1000);
+  cursor: pointer;
+}

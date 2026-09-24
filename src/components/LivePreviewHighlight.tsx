@@ -12,7 +12,8 @@ const HIGHLIGHT_DURATION_MS = 1800;
 // carries field data, not "which section is being edited". So "scroll to
 // and highlight the section" is driven by the URL itself instead: a
 // global's admin.livePreview.url can point here with
-// `#live-preview:<element id>` (see globals/Hero.ts), and this component
+// `#live-preview:<element id>` (see globals/Hero.ts), or a comma-separated
+// list of ids to try in order, and this component
 // reads that hash once on mount, scrolls the matching element into view,
 // and briefly outlines it via the .live-preview-highlight class (see
 // globals.css). Only ever set by Payload's own Live Preview URL function —
@@ -22,8 +23,14 @@ export default function LivePreviewHighlight() {
     const { hash } = window.location;
     if (!hash.startsWith(HASH_PREFIX)) return;
 
-    const targetId = hash.slice(HASH_PREFIX.length);
-    const target = document.getElementById(targetId);
+    // A comma-separated list tries each id in turn, e.g. a category's tile
+    // then the whole section (Categories.ts), for when the tile isn't
+    // rendered (hidden or no cover photo yet).
+    const target = hash
+      .slice(HASH_PREFIX.length)
+      .split(",")
+      .map((id) => document.getElementById(decodeURIComponent(id)))
+      .find((el): el is HTMLElement => el !== null);
     if (!target) return;
 
     const prefersReducedMotion = window.matchMedia(

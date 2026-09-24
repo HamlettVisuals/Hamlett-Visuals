@@ -107,7 +107,10 @@ export default buildConfig({
       // other row's displayed content. RefreshRouteOnSave (already mounted
       // in (site)/layout.tsx) covers reactivity here instead: saving a
       // document refreshes the page with fresh server data, just not on
-      // every keystroke the way wired globals do.
+      // every keystroke the way wired globals do. Categories is the first
+      // collection with item-scoped preview on top of that (its own
+      // admin.livePreview.url adds ?lpDoc=<id>; see
+      // docs/collection-live-preview.md); the rest follow as each is cleaned up.
       collections: ["pricing-rows", "categories", "events", "photos", "testimonials", "backstage"],
     },
     components: {

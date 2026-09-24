@@ -10,6 +10,9 @@ import { generateKeyBetween } from "payload/shared";
 import { isAdmin } from "#src/access/isAdmin.ts";
 import { formatSlug } from "#src/hooks/formatSlug.ts";
 import { OTHER_SESSION_TYPE } from "#src/lib/booking-session-type.ts";
+import { BLURB_MAX } from "#src/lib/category-limits.ts";
+import { serverURL } from "#src/lib/server-url.ts";
+import { CLOSE_EDITOR_BUTTON } from "#src/lib/admin-components.ts";
 
 // An error the admin shows as-is (the `true` exposes the message).
 const refuse = (message: string) => new APIError(message, 400, null, true);
@@ -197,13 +200,38 @@ export const Categories: CollectionConfig = {
           "/components/admin/PreviewSizeButtons#default",
         ],
       },
+      // ✕ back to this list, in the top bar of the Edit and History tabs.
+      // See components/admin/CloseEditorButton.tsx.
+      views: {
+        edit: {
+          default: { actions: [CLOSE_EDITOR_BUTTON] },
+          versions: { actions: [CLOSE_EDITOR_BUTTON] },
+          version: { actions: [CLOSE_EDITOR_BUTTON] },
+        },
+      },
     },
     hideAPIURL: true,
     useAsTitle: "name",
     defaultColumns: ["name", "coverPhoto", "published"],
     // Only a handful of categories, so show them all on one page and any row
-    // can be dragged anywhere. The per-page control is hidden.
+    // can be dragged anywhere. The per-page control is hidden, and src/proxy.ts
+    // forces limit=100 (and the drag sort) over any saved per-user setting.
     pagination: { defaultLimit: 100, limits: [100] },
+    // Item-scoped Live Preview (docs/collection-live-preview.md): the
+    // homepage, scrolled to this category's tile, with `lpDoc` telling that
+    // one tile (components/home/CategoryTile.tsx) to follow the unsaved form.
+    // The tile shows the name, blurb and cover photo, the fields edited
+    // here; the portfolio page shows only the name. Falls back to the
+    // section when the tile isn't on the page (hidden, no cover photo, or
+    // not saved yet). Show/hide and order only change after saving.
+    livePreview: {
+      url: ({ data }) => {
+        const id = data?.id;
+        const slug = typeof data?.slug === "string" ? data.slug : "";
+        if (!id) return `${serverURL}/#live-preview:categories`;
+        return `${serverURL}/?lpDoc=${encodeURIComponent(String(id))}#live-preview:category-${slug},categories`;
+      },
+    },
     description:
       "The types of photography you offer (Weddings, Portraits, Pets, etc.) — these show up as the tiles on the homepage and each one gets its own portfolio page.",
   },
@@ -234,16 +262,34 @@ export const Categories: CollectionConfig = {
       },
     },
     {
+      // Directly under Name in the main column, not Payload's sidebar: the
+      // sidebar drops below the form whenever Live Preview is open, so the
+      // switch would move with the preview toggle.
+      name: "published",
+      type: "checkbox",
+      defaultValue: true,
+      label: "Show on website",
+      admin: {
+        description: "Turn off to hide this category from your site.",
+        components: {
+          Field: "/components/admin/ShowOnWebsiteField#default",
+          Cell: "/components/admin/CategoryCells#CategoryStatusCell",
+        },
+      },
+    },
+    {
       name: "slug",
       type: "text",
       required: true,
       unique: true,
+      // Hidden everywhere in the admin. Set once from the name on the first
+      // save and never changed after (formatSlug.ts), so renaming a category
+      // doesn't break links to its portfolio page.
       admin: {
+        hidden: true,
         readOnly: true,
         disableListColumn: true,
         disableListFilter: true,
-        description:
-          "The web address for this category's portfolio page. Fills in automatically from the name above — you don't need to touch this.",
       },
       hooks: {
         beforeValidate: [formatSlug("name")],
@@ -252,9 +298,9 @@ export const Categories: CollectionConfig = {
     {
       name: "blurb",
       type: "textarea",
+      maxLength: BLURB_MAX,
       admin: {
-        description:
-          "One short line shown under the category name on the homepage.",
+        description: `One short line shown under the category name on the homepage. Up to ${BLURB_MAX} characters, so it stays on one line on phones.`,
       },
     },
     {
@@ -288,19 +334,6 @@ export const Categories: CollectionConfig = {
         hidden: true,
         disableListColumn: true,
         disableListFilter: true,
-      },
-    },
-    {
-      name: "published",
-      type: "checkbox",
-      defaultValue: true,
-      label: "Status",
-      admin: {
-        description: "Turn off to hide this category from the live site.",
-        position: "sidebar",
-        components: {
-          Cell: "/components/admin/CategoryCells#CategoryStatusCell",
-        },
       },
     },
   ],

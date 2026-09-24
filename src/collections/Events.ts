@@ -1,6 +1,7 @@
 import type { CollectionConfig } from "payload";
 import { isAdmin } from "#src/access/isAdmin.ts";
 import { formatSlug } from "#src/hooks/formatSlug.ts";
+import { CLOSE_EDITOR_BUTTON } from "#src/lib/admin-components.ts";
 
 // An "Event" is a single shoot/album within a category (e.g. the
 // "Priya & Daniel" wedding within the Weddings category) — see
@@ -22,6 +23,15 @@ export const Events: CollectionConfig = {
           "/components/admin/EditHistory#default",
           "/components/admin/PreviewSizeButtons#default",
         ],
+      },
+      // ✕ back to this list, in the top bar of the Edit and History tabs.
+      // See components/admin/CloseEditorButton.tsx.
+      views: {
+        edit: {
+          default: { actions: [CLOSE_EDITOR_BUTTON] },
+          versions: { actions: [CLOSE_EDITOR_BUTTON] },
+          version: { actions: [CLOSE_EDITOR_BUTTON] },
+        },
       },
     },
     hideAPIURL: true,

@@ -1,6 +1,7 @@
 # Collection Live Preview: showing unsaved edits
 
-Status: agreed approach, **not built yet**. Add it per collection as each page
+Status: **built for Categories** (Categories.ts livePreview.url, components/home/CategoryTile.tsx,
+lib/use-scoped-collection-live-preview.ts). Add it per collection as each page
 comes up in the cleanup.
 
 ## Why collections only refresh on save today

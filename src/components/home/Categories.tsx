@@ -1,9 +1,6 @@
 "use client";
 
-import Link from "next/link";
-import HoverZoomImage from "@/components/HoverZoomImage";
-import { generateAltText } from "@/lib/generate-alt-text";
-import { resolvePhoto } from "@/lib/resolve-photo";
+import CategoryTile from "@/components/home/CategoryTile";
 import { serverURL } from "@/lib/server-url";
 import { useScopedLivePreview } from "@/lib/use-scoped-live-preview";
 import type { CategoriesIntro, Category } from "@/payload-types";
@@ -32,23 +29,14 @@ export default function Categories({
   categories: Category[];
 }) {
   // Live Preview overlays the admin's current unsaved form state on top of
-  // `categoriesIntro` via postMessage — same mechanism as Hero/About. The
-  // grid itself doesn't live-sync — it's driven by the Categories
-  // collection, which gets plain Live Preview only (see payload.config.ts).
+  // `categoriesIntro` via postMessage — same mechanism as Hero/About. Each
+  // tile follows the Categories editor on its own (CategoryTile.tsx), only
+  // while that category is the one being edited.
   const { data } = useScopedLivePreview<CategoriesIntro>({
     initialData: categoriesIntro,
     serverURL,
     globalSlug: "categories-intro",
     apiRoute: "/hv-studio/api",
-  });
-
-  // Tiles without a cover photo are skipped rather than shown broken —
-  // same approach as Hero's filmstrip for the same underlying data.
-  const tiles = categories.flatMap((category) => {
-    const coverPhoto = resolvePhoto(category.coverPhoto);
-    const coverPhotoUrl = coverPhoto?.url;
-    if (!coverPhotoUrl) return [];
-    return [{ category, coverPhoto: { ...coverPhoto, url: coverPhotoUrl } }];
   });
 
   return (
@@ -59,27 +47,8 @@ export default function Categories({
         </h2>
 
         <ul className="mt-8 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 lg:gap-4">
-          {tiles.map(({ category, coverPhoto }) => (
-            <li key={category.slug}>
-              <Link href={`/portfolio/${category.slug}`} className="block">
-                <HoverZoomImage
-                  src={coverPhoto.url}
-                  alt={
-                    coverPhoto.alt ||
-                    generateAltText({ kind: "category", category: category.name })
-                  }
-                  sizes="(min-width: 1024px) 336px, (min-width: 640px) 50vw, 100vw"
-                  className="aspect-[9/16] w-full"
-                />
-
-                <div className="mt-3 text-center">
-                  <h3 className="font-display text-title font-medium text-ink">
-                    {category.name}
-                  </h3>
-                  <p className="mt-1 text-body text-muted">{category.blurb}</p>
-                </div>
-              </Link>
-            </li>
+          {categories.map((category) => (
+            <CategoryTile key={category.id} category={category} />
           ))}
         </ul>
       </div>
