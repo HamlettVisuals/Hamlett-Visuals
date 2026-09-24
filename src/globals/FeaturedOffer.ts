@@ -13,6 +13,7 @@ export const FeaturedOffer: GlobalConfig = {
     components: {
       elements: {
         SaveButton: "/components/admin/PublishButton#default",
+        beforeDocumentControls: ["/components/admin/EditHistory#default"],
       },
     },
     group: "Homepage",

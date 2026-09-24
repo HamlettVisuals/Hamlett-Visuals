@@ -117,3 +117,54 @@
   overflow-x: auto;
   scrollbar-width: none;
 }
+
+/* Undo / Redo / Discard (components/admin/EditHistory.tsx), rendered in
+   DocumentControls' beforeDocumentControls slot just left of the Live
+   Preview eye. That row (.doc-controls__controls) is a fixed 44px-tall
+   strip, so the icons are 36px squares with no gap between them — enough
+   to fit beside the eye, Publish/Save and the ⋯ menu at phone width. Hover
+   labels are native `title`s: a positioned tooltip would be clipped by the
+   row's overflow (see the "Edit fields" hint above). */
+.edit-history {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.edit-history__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 0;
+  border-radius: 4px;
+  background: none;
+  color: var(--theme-elevation-800);
+  cursor: pointer;
+}
+
+.edit-history__btn svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.edit-history__btn:hover:not(:disabled) {
+  background: var(--theme-elevation-100);
+}
+
+.edit-history__btn:focus-visible {
+  outline: 2px solid var(--theme-elevation-800);
+  outline-offset: -2px;
+}
+
+.edit-history__btn:disabled {
+  opacity: 0.3;
+  cursor: default;
+}

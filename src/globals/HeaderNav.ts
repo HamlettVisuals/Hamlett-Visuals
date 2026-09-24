@@ -12,6 +12,7 @@ export const HeaderNav: GlobalConfig = {
     components: {
       elements: {
         SaveButton: "/components/admin/PublishButton#default",
+        beforeDocumentControls: ["/components/admin/EditHistory#default"],
       },
     },
     group: "Site",

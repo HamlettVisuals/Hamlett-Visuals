@@ -1,3 +1,4 @@
+import { default as default_49f4009bbc7bc7fd7fd116764fa09aa1 } from '../../../components/admin/EditHistory'
 import { default as default_f0b47ff3ed1c349a2095a4c32239e4c7 } from '../../../components/admin/InquiryStatusCell'
 import { default as default_e64e3227e8fc271149c5bbc76b35348c } from '../../../components/admin/TestimonialRequestBanner'
 import { default as default_0858cef9b5d1128067511307e25157f9 } from '../../../components/admin/BackToBoardLink'
@@ -33,6 +34,7 @@ import { CollectionCards as CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1 } f
 
 /** @type import('payload').ImportMap */
 export const importMap = {
+  "/components/admin/EditHistory#default": default_49f4009bbc7bc7fd7fd116764fa09aa1,
   "/components/admin/InquiryStatusCell#default": default_f0b47ff3ed1c349a2095a4c32239e4c7,
   "/components/admin/TestimonialRequestBanner#default": default_e64e3227e8fc271149c5bbc76b35348c,
   "/components/admin/BackToBoardLink#default": default_0858cef9b5d1128067511307e25157f9,

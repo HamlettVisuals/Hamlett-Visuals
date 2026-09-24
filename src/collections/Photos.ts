@@ -7,6 +7,12 @@ export const Photos: CollectionConfig = {
   // Deletes go to this collection's Trash view first, restorable from there.
   trash: true,
   admin: {
+    // Undo / Redo / Discard next to Save — see components/admin/EditHistory.tsx.
+    components: {
+      edit: {
+        beforeDocumentControls: ["/components/admin/EditHistory#default"],
+      },
+    },
     hideAPIURL: true,
     useAsTitle: "alt",
     defaultColumns: ["filename", "alt", "event", "category"],

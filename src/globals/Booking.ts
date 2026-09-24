@@ -15,6 +15,7 @@ export const Booking: GlobalConfig = {
     components: {
       elements: {
         SaveButton: "/components/admin/PublishButton#default",
+        beforeDocumentControls: ["/components/admin/EditHistory#default"],
       },
     },
     group: "Booking",
