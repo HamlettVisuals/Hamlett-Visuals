@@ -273,24 +273,34 @@
   }
 }
 
-/* Character counter, pinned inside the right edge of the label box. */
-.nav-links .field-type.text .field-type__wrap {
-  position: relative;
-}
-
-.nav-links .field-type.text input {
-  padding-right: 48px;
-}
-
 /* Payload caps its error bubble at 75% of the input and truncates the
    text, which cut "This field is required." short in the narrow label box. */
 .nav-links .field-error.tooltip {
   max-width: none;
 }
 
-.nav-links__counter {
+/* Character counter (components/admin/CharacterCounter.tsx) on every
+   capped text field, pinned inside the right edge of the input — the text
+   box gets matching right padding so typing never runs under it. On a
+   textarea it sits in the bottom-right corner instead. The auto-attached
+   counter sets --char-counter-top from the input's measured box (the wrap
+   also holds the description); NavLinksField's inputs have no description,
+   so they use the 50% fallback. */
+.field-type__wrap:has(.char-counter) {
+  position: relative;
+}
+
+.field-type__wrap:has(.char-counter) input {
+  padding-right: 56px;
+}
+
+.field-type__wrap:has(.char-counter) textarea {
+  padding-bottom: 24px;
+}
+
+.char-counter {
   position: absolute;
-  top: 50%;
+  top: var(--char-counter-top, 50%);
   right: 10px;
   transform: translateY(-50%);
   color: var(--theme-elevation-400);
@@ -299,7 +309,11 @@
   pointer-events: none;
 }
 
-.nav-links__counter--full {
+.field-type.textarea .char-counter {
+  transform: translateY(-100%);
+}
+
+.char-counter--full {
   color: var(--theme-warning-600, #b45309);
 }
 

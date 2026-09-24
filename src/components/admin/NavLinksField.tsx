@@ -25,6 +25,7 @@ import {
   NAV_MAX_LINKS,
   navLinksCrowdLogo,
 } from "@/lib/nav-limits";
+import { CounterBadge } from "@/components/admin/CharacterCounter";
 
 // The Header/Nav global's link list (globals/HeaderNav.ts → navLinks), as
 // one compact line per link — drag handle, label, "Goes to" dropdown, a
@@ -50,17 +51,6 @@ function useMaxLength(max: number) {
     if (ref.current) ref.current.maxLength = max;
   });
   return ref;
-}
-
-function Counter({ length, max }: { length: number; max: number }) {
-  return (
-    <span
-      className={`${baseClass}__counter${length >= max ? ` ${baseClass}__counter--full` : ""}`}
-      aria-hidden="true"
-    >
-      {length}/{max}
-    </span>
-  );
 }
 
 type RowProps = {
@@ -128,7 +118,7 @@ function NavLinkRow({
             showError={label.showError}
             placeholder="Link text"
             inputRef={labelRef as React.RefObject<HTMLInputElement>}
-            AfterInput={<Counter length={labelText.length} max={NAV_LABEL_MAX} />}
+            AfterInput={<CounterBadge length={labelText.length} max={NAV_LABEL_MAX} />}
           />
           <SelectInput
             className={`${baseClass}__href`}
@@ -338,7 +328,7 @@ const NavLinksField: ArrayFieldClientComponent = (props) => {
           onChange={(e: React.ChangeEvent<HTMLInputElement>) => book.setValue(e.target.value.slice(0, BOOK_LABEL_MAX))}
           showError={book.showError}
           inputRef={bookRef as React.RefObject<HTMLInputElement>}
-          AfterInput={<Counter length={bookText.length} max={BOOK_LABEL_MAX} />}
+          AfterInput={<CounterBadge length={bookText.length} max={BOOK_LABEL_MAX} />}
         />
         <p className={`${baseClass}__intro`}>
           The button at the right end of the menu bar. It always opens the booking page.

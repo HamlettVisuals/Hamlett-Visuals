@@ -4,6 +4,7 @@ import { default as default_f0b47ff3ed1c349a2095a4c32239e4c7 } from '../../../co
 import { default as default_e64e3227e8fc271149c5bbc76b35348c } from '../../../components/admin/TestimonialRequestBanner'
 import { default as default_0858cef9b5d1128067511307e25157f9 } from '../../../components/admin/BackToBoardLink'
 import { default as default_1b650ef99724fbd75de054d026e34ba4 } from '../../../components/admin/TestimonialPublishPanel'
+import { default as default_05d63ad5a72bb5528538c90265118706 } from '../../../components/admin/CharacterCounter'
 import { default as default_3ff6a48a77222379c05feba297b20132 } from '../../../components/admin/NavLinksField'
 import { default as default_45f306dc284acabb8024fc7078f1d047 } from '../../../components/admin/NavLinksDiff'
 import { default as default_85c066c9e85977a669a8719b5844b2d5 } from '../../../components/admin/PublishButton'
@@ -43,6 +44,7 @@ export const importMap = {
   "/components/admin/TestimonialRequestBanner#default": default_e64e3227e8fc271149c5bbc76b35348c,
   "/components/admin/BackToBoardLink#default": default_0858cef9b5d1128067511307e25157f9,
   "/components/admin/TestimonialPublishPanel#default": default_1b650ef99724fbd75de054d026e34ba4,
+  "/components/admin/CharacterCounter#default": default_05d63ad5a72bb5528538c90265118706,
   "/components/admin/NavLinksField#default": default_3ff6a48a77222379c05feba297b20132,
   "/components/admin/NavLinksDiff#default": default_45f306dc284acabb8024fc7078f1d047,
   "/components/admin/PublishButton#default": default_85c066c9e85977a669a8719b5844b2d5,

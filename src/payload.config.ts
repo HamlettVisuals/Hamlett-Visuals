@@ -53,6 +53,7 @@ import { FinalCtaFooter } from "#src/globals/FinalCtaFooter.ts";
 import { SiteSettings } from "#src/globals/SiteSettings.ts";
 import { Booking } from "#src/globals/Booking.ts";
 import { serverURL } from "#src/lib/server-url.ts";
+import { addCharacterCounters } from "#src/lib/character-counters.ts";
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -170,7 +171,9 @@ export default buildConfig({
       },
     },
   },
-  collections: [
+  // Every text field with a maxLength gets a live character counter — see
+  // lib/character-counters.ts.
+  collections: addCharacterCounters([
     Users,
     Categories,
     Events,
@@ -184,8 +187,8 @@ export default buildConfig({
     TestimonialSubmissions,
     TestimonialPhotos,
     Logos,
-  ],
-  globals: [
+  ]),
+  globals: addCharacterCounters([
     HeaderNav,
     Hero,
     CategoriesIntro,
@@ -196,7 +199,7 @@ export default buildConfig({
     FinalCtaFooter,
     SiteSettings,
     Booking,
-  ],
+  ]),
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET ?? "",
   typescript: {
