@@ -189,7 +189,7 @@ export const Events: CollectionConfig = {
       type: "textarea",
       maxLength: DESCRIPTION_MAX,
       admin: {
-        description: `Optional. One short line shown under the album's title. Up to ${DESCRIPTION_MAX} characters, so it stays on one line on phones.`,
+        description: `Optional. A short note shown under the album's title. Up to ${DESCRIPTION_MAX} characters, so it fits on two lines on phones.`,
       },
     },
     {

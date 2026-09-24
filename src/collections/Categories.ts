@@ -198,6 +198,8 @@ export const Categories: CollectionConfig = {
         beforeDocumentControls: [
           "/components/admin/EditHistory#default",
           "/components/admin/PreviewSizeButtons#default",
+          // "New category" instead of "[Untitled]" before the first save.
+          "/components/admin/NewDocumentTitle#default",
         ],
       },
       // ✕ back to this list, in the top bar of the Edit and History tabs.

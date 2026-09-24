@@ -16,7 +16,7 @@ export type GalleryEvent = {
   id: number;
   slug: string;
   name: string;
-  /** Optional one-line description, shown under the title when set. */
+  /** Optional short description, shown under the title when set. */
   description?: string | null;
   /** Optional shoot date (ISO); its month and year show when set. */
   date?: string | null;

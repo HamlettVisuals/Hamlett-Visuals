@@ -20,7 +20,7 @@ export type EventRowProps = {
    */
   slug: string;
   photos: GalleryPhoto[];
-  /** Optional one-line description under the title; nothing shows when blank. */
+  /** Optional description under the title (up to two lines on phones); nothing shows when blank. */
   description?: string | null;
   /** Optional shoot date (ISO); its month and year show when set. */
   date?: string | null;

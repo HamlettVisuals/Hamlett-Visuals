@@ -7,13 +7,13 @@ import { CategoryThumbnailCell as CategoryThumbnailCell_34f53f145c1dd1973f992a6a
 import { CategoriesListDescription as CategoriesListDescription_34f53f145c1dd1973f992a6af63ac90d } from '../../../components/admin/CategoryCells'
 import { default as default_49f4009bbc7bc7fd7fd116764fa09aa1 } from '../../../components/admin/EditHistory'
 import { default as default_a779bcd001681498b9df2066a3cdc326 } from '../../../components/admin/PreviewSizeButtons'
+import { default as default_f9fe0edb7b576d729d7593eacd2325b9 } from '../../../components/admin/NewDocumentTitle'
 import { default as default_6aeb1fbc8f89ed5df824f9ed2a8ef3f4 } from '../../../components/admin/CloseEditorButton'
 import { EmptyField as EmptyField_271eec196f6613c6ae3ecc547136025a } from '../../../components/admin/AlbumCells'
 import { default as default_f7ada3d495e51370acd8dcac7a5e5f13 } from '../../../components/admin/AlbumThumbnailCell'
 import { AlbumTitleCell as AlbumTitleCell_271eec196f6613c6ae3ecc547136025a } from '../../../components/admin/AlbumCells'
 import { AlbumsListToolbar as AlbumsListToolbar_271eec196f6613c6ae3ecc547136025a } from '../../../components/admin/AlbumCells'
 import { AlbumsListDescription as AlbumsListDescription_271eec196f6613c6ae3ecc547136025a } from '../../../components/admin/AlbumCells'
-import { default as default_f9fe0edb7b576d729d7593eacd2325b9 } from '../../../components/admin/NewDocumentTitle'
 import { default as default_f0b47ff3ed1c349a2095a4c32239e4c7 } from '../../../components/admin/InquiryStatusCell'
 import { default as default_e64e3227e8fc271149c5bbc76b35348c } from '../../../components/admin/TestimonialRequestBanner'
 import { default as default_0858cef9b5d1128067511307e25157f9 } from '../../../components/admin/BackToBoardLink'
@@ -60,13 +60,13 @@ export const importMap = {
   "/components/admin/CategoryCells#CategoriesListDescription": CategoriesListDescription_34f53f145c1dd1973f992a6af63ac90d,
   "/components/admin/EditHistory#default": default_49f4009bbc7bc7fd7fd116764fa09aa1,
   "/components/admin/PreviewSizeButtons#default": default_a779bcd001681498b9df2066a3cdc326,
+  "/components/admin/NewDocumentTitle#default": default_f9fe0edb7b576d729d7593eacd2325b9,
   "/components/admin/CloseEditorButton#default": default_6aeb1fbc8f89ed5df824f9ed2a8ef3f4,
   "/components/admin/AlbumCells#EmptyField": EmptyField_271eec196f6613c6ae3ecc547136025a,
   "/components/admin/AlbumThumbnailCell#default": default_f7ada3d495e51370acd8dcac7a5e5f13,
   "/components/admin/AlbumCells#AlbumTitleCell": AlbumTitleCell_271eec196f6613c6ae3ecc547136025a,
   "/components/admin/AlbumCells#AlbumsListToolbar": AlbumsListToolbar_271eec196f6613c6ae3ecc547136025a,
   "/components/admin/AlbumCells#AlbumsListDescription": AlbumsListDescription_271eec196f6613c6ae3ecc547136025a,
-  "/components/admin/NewDocumentTitle#default": default_f9fe0edb7b576d729d7593eacd2325b9,
   "/components/admin/InquiryStatusCell#default": default_f0b47ff3ed1c349a2095a4c32239e4c7,
   "/components/admin/TestimonialRequestBanner#default": default_e64e3227e8fc271149c5bbc76b35348c,
   "/components/admin/BackToBoardLink#default": default_0858cef9b5d1128067511307e25157f9,
