@@ -1,5 +1,6 @@
 import type { GlobalConfig } from "payload";
 import { publicReadAdminWrite } from "#src/access/isAdmin.ts";
+import { HEADING_MAX } from "#src/lib/categories-intro-limits.ts";
 import { serverURL } from "#src/lib/server-url.ts";
 
 // The category grid itself is the Categories collection — this global is
@@ -43,8 +44,9 @@ export const CategoriesIntro: GlobalConfig = {
       type: "text",
       required: true,
       defaultValue: "Browse by category",
+      maxLength: HEADING_MAX,
       admin: {
-        description: "The title text above the category photos.",
+        description: `The title text above the category photos. Up to ${HEADING_MAX} characters, so it stays on one line on phones.`,
       },
     },
   ],
