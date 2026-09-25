@@ -99,8 +99,9 @@ export const TestimonialSubmissions: CollectionConfig = {
       },
     },
     {
-      // Renders the "Publish this testimonial" panel (photo picker + featured
-      // checkbox + Publish button) once status is Pending — see
+      // Renders the "Publish this testimonial" panel (photo picker, a pointer
+      // to the homepage picker in Testimonials Teaser, and the Publish
+      // button) once status is Pending — see
       // TestimonialPublishPanel.tsx and its route,
       // /api/testimonial-submissions/[id]/publish/route.ts. Same `ui` field +
       // `admin.condition` mechanism as Inquiries.testimonialRequestBanner.

@@ -1,10 +1,13 @@
 import type { GlobalConfig } from "payload";
 import { publicReadAdminWrite } from "#src/access/isAdmin.ts";
 import { serverURL } from "#src/lib/server-url.ts";
+import { TESTIMONIAL_PICKS_MAX, testimonialPickOptions } from "#src/lib/teaser-testimonials.ts";
+import { HEADING_MAX, LINK_TEXT_MAX } from "#src/lib/testimonials-teaser-limits.ts";
 
-// The two testimonials shown here are whichever Testimonials collection
-// entries have `featured` checked — this global is just the heading/link row
-// above them (src/components/home/Testimonials.tsx).
+// The homepage "In their words" section (src/components/home/Testimonials.tsx):
+// which testimonials it shows, in order, plus the heading and link above
+// them. With none picked, or none still shown on the site, the section is
+// left out.
 export const TestimonialsTeaser: GlobalConfig = {
   slug: "testimonials-teaser",
   label: "Testimonials Teaser",
@@ -21,16 +24,15 @@ export const TestimonialsTeaser: GlobalConfig = {
     },
     group: "Homepage",
     description:
-      "The 'In their words' preview on the homepage. To change WHICH client quotes appear here, go to Testimonials and check 'featured' on the ones you want (pick exactly two) — this page only controls the heading and link text around them.",
-    // Same Live Preview treatment as Hero/About/CategoriesIntro/FeaturedOffer
-    // — opens automatically and scrolls to/highlights the #testimonials
-    // section via LivePreviewHighlight. The quotes themselves come from the
-    // Testimonials collection, which stays out of scope here (like
-    // Categories/Photos/Pricing Rows) — only heading/linkLabel/linkHref
-    // are wired.
+      "The 'In their words' section on your homepage. Pick up to 4 testimonials to show.",
+    // Same Live Preview treatment as the other homepage globals — opens
+    // automatically and scrolls to/highlights #testimonials, falling back
+    // to the Instagram section while nothing is picked (#testimonials isn't
+    // rendered then). Picking, removing and reordering follow the form
+    // before saving (Testimonials.tsx fetches the picks at depth 2).
     livePreview: {
       openByDefault: true,
-      url: () => `${serverURL}/#live-preview:testimonials`,
+      url: () => `${serverURL}/#live-preview:testimonials,instagram`,
     },
   },
   access: publicReadAdminWrite,
@@ -39,21 +41,48 @@ export const TestimonialsTeaser: GlobalConfig = {
   versions: true,
   fields: [
     {
+      // Replaces the old per-testimonial `featured` checkbox (kept on
+      // Testimonials, hidden, so the column isn't dropped). Payload's
+      // multi-pick with drag-to-reorder; filterOptions offers only
+      // testimonials shown on the site (and nothing more once 4 are
+      // picked) and refuses saving while a pick
+      // that's since been hidden or trashed is still in the list
+      // (TestimonialPicksNote says which).
+      name: "testimonials",
+      type: "relationship",
+      relationTo: "testimonials",
+      hasMany: true,
+      maxRows: TESTIMONIAL_PICKS_MAX,
+      label: "Testimonials",
+      filterOptions: testimonialPickOptions,
+      admin: {
+        isSortable: true,
+        allowCreate: false,
+        allowEdit: false,
+        description: `Pick up to ${TESTIMONIAL_PICKS_MAX} testimonials and drag them into the order you want. With none picked, this section is hidden.`,
+        components: {
+          afterInput: ["/components/admin/TestimonialPicksNote#default"],
+        },
+      },
+    },
+    {
       name: "heading",
       type: "text",
       required: true,
       defaultValue: "In their words",
+      maxLength: HEADING_MAX,
       admin: {
-        description: "The title above the client quotes.",
+        description: `The title above the quotes. Up to ${HEADING_MAX} characters, so it stays on one line on phones.`,
       },
     },
     {
       name: "linkLabel",
       type: "text",
+      label: "Link text",
       defaultValue: "All testimonials",
+      maxLength: LINK_TEXT_MAX,
       admin: {
-        description:
-          "The text of the link that takes people to the full testimonials page.",
+        description: `The link to your full Testimonials page. Up to ${LINK_TEXT_MAX} characters, so it stays on one line on phones.`,
       },
     },
     {

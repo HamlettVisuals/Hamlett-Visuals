@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useConfig, useDocumentInfo } from "@payloadcms/ui";
+import { formatAdminURL } from "payload/shared";
 import type { TestimonialPhoto } from "@/payload-types";
 
 // The "Publish this testimonial" panel on a pending TestimonialSubmission's
@@ -35,7 +37,6 @@ export default function TestimonialPublishPanel() {
 
   const [photos, setPhotos] = useState<TestimonialPhoto[]>([]);
   const [selectedPhotoId, setSelectedPhotoId] = useState<number | null>(null);
-  const [featured, setFeatured] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -75,7 +76,7 @@ export default function TestimonialPublishPanel() {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ photoId: selectedPhotoId, featured }),
+        body: JSON.stringify({ photoId: selectedPhotoId }),
       });
       const body = await res.json();
       if (!res.ok) {
@@ -154,14 +155,13 @@ export default function TestimonialPublishPanel() {
         </div>
       )}
 
-      <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13 }}>
-        <input
-          type="checkbox"
-          checked={featured}
-          onChange={(event) => setFeatured(event.target.checked)}
-        />
-        Feature on the homepage
-      </label>
+      <p style={{ margin: 0, fontSize: 13, color: "var(--theme-elevation-650)" }}>
+        To show it on your homepage, pick it in{" "}
+        <Link href={formatAdminURL({ adminRoute: config.routes.admin, path: "/globals/testimonials-teaser" }) as `/${string}`} prefetch={false}>
+          Testimonials Teaser
+        </Link>{" "}
+        once it&rsquo;s published.
+      </p>
 
       {error && (
         <p style={{ margin: 0, color: "var(--theme-error-500)", fontSize: 13 }}>{error}</p>

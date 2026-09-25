@@ -27,9 +27,9 @@ export const Testimonials: CollectionConfig = {
     },
     hideAPIURL: true,
     useAsTitle: "clientName",
-    defaultColumns: ["clientName", "category", "featured", "published"],
+    defaultColumns: ["clientName", "category", "published"],
     description:
-      "Client quotes and reviews, shown on the Testimonials page and (for the ones you feature) on the homepage.",
+      "Client quotes and reviews, shown on the Testimonials page. Pick which ones appear on your homepage in Testimonials Teaser.",
   },
   access: {
     read: () => true,
@@ -97,13 +97,17 @@ export const Testimonials: CollectionConfig = {
       },
     },
     {
+      // Retired: the homepage picks come from the Testimonials Teaser
+      // global's "Testimonials" field now (carried over once by
+      // src/scripts/carryOverFeaturedTestimonials.ts). Hidden rather than
+      // removed so the column isn't dropped. Nothing reads it any more.
       name: "featured",
       type: "checkbox",
       defaultValue: false,
       admin: {
-        description:
-          "Check this to show this testimonial on the homepage (pick exactly two).",
-        position: "sidebar",
+        hidden: true,
+        disableListColumn: true,
+        disableListFilter: true,
       },
     },
     {

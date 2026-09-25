@@ -313,7 +313,7 @@ export interface Event {
   deletedAt?: string | null;
 }
 /**
- * Client quotes and reviews, shown on the Testimonials page and (for the ones you feature) on the homepage.
+ * Client quotes and reviews, shown on the Testimonials page. Pick which ones appear on your homepage in Testimonials Teaser.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "testimonials".
@@ -344,9 +344,6 @@ export interface Testimonial {
    * An optional short line, e.g. "Wedding, June 2025".
    */
   context?: string | null;
-  /**
-   * Check this to show this testimonial on the homepage (pick exactly two).
-   */
   featured?: boolean | null;
   /**
    * Turn off to hide this testimonial from the live site.
@@ -1446,7 +1443,7 @@ export interface BookingCta {
   createdAt?: string | null;
 }
 /**
- * The 'In their words' preview on the homepage. To change WHICH client quotes appear here, go to Testimonials and check 'featured' on the ones you want (pick exactly two) — this page only controls the heading and link text around them.
+ * The 'In their words' section on your homepage. Pick up to 4 testimonials to show.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "testimonials-teaser".
@@ -1454,11 +1451,15 @@ export interface BookingCta {
 export interface TestimonialsTeaser {
   id: number;
   /**
-   * The title above the client quotes.
+   * Pick up to 4 testimonials and drag them into the order you want. With none picked, this section is hidden.
+   */
+  testimonials?: (number | Testimonial)[] | null;
+  /**
+   * The title above the quotes. Up to 20 characters, so it stays on one line on phones.
    */
   heading: string;
   /**
-   * The text of the link that takes people to the full testimonials page.
+   * The link to your full Testimonials page. Up to 30 characters, so it stays on one line on phones.
    */
   linkLabel?: string | null;
   /**
@@ -1711,6 +1712,7 @@ export interface BookingCtaSelect<T extends boolean = true> {
  * via the `definition` "testimonials-teaser_select".
  */
 export interface TestimonialsTeaserSelect<T extends boolean = true> {
+  testimonials?: T;
   heading?: T;
   linkLabel?: T;
   linkHref?: T;

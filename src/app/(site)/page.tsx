@@ -76,16 +76,13 @@ export default async function Home() {
       .slice(0, SAMPLE_PHOTOS)
       .map((photo) => ({ id: photo.id, url: photo.url as string, alt: photo.alt }));
   }
+  // depth 2: the picked testimonials, then each one's category (for the
+  // attribution line).
   const testimonialsTeaser = await payload.findGlobal({
     slug: "testimonials-teaser",
+    depth: 2,
   });
   const bookingCta = await payload.findGlobal({ slug: "booking-cta" });
-  const { docs: featuredTestimonials } = await payload.find({
-    collection: "testimonials",
-    where: { featured: { equals: true }, published: { equals: true } },
-    depth: 1,
-    limit: 0,
-  });
   const siteSettings = await payload.findGlobal({ slug: "site-settings" });
 
   return (
@@ -112,10 +109,7 @@ export default async function Home() {
       <Instagram siteSettings={siteSettings} />
 
       {/* 8. Testimonials teaser */}
-      <Testimonials
-        testimonialsTeaser={testimonialsTeaser}
-        featuredTestimonials={featuredTestimonials}
-      />
+      <Testimonials testimonialsTeaser={testimonialsTeaser} />
     </>
   );
 }

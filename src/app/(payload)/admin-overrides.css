@@ -1001,6 +1001,19 @@ button.category-status:focus-visible {
 
 /* Under "Sample photos from album" when the picked album no longer fits
    (AlbumMatchNote.tsx). */
+/* Testimonials Teaser: picks that have been hidden or trashed since
+   (components/admin/TestimonialPicksNote.tsx). */
+.testimonial-picks-note {
+  margin: 6px 0 0;
+  color: var(--theme-warning-700, #92400e);
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.testimonial-picks-note p {
+  margin: 0;
+}
+
 .album-match-note {
   margin: 6px 0 0;
   color: var(--theme-warning-700, #92400e);

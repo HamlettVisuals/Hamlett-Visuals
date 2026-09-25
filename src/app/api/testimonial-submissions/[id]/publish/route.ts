@@ -29,7 +29,6 @@ export async function POST(
   const { id } = await params;
   const body = (await request.json().catch(() => null)) as {
     photoId?: unknown;
-    featured?: unknown;
   } | null;
 
   const payload = await getPayload({ config });
@@ -145,7 +144,6 @@ export async function POST(
         category: categoryId,
         event: eventId ?? undefined,
         photo: promotedPhotoId,
-        featured: Boolean(body?.featured),
         published: true,
       },
       overrideAccess: true,
