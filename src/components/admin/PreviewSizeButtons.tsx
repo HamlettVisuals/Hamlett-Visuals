@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { useLivePreviewContext } from "@payloadcms/ui";
+import LivePreviewResync from "@/components/admin/LivePreviewResync";
 
 // Desktop / Tablet / Phone buttons for the Live Preview toolbar, replacing
 // Payload's breakpoint dropdown, width × height boxes and zoom menu (hidden
@@ -87,7 +88,19 @@ function usePreviewPane() {
   return { toolbar, paneSize, adminWidth };
 }
 
+// This is the one component on every Live Preview screen, so it also
+// mounts LivePreviewResync, which keeps the preview in step after it
+// reloads.
 export default function PreviewSizeButtons() {
+  return (
+    <>
+      <LivePreviewResync />
+      <SizeButtons />
+    </>
+  );
+}
+
+function SizeButtons() {
   const {
     breakpoint,
     breakpoints,

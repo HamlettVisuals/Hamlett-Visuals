@@ -3,8 +3,8 @@ import type { ContactDetails } from "@/lib/contact-details";
 // The Booking CTA's contact line (components/home/BookingCta.tsx): her own
 // text from the Booking CTA editor, then whichever contacts are switched on
 // there AND filled in on Site Settings, as links in the order email, phone,
-// Instagram. All the wording is hers; the site adds nothing but the links
-// and the dividers between them. Empty text shows just the links, no
+// Instagram, each on its own line. All the wording is hers; the site adds
+// nothing but the links. Empty text shows just the links, no
 // contacts shows just the text, and with neither the line is left out.
 
 export type ContactLink = {

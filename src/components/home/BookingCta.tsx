@@ -1,6 +1,5 @@
 "use client";
 
-import { Fragment } from "react";
 import Link from "next/link";
 import { buildContactLine } from "@/lib/booking-contact-line";
 import { contactDetails } from "@/lib/contact-details";
@@ -65,37 +64,23 @@ export default function BookingCta({
         </div>
 
         {contactLine && (
-          // Her text on its own line, the links under it: stacked one per
-          // line on phones (three don't fit in a row at 320–390px without a
-          // divider dangling at a line end), then one row split by " · "
-          // from `sm` up.
-          <p className="mt-4 text-caption text-muted">
-            {contactLine.text && <span className="block">{contactLine.text}</span>}
-            {contactLine.links.length > 0 && (
-              <span
-                className={`flex flex-col items-center gap-0.5 sm:block ${contactLine.text ? "mt-1" : ""}`}
+          // Her text on its own line, then each link on a line of its own,
+          // centred, at every width.
+          <div className="mt-4 flex flex-col items-center gap-0.5 text-caption text-muted">
+            {contactLine.text && <p className={contactLine.links.length ? "mb-0.5" : ""}>{contactLine.text}</p>}
+            {contactLine.links.map((link) => (
+              <a
+                key={link.kind}
+                href={link.href}
+                className="link text-ink"
+                {...(link.external
+                  ? { target: "_blank", rel: "noopener noreferrer" }
+                  : {})}
               >
-                {contactLine.links.map((link, i) => (
-                  <Fragment key={link.kind}>
-                    {i > 0 && (
-                      <span className="hidden sm:inline" aria-hidden="true">
-                        {" · "}
-                      </span>
-                    )}
-                    <a
-                      href={link.href}
-                      className="link whitespace-nowrap text-ink"
-                      {...(link.external
-                        ? { target: "_blank", rel: "noopener noreferrer" }
-                        : {})}
-                    >
-                      {link.text}
-                    </a>
-                  </Fragment>
-                ))}
-              </span>
-            )}
-          </p>
+                {link.text}
+              </a>
+            ))}
+          </div>
         )}
       </div>
     </section>
