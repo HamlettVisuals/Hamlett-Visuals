@@ -9,7 +9,7 @@ import {
 import { serverURL } from "#src/lib/server-url.ts";
 
 // The homepage "Ready when you are" section (components/home/BookingCta.tsx).
-// Its contact line's wording and which details it shows are set here; the
+// Its contact line's text and which details it links to are set here; the
 // email, phone and Instagram themselves are shared across the site and live
 // on the Site Settings global instead of being repeated here.
 export const BookingCta: GlobalConfig = {
@@ -28,7 +28,7 @@ export const BookingCta: GlobalConfig = {
     },
     group: "Homepage",
     description:
-      "The 'Ready when you are' section on your homepage that invites people to book a session, with a line of ways to reach you under the button.",
+      "The 'Ready when you are' section on your homepage that invites people to book a session, with a line under the button: your text, followed by your contact details as links.",
     // Same Live Preview treatment as the other wired homepage globals —
     // opens automatically and scrolls to/highlights the #booking-cta section
     // via LivePreviewHighlight.
@@ -94,19 +94,20 @@ export const BookingCta: GlobalConfig = {
       },
     },
     {
+      // Column name kept from when this was the sentence's opening words.
       name: "contactLeadIn",
       type: "text",
-      label: "Contact line opening",
-      defaultValue: "Prefer to email?",
+      label: "Contact line text",
+      defaultValue: "Prefer to reach out directly?",
       maxLength: LEAD_IN_MAX,
       admin: {
-        description: `The words before your contact details, e.g. "Prefer to email?" Up to ${LEAD_IN_MAX} characters. Leave empty to start straight with the details.`,
+        description: `Shown before your contact details, e.g. "Prefer to reach out directly?" Up to ${LEAD_IN_MAX} characters. Leave empty to show just the links.`,
       },
     },
     // One switch per contact detail (components/admin/ContactSwitchField.tsx
-    // shows what Site Settings has for each). The line is built in
-    // lib/booking-contact-line.ts; with every switch off, or nothing filled
-    // in for the ones that are on, it isn't shown.
+    // shows what Site Settings has for each). The line is her text, then
+    // the links (lib/booking-contact-line.ts); with no text and no links
+    // it isn't shown.
     {
       name: "showEmail",
       type: "checkbox",

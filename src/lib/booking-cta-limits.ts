@@ -11,8 +11,8 @@
 //   - BUTTON_TEXT_MAX: the button never wraps; 25–26 characters run
 //     224–232px, and 30 ("Reserve your photo session now") fills all
 //     265px, so 26 leaves room for wide letters.
-//   - LEAD_IN_MAX: the contact line's opening words (13px captions) — 40
-//     fits on one line at 320px, before the contact details start.
+//   - LEAD_IN_MAX: the contact line's text (13px captions) — 40 fits on
+//     one line at 320px, above the contact links.
 // Recheck if the section's fonts, sizes or widths change.
 export const HEADING_MAX = 20;
 export const SUBHEADING_MAX = 110;

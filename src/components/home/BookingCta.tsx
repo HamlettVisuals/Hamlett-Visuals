@@ -2,7 +2,7 @@
 
 import { Fragment } from "react";
 import Link from "next/link";
-import { buildContactLine, separatorAfter } from "@/lib/booking-contact-line";
+import { buildContactLine } from "@/lib/booking-contact-line";
 import { contactDetails } from "@/lib/contact-details";
 import { serverURL } from "@/lib/server-url";
 import { useScopedLivePreview } from "@/lib/use-scoped-live-preview";
@@ -15,10 +15,10 @@ import type { BookingCta as BookingCtaGlobal, SiteSetting } from "@/payload-type
 // it never competes with the Hero or the Featured offer.
 //
 // Heading/subheading/CTA come from the Booking CTA global (see
-// globals/BookingCta.ts), as do the contact line's opening words and which
-// details it lists; the email, phone and Instagram themselves come from
-// Site Settings — shared with the Footer and the homepage Instagram section.
-// The line's wording for each combination is lib/booking-contact-line.ts.
+// globals/BookingCta.ts), as do the contact line's text and which details
+// it links to; the email, phone and Instagram themselves come from Site
+// Settings — shared with the Footer and the homepage Instagram section. The
+// line is her text followed by the links (lib/booking-contact-line.ts).
 // Two separate globals render here, so two separate (scoped) Live Preview
 // subscriptions — same pattern as Footer.tsx.
 
@@ -65,23 +65,36 @@ export default function BookingCta({
         </div>
 
         {contactLine && (
+          // Her text on its own line, the links under it: stacked one per
+          // line on phones (three don't fit in a row at 320–390px without a
+          // divider dangling at a line end), then one row split by " · "
+          // from `sm` up.
           <p className="mt-4 text-caption text-muted">
-            {contactLine.leadIn && `${contactLine.leadIn} `}
-            {contactLine.parts.map((part, i) => (
-              <Fragment key={part.kind}>
-                {part.before}
-                <a
-                  href={part.href}
-                  className="link text-ink"
-                  {...(part.external
-                    ? { target: "_blank", rel: "noopener noreferrer" }
-                    : {})}
-                >
-                  {part.text}
-                </a>
-                {separatorAfter(i, contactLine.parts.length)}
-              </Fragment>
-            ))}
+            {contactLine.text && <span className="block">{contactLine.text}</span>}
+            {contactLine.links.length > 0 && (
+              <span
+                className={`flex flex-col items-center gap-0.5 sm:block ${contactLine.text ? "mt-1" : ""}`}
+              >
+                {contactLine.links.map((link, i) => (
+                  <Fragment key={link.kind}>
+                    {i > 0 && (
+                      <span className="hidden sm:inline" aria-hidden="true">
+                        {" · "}
+                      </span>
+                    )}
+                    <a
+                      href={link.href}
+                      className="link whitespace-nowrap text-ink"
+                      {...(link.external
+                        ? { target: "_blank", rel: "noopener noreferrer" }
+                        : {})}
+                    >
+                      {link.text}
+                    </a>
+                  </Fragment>
+                ))}
+              </span>
+            )}
           </p>
         )}
       </div>

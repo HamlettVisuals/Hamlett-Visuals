@@ -14,8 +14,9 @@ export default function ContactLineIntro() {
     <div className="field-type contact-line-intro">
       <h3 className="contact-line-intro__title">Contact line</h3>
       <p className="contact-line-intro__note">
-        The line under the button, e.g. &ldquo;Prefer to email? hello@example.com, or find me at
-        @yourname.&rdquo; Your email, Instagram and phone come from{" "}
+        The line under the button: your text, followed by your contact details as links, e.g.
+        &ldquo;Prefer to reach out directly? hello@example.com · @yourname&rdquo;. Your email,
+        Instagram and phone come from{" "}
         <Link href={href as `/${string}`} prefetch={false}>
           Site Settings
         </Link>

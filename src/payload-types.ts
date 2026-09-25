@@ -1412,7 +1412,7 @@ export interface FeaturedOffer {
   createdAt?: string | null;
 }
 /**
- * The 'Ready when you are' section on your homepage that invites people to book a session, with a line of ways to reach you under the button.
+ * The 'Ready when you are' section on your homepage that invites people to book a session, with a line under the button: your text, followed by your contact details as links.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "booking-cta".
@@ -1436,7 +1436,7 @@ export interface BookingCta {
    */
   ctaHref?: string | null;
   /**
-   * The words before your contact details, e.g. "Prefer to email?" Up to 40 characters. Leave empty to start straight with the details.
+   * Shown before your contact details, e.g. "Prefer to reach out directly?" Up to 40 characters. Leave empty to show just the links.
    */
   contactLeadIn?: string | null;
   showEmail?: boolean | null;
@@ -1561,7 +1561,7 @@ export interface SiteSetting {
      */
     email?: string | null;
     /**
-     * Leave empty to keep your number off the site. US numbers can be typed any way, e.g. 555 123 4567; for other countries start with + and the country code.
+     * Leave empty to keep your number off the site. US numbers can be typed any way, e.g. 555 123 4567; for other countries start with + and the country code, spaced the way you want it shown.
      */
     phone?: string | null;
     phoneDisplay?: string | null;
