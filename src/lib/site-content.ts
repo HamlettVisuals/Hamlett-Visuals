@@ -146,16 +146,3 @@ export const featuredOffer: Offer =
   offers.find((offer) => offer.featured) ?? offers[0];
 
 export const standardOffers: Offer[] = offers;
-
-// Single source of truth for the studio's Instagram identity. Imported by the
-// Footer, the Booking CTA and the homepage Instagram section — change the
-// handle or URL here and every reference follows.
-//
-// The curated post list for the homepage Instagram section lives in
-// lib/instagram-posts.ts instead of here — it's a data-layer seam (same
-// pattern as lib/inquiries.ts and lib/site-settings.ts) that a later API sync
-// replaces without touching this file.
-export const instagram = {
-  handle: "@hamlettvisuals",
-  url: "https://www.instagram.com/hamlettvisuals/",
-};

@@ -1,7 +1,10 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import Wordmark from "@/components/Wordmark";
+import { contactDetails } from "@/lib/contact-details";
+import { getInstagramQrSvg } from "@/lib/instagram-qr";
 import { serverURL } from "@/lib/server-url";
 import { useScopedLivePreview } from "@/lib/use-scoped-live-preview";
 import type { FinalCtaFooter, SiteSetting } from "@/payload-types";
@@ -19,10 +22,13 @@ export default function Footer({
   finalCtaFooter,
   siteSettings,
   qrSvg,
+  qrUrl,
 }: {
   finalCtaFooter: FinalCtaFooter;
   siteSettings: SiteSetting;
+  /** QR code for the saved Instagram link (`qrUrl`), drawn on the server. */
   qrSvg: string;
+  qrUrl: string | null;
 }) {
   // Two separate globals render in this one component, so two separate
   // (scoped) Live Preview subscriptions — one per document. See
@@ -41,12 +47,29 @@ export default function Footer({
     apiRoute: "/hv-studio/api",
   });
 
-  const email = settings.contact?.email || "hello@example.com";
-  const phoneDisplay = settings.contact?.phoneDisplay || "+0 000 000 0000";
-  const phoneHref = settings.contact?.phoneHref || "tel:+00000000000";
-  const instagramHandle = settings.instagram?.handle || "@hamlettvisuals";
-  const instagramUrl =
-    settings.instagram?.url || "https://www.instagram.com/hamlettvisuals/";
+  const { email, phone, instagram } = contactDetails(settings);
+
+  // The QR code is drawn on the server for the saved Instagram link; while
+  // the username is edited in Live Preview, redraw it here so it keeps
+  // pointing where the link does.
+  const [liveQr, setLiveQr] = useState<{ url: string; svg: string } | null>(null);
+  const instagramUrl = instagram?.url ?? null;
+  useEffect(() => {
+    if (!instagramUrl || instagramUrl === qrUrl) return;
+    let cancelled = false;
+    getInstagramQrSvg(instagramUrl).then((svg) => {
+      if (!cancelled) setLiveQr({ url: instagramUrl, svg });
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [instagramUrl, qrUrl]);
+  const qr =
+    instagramUrl === qrUrl
+      ? qrSvg
+      : liveQr?.url === instagramUrl
+        ? liveQr.svg
+        : null;
 
   return (
     <footer id="footer" className="border-t border-hairline bg-canvas-tint">
@@ -65,34 +88,42 @@ export default function Footer({
           {data.ctaLabel || "Book a session"}
         </Link>
 
-        <div className="mt-14 flex flex-col items-center gap-1.5 text-caption text-muted">
-          <a href={`mailto:${email}`} className="link">
-            {email}
-          </a>
-          <a href={phoneHref} className="link">
-            {phoneDisplay}
-          </a>
-        </div>
+        {(email || phone) && (
+          <div className="mt-14 flex flex-col items-center gap-1.5 text-caption text-muted">
+            {email && (
+              <a href={`mailto:${email}`} className="link">
+                {email}
+              </a>
+            )}
+            {phone && (
+              <a href={phone.href} className="link">
+                {phone.display}
+              </a>
+            )}
+          </div>
+        )}
 
-        <div className="mt-10 flex flex-col items-center gap-3">
-          <h2 className="text-body text-ink">Follow on Instagram</h2>
-          <a
-            href={instagramUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="link text-caption text-ink"
-          >
-            {instagramHandle}
-          </a>
-          <a
-            href={instagramUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label={`Open ${instagramHandle} on Instagram`}
-            className="mt-1 inline-block border border-hairline"
-            dangerouslySetInnerHTML={{ __html: qrSvg }}
-          />
-        </div>
+        {instagram && (
+          <div className="mt-10 flex flex-col items-center gap-3">
+            <h2 className="text-body text-ink">Follow on Instagram</h2>
+            <a
+              href={instagram.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="link text-caption text-ink"
+            >
+              {instagram.handle}
+            </a>
+            <a
+              href={instagram.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={`Open ${instagram.handle} on Instagram`}
+              className="mt-1 inline-block min-h-[128px] min-w-[128px] border border-hairline"
+              dangerouslySetInnerHTML={{ __html: qr ?? "" }}
+            />
+          </div>
+        )}
 
         <nav className="mt-16 flex flex-wrap justify-center gap-x-5 gap-y-2">
           {(data.footerNav ?? []).map((item) => (

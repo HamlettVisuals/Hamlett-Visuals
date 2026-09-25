@@ -10,7 +10,9 @@ export type InstagramPost = {
   id: string;
   imageUrl: string;
   caption: string;
-  permalink: string;
+  // The post's own link; null (the placeholders below) links to her
+  // profile, made from the Instagram username in Site Settings.
+  permalink: string | null;
   // Pins a post to the front of selectFeaturedPosts(), ahead of whatever
   // "the rest" resolves to. Unused today (every post below is unpinned) but
   // present so pinning becomes a data change later, not a code change.
@@ -22,42 +24,42 @@ export const instagramPosts: InstagramPost[] = [
     id: "1",
     imageUrl: "/instagram/post-1.svg",
     caption: "Golden-hour first dance, riverside barn",
-    permalink: "https://www.instagram.com/hamlettvisuals/",
+    permalink: null,
     pinned: false,
   },
   {
     id: "2",
     imageUrl: "/instagram/post-2.svg",
     caption: "Portrait in soft window light",
-    permalink: "https://www.instagram.com/hamlettvisuals/",
+    permalink: null,
     pinned: false,
   },
   {
     id: "3",
     imageUrl: "/instagram/post-3.svg",
     caption: "Pit lane, round four",
-    permalink: "https://www.instagram.com/hamlettvisuals/",
+    permalink: null,
     pinned: false,
   },
   {
     id: "4",
     imageUrl: "/instagram/post-4.svg",
     caption: "Mid-stride across an open field",
-    permalink: "https://www.instagram.com/hamlettvisuals/",
+    permalink: null,
     pinned: false,
   },
   {
     id: "5",
     imageUrl: "/instagram/post-5.svg",
     caption: "Studio set for a coffee roaster",
-    permalink: "https://www.instagram.com/hamlettvisuals/",
+    permalink: null,
     pinned: false,
   },
   {
     id: "6",
     imageUrl: "/instagram/post-6.svg",
     caption: "Twilight exterior, listing shoot",
-    permalink: "https://www.instagram.com/hamlettvisuals/",
+    permalink: null,
     pinned: false,
   },
 ];

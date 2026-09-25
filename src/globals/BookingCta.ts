@@ -1,9 +1,17 @@
 import type { GlobalConfig } from "payload";
 import { publicReadAdminWrite } from "#src/access/isAdmin.ts";
+import {
+  BUTTON_TEXT_MAX,
+  HEADING_MAX,
+  LEAD_IN_MAX,
+  SUBHEADING_MAX,
+} from "#src/lib/booking-cta-limits.ts";
 import { serverURL } from "#src/lib/server-url.ts";
 
-// Contact email and Instagram handle are shared across sections and live on
-// the Site Settings global instead of being repeated here.
+// The homepage "Ready when you are" section (components/home/BookingCta.tsx).
+// Its contact line's wording and which details it shows are set here; the
+// email, phone and Instagram themselves are shared across the site and live
+// on the Site Settings global instead of being repeated here.
 export const BookingCta: GlobalConfig = {
   slug: "booking-cta",
   label: "Booking CTA",
@@ -20,7 +28,7 @@ export const BookingCta: GlobalConfig = {
     },
     group: "Homepage",
     description:
-      "The 'Ready when you are' section on the homepage that invites people to book a session. (The email address shown there comes from Site Settings.)",
+      "The 'Ready when you are' section on your homepage that invites people to book a session, with a line of ways to reach you under the button.",
     // Same Live Preview treatment as the other wired homepage globals —
     // opens automatically and scrolls to/highlights the #booking-cta section
     // via LivePreviewHighlight.
@@ -39,8 +47,9 @@ export const BookingCta: GlobalConfig = {
       type: "text",
       required: true,
       defaultValue: "Ready when you are",
+      maxLength: HEADING_MAX,
       admin: {
-        description: "The title of this section.",
+        description: `The title of this section. Up to ${HEADING_MAX} characters, so it stays on one line on phones.`,
       },
     },
     {
@@ -48,16 +57,19 @@ export const BookingCta: GlobalConfig = {
       type: "text",
       defaultValue:
         "Tell me what you're planning and I'll get back to you within a day.",
+      maxLength: SUBHEADING_MAX,
       admin: {
-        description: "The line of text under the title.",
+        description: `The line of text under the title. Up to ${SUBHEADING_MAX} characters, so it stays within three lines on phones.`,
       },
     },
     {
       name: "ctaLabel",
       type: "text",
+      label: "Button text",
       defaultValue: "Book a session",
+      maxLength: BUTTON_TEXT_MAX,
       admin: {
-        description: "The text on the button.",
+        description: `The text on the button, which goes to your booking page. Up to ${BUTTON_TEXT_MAX} characters, so it stays on one line.`,
       },
     },
     {
@@ -68,6 +80,61 @@ export const BookingCta: GlobalConfig = {
         hidden: true,
         description:
           "Where the button sends people. Locked to the booking page.",
+      },
+    },
+    {
+      // Heading for the contact-line fields below, and the pointer to
+      // Site Settings where the email, phone and Instagram themselves live.
+      name: "contactLineIntro",
+      type: "ui",
+      admin: {
+        components: {
+          Field: "/components/admin/ContactLineIntro#default",
+        },
+      },
+    },
+    {
+      name: "contactLeadIn",
+      type: "text",
+      label: "Contact line opening",
+      defaultValue: "Prefer to email?",
+      maxLength: LEAD_IN_MAX,
+      admin: {
+        description: `The words before your contact details, e.g. "Prefer to email?" Up to ${LEAD_IN_MAX} characters. Leave empty to start straight with the details.`,
+      },
+    },
+    // One switch per contact detail (components/admin/ContactSwitchField.tsx
+    // shows what Site Settings has for each). The line is built in
+    // lib/booking-contact-line.ts; with every switch off, or nothing filled
+    // in for the ones that are on, it isn't shown.
+    {
+      name: "showEmail",
+      type: "checkbox",
+      label: "Show email",
+      defaultValue: true,
+      admin: {
+        components: { Field: "/components/admin/ContactSwitchField#default" },
+        custom: { contact: "email" },
+      },
+    },
+    {
+      name: "showPhone",
+      type: "checkbox",
+      label: "Show phone number",
+      defaultValue: true,
+      admin: {
+        components: { Field: "/components/admin/ContactSwitchField#default" },
+        custom: { contact: "phone" },
+      },
+    },
+    {
+      name: "showInstagram",
+      type: "checkbox",
+      label: "Show Instagram",
+      defaultValue: true,
+      admin: {
+        components: { Field: "/components/admin/ContactSwitchField#default" },
+        custom: { contact: "instagram" },
       },
     },
   ],

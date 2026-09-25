@@ -7,6 +7,7 @@ import Footer from "@/components/Footer";
 import FloatingAskButton from "@/components/AskQuestion/FloatingAskButton";
 import LivePreviewRefresh from "@/components/LivePreviewRefresh";
 import LivePreviewHighlight from "@/components/LivePreviewHighlight";
+import { instagramLink } from "@/lib/contact-details";
 import { getInstagramQrSvg } from "@/lib/instagram-qr";
 import "../globals.css";
 
@@ -58,9 +59,8 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
   const headerNav = await payload.findGlobal({ slug: "header-nav" });
   const finalCtaFooter = await payload.findGlobal({ slug: "final-cta-footer" });
   const siteSettings = await payload.findGlobal({ slug: "site-settings" });
-  const qrSvg = await getInstagramQrSvg(
-    siteSettings.instagram?.url || "https://www.instagram.com/hamlettvisuals/",
-  );
+  const qrUrl = instagramLink(siteSettings.instagram?.handle)?.url ?? null;
+  const qrSvg = qrUrl ? await getInstagramQrSvg(qrUrl) : "";
 
   return (
     <html
@@ -74,6 +74,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
           finalCtaFooter={finalCtaFooter}
           siteSettings={siteSettings}
           qrSvg={qrSvg}
+          qrUrl={qrUrl}
         />
         <FloatingAskButton />
         <LivePreviewRefresh />

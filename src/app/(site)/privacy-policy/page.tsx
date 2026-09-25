@@ -99,14 +99,20 @@ export default async function PrivacyPolicyPage() {
             Questions about this policy or how your information is handled
             are welcome any time.
           </p>
-          <div className="mt-4 flex flex-col gap-1.5 text-caption text-muted">
-            <a href={`mailto:${contact.email}`} className="link text-ink">
-              {contact.email}
-            </a>
-            <a href={contact.phoneHref} className="link text-ink">
-              {contact.phoneDisplay}
-            </a>
-          </div>
+          {(contact.email || contact.phone) && (
+            <div className="mt-4 flex flex-col gap-1.5 text-caption text-muted">
+              {contact.email && (
+                <a href={`mailto:${contact.email}`} className="link text-ink">
+                  {contact.email}
+                </a>
+              )}
+              {contact.phone && (
+                <a href={contact.phone.href} className="link text-ink">
+                  {contact.phone.display}
+                </a>
+              )}
+            </div>
+          )}
         </section>
       </div>
 

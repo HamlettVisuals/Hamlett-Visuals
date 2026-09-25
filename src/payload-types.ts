@@ -1412,7 +1412,7 @@ export interface FeaturedOffer {
   createdAt?: string | null;
 }
 /**
- * The 'Ready when you are' section on the homepage that invites people to book a session. (The email address shown there comes from Site Settings.)
+ * The 'Ready when you are' section on your homepage that invites people to book a session, with a line of ways to reach you under the button.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "booking-cta".
@@ -1420,21 +1420,28 @@ export interface FeaturedOffer {
 export interface BookingCta {
   id: number;
   /**
-   * The title of this section.
+   * The title of this section. Up to 20 characters, so it stays on one line on phones.
    */
   heading: string;
   /**
-   * The line of text under the title.
+   * The line of text under the title. Up to 110 characters, so it stays within three lines on phones.
    */
   subheading?: string | null;
   /**
-   * The text on the button.
+   * The text on the button, which goes to your booking page. Up to 26 characters, so it stays on one line.
    */
   ctaLabel?: string | null;
   /**
    * Where the button sends people. Locked to the booking page.
    */
   ctaHref?: string | null;
+  /**
+   * The words before your contact details, e.g. "Prefer to email?" Up to 40 characters. Leave empty to start straight with the details.
+   */
+  contactLeadIn?: string | null;
+  showEmail?: boolean | null;
+  showPhone?: boolean | null;
+  showInstagram?: boolean | null;
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -1518,7 +1525,7 @@ export interface FinalCtaFooter {
   createdAt?: string | null;
 }
 /**
- * Studio name, logo, contact details, Instagram, and the small icon/preview image used when the site is shared or shows up in a browser tab. These values are reused in several places across the site.
+ * Studio name, logo, email, phone, Instagram, and the small icon/preview image used when the site is shared or shows up in a browser tab. These values are reused in several places across the site.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "site-settings".
@@ -1546,7 +1553,7 @@ export interface SiteSetting {
    */
   ogImageAlt?: string | null;
   /**
-   * How people reach you — shown in the footer and booking section.
+   * How people reach you — shown in the footer and the homepage booking section.
    */
   contact?: {
     /**
@@ -1554,25 +1561,20 @@ export interface SiteSetting {
      */
     email?: string | null;
     /**
-     * Your phone number as shown on the page.
+     * Leave empty to keep your number off the site. US numbers can be typed any way, e.g. 555 123 4567; for other countries start with + and the country code.
      */
+    phone?: string | null;
     phoneDisplay?: string | null;
-    /**
-     * Makes the phone number above tappable on mobile. Keep the same format: "tel:" followed by the number with no spaces or dashes, e.g. tel:+15551234567.
-     */
     phoneHref?: string | null;
   };
   /**
-   * Your Instagram account, shown in the footer and homepage.
+   * Your Instagram account, shown in the footer, the homepage Instagram section and the booking section.
    */
   instagram?: {
     /**
-     * Your Instagram @handle, as shown on the page.
+     * With or without the @, e.g. @hamlettvisuals. Your profile link is made from it. Leave empty to hide Instagram links.
      */
     handle?: string | null;
-    /**
-     * The web address your Instagram handle links to.
-     */
     url?: string | null;
   };
   updatedAt?: string | null;
@@ -1696,6 +1698,10 @@ export interface BookingCtaSelect<T extends boolean = true> {
   subheading?: T;
   ctaLabel?: T;
   ctaHref?: T;
+  contactLeadIn?: T;
+  showEmail?: T;
+  showPhone?: T;
+  showInstagram?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;
@@ -1746,6 +1752,7 @@ export interface SiteSettingsSelect<T extends boolean = true> {
     | T
     | {
         email?: T;
+        phone?: T;
         phoneDisplay?: T;
         phoneHref?: T;
       };

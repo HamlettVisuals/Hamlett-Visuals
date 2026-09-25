@@ -1,6 +1,7 @@
 "use client";
 
 import HoverZoomImage from "@/components/HoverZoomImage";
+import { instagramLink } from "@/lib/contact-details";
 import { instagramPosts, selectFeaturedPosts } from "@/lib/instagram-posts";
 import { serverURL } from "@/lib/server-url";
 import { useScopedLivePreview } from "@/lib/use-scoped-live-preview";
@@ -39,8 +40,10 @@ export default function Instagram({
     apiRoute: "/hv-studio/api",
   });
 
-  const instagramUrl =
-    settings.instagram?.url || "https://www.instagram.com/hamlettvisuals/";
+  // No username in Site Settings means nowhere to send people, so the
+  // section is left out.
+  const instagram = instagramLink(settings.instagram?.handle);
+  if (!instagram) return null;
   const posts = selectFeaturedPosts(instagramPosts, FEATURED_COUNT);
 
   return (
@@ -51,7 +54,7 @@ export default function Instagram({
             Recent on Instagram
           </h2>
           <a
-            href={instagramUrl}
+            href={instagram.url}
             target="_blank"
             rel="noopener noreferrer"
             className="link inline-flex items-center gap-1.5 text-body text-ink"
@@ -65,7 +68,7 @@ export default function Instagram({
           {posts.map((post) => (
             <a
               key={post.id}
-              href={post.permalink}
+              href={post.permalink ?? instagram.url}
               target="_blank"
               rel="noopener noreferrer"
               className="block"

@@ -55,6 +55,8 @@ import { ItalicFeatureClient as ItalicFeatureClient_e70f5e05f09f93e00b997edb1ef0
 import { default as default_16d9ddff4d9bc0b942eb2a46f2a32f20 } from '../../../components/admin/AboutQuickLinksField'
 import { default as default_651ba4359426e21e5e75ce26d08a4169 } from '../../../components/admin/QuickLinksDiff'
 import { default as default_ec7d0821a0034acc48d37adac94c8805 } from '../../../components/admin/FeaturedPackageField'
+import { default as default_fc623a9f5bba3245f394e25f9cc96ad7 } from '../../../components/admin/ContactLineIntro'
+import { default as default_656bea43dbcc31aeaa2c7e2919cc66cf } from '../../../components/admin/ContactSwitchField'
 import { default as default_beebdd1cde60416cd3f6a700617bab88 } from '../../../components/admin/SiteNav'
 import { S3ClientUploadHandler as S3ClientUploadHandler_f97aa6c64367fa259c5bc0567239ef24 } from '@payloadcms/storage-s3/client'
 import { default as default_417d8d667e84e4656bf87771dc7c88df } from '../../../components/admin/KanbanBoard'
@@ -119,6 +121,8 @@ export const importMap = {
   "/components/admin/AboutQuickLinksField#default": default_16d9ddff4d9bc0b942eb2a46f2a32f20,
   "/components/admin/QuickLinksDiff#default": default_651ba4359426e21e5e75ce26d08a4169,
   "/components/admin/FeaturedPackageField#default": default_ec7d0821a0034acc48d37adac94c8805,
+  "/components/admin/ContactLineIntro#default": default_fc623a9f5bba3245f394e25f9cc96ad7,
+  "/components/admin/ContactSwitchField#default": default_656bea43dbcc31aeaa2c7e2919cc66cf,
   "/components/admin/SiteNav#default": default_beebdd1cde60416cd3f6a700617bab88,
   "@payloadcms/storage-s3/client#S3ClientUploadHandler": S3ClientUploadHandler_f97aa6c64367fa259c5bc0567239ef24,
   "/components/admin/KanbanBoard#default": default_417d8d667e84e4656bf87771dc7c88df,

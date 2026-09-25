@@ -731,6 +731,50 @@ button.category-status:focus-visible {
   cursor: pointer;
 }
 
+/* Booking CTA's contact line (globals/BookingCta.ts): the heading and Site
+   Settings note (ContactLineIntro.tsx), then one switch per contact detail
+   (ContactSwitchField.tsx, the .show-on-website switch above) with what
+   Site Settings has for it. */
+.contact-line-intro {
+  margin-top: 12px;
+  padding-top: 24px;
+  border-top: 1px solid var(--theme-elevation-100);
+}
+
+.contact-line-intro__title {
+  margin: 0 0 4px;
+  font-size: 18px;
+}
+
+.contact-line-intro__note {
+  margin: 0;
+  color: var(--theme-elevation-650);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.contact-line-intro__note a {
+  color: var(--theme-elevation-1000);
+  text-decoration: underline;
+}
+
+.contact-switch + .contact-switch {
+  margin-top: -8px;
+}
+
+.contact-switch__value {
+  color: var(--theme-elevation-650);
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+
+.contact-switch__missing {
+  margin: 6px 0 0 56px;
+  color: var(--theme-warning-700, #92400e);
+  font-size: 13px;
+  line-height: 1.4;
+}
+
 /* Albums list view (collections/Events.ts, components/admin/AlbumCells.tsx).
    Same approach as Categories, but albums page and search: the search bar,
    page controls and Trash tab stay; bulk-select checkboxes and their bar,

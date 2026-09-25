@@ -1,6 +1,9 @@
 "use client";
 
+import { Fragment } from "react";
 import Link from "next/link";
+import { buildContactLine, separatorAfter } from "@/lib/booking-contact-line";
+import { contactDetails } from "@/lib/contact-details";
 import { serverURL } from "@/lib/server-url";
 import { useScopedLivePreview } from "@/lib/use-scoped-live-preview";
 import type { BookingCta as BookingCtaGlobal, SiteSetting } from "@/payload-types";
@@ -12,8 +15,10 @@ import type { BookingCta as BookingCtaGlobal, SiteSetting } from "@/payload-type
 // it never competes with the Hero or the Featured offer.
 //
 // Heading/subheading/CTA come from the Booking CTA global (see
-// globals/BookingCta.ts); the contact email and Instagram handle come from
+// globals/BookingCta.ts), as do the contact line's opening words and which
+// details it lists; the email, phone and Instagram themselves come from
 // Site Settings — shared with the Footer and the homepage Instagram section.
+// The line's wording for each combination is lib/booking-contact-line.ts.
 // Two separate globals render here, so two separate (scoped) Live Preview
 // subscriptions — same pattern as Footer.tsx.
 
@@ -37,10 +42,11 @@ export default function BookingCta({
     apiRoute: "/hv-studio/api",
   });
 
-  const email = settings.contact?.email || "hello@example.com";
-  const instagramHandle = settings.instagram?.handle || "@hamlettvisuals";
-  const instagramUrl =
-    settings.instagram?.url || "https://www.instagram.com/hamlettvisuals/";
+  const contactLine = buildContactLine(
+    data.contactLeadIn,
+    data,
+    contactDetails(settings),
+  );
 
   return (
     <section id="booking-cta" className="border-y border-hairline bg-canvas-tint">
@@ -58,22 +64,26 @@ export default function BookingCta({
           </Link>
         </div>
 
-        <p className="mt-4 text-caption text-muted">
-          Prefer to email?{" "}
-          <a href={`mailto:${email}`} className="link text-ink">
-            {email}
-          </a>
-          , or find me at{" "}
-          <a
-            href={instagramUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="link text-ink"
-          >
-            {instagramHandle}
-          </a>
-          .
-        </p>
+        {contactLine && (
+          <p className="mt-4 text-caption text-muted">
+            {contactLine.leadIn && `${contactLine.leadIn} `}
+            {contactLine.parts.map((part, i) => (
+              <Fragment key={part.kind}>
+                {part.before}
+                <a
+                  href={part.href}
+                  className="link text-ink"
+                  {...(part.external
+                    ? { target: "_blank", rel: "noopener noreferrer" }
+                    : {})}
+                >
+                  {part.text}
+                </a>
+                {separatorAfter(i, contactLine.parts.length)}
+              </Fragment>
+            ))}
+          </p>
+        )}
       </div>
     </section>
   );

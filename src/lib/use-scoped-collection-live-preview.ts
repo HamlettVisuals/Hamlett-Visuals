@@ -34,6 +34,10 @@ export function useScopedCollectionLivePreview<T extends Record<string, any> & {
 }): { data: T } {
   const [data, setData] = useState<T>(initialData);
   const mergeBasis = useRef<T>(initialData);
+  // mergeData is async (it may fetch relationships), so two quick edits can
+  // finish out of order; only the newest message's result is kept, or an
+  // older one would land last and leave the preview a keystroke behind.
+  const latestMessage = useRef(0);
   const id = initialData.id;
 
   useEffect(() => {
@@ -44,6 +48,7 @@ export function useScopedCollectionLivePreview<T extends Record<string, any> & {
       if (!isLivePreviewEvent(event, serverURL)) return;
       if (event.data.collectionSlug !== collectionSlug) return;
 
+      const messageId = ++latestMessage.current;
       const merged = await mergeData<T>({
         apiRoute,
         collectionSlug,
@@ -53,6 +58,7 @@ export function useScopedCollectionLivePreview<T extends Record<string, any> & {
         locale: event.data.locale,
         serverURL,
       });
+      if (messageId !== latestMessage.current) return;
       mergeBasis.current = merged;
       setData(merged);
     };
