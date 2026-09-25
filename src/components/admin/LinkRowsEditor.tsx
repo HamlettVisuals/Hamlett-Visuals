@@ -25,8 +25,8 @@ import { CounterBadge } from "@/components/admin/CharacterCounter";
 // one or more capped text inputs, a "Goes to" dropdown (link lists only),
 // a Move up / Move down / Remove menu — and one "Add …" button that greys
 // out at the cap. Used by Header/Nav's menu links (NavLinksField.tsx),
-// About's quick links (AboutQuickLinksField.tsx) and a package's features
-// (PackageFeaturesField.tsx).
+// About's quick links (AboutQuickLinksField.tsx), the footer's links
+// (FooterLinksField.tsx) and a package's features (PackageFeaturesField.tsx).
 //
 // Replaces Payload's default array UI (a collapsible card per row with
 // Copy/Paste/Duplicate/Add below actions and Collapse All / Show All) but
@@ -225,6 +225,8 @@ export type LinkRowsEditorProps = {
   rowNotes?: (row: LinkRowValues, index: number) => React.ReactNode[];
   /** Extra class on the wrapper, for layouts with more inputs per row. */
   className?: string;
+  /** Destinations left out of the "Goes to" dropdown (the field's validate refuses them too). */
+  excludeDestinations?: string[];
   /** Rendered after the Add button (e.g. a crowding warning). */
   afterAdd?: (rows: LinkRowValues[]) => React.ReactNode;
   children?: React.ReactNode;
@@ -241,6 +243,7 @@ export default function LinkRowsEditor({
   summarize,
   rowNotes,
   className,
+  excludeDestinations,
   afterAdd,
   children,
 }: LinkRowsEditorProps) {
@@ -255,11 +258,11 @@ export default function LinkRowsEditor({
   const options = useMemo(
     () =>
       hrefField && "options" in hrefField
-        ? (hrefField.options.map((option) =>
-            typeof option === "string" ? { label: option, value: option } : option,
-          ) as OptionObject[])
+        ? (hrefField.options
+            .map((option) => (typeof option === "string" ? { label: option, value: option } : option))
+            .filter((option) => !excludeDestinations?.includes(String(option.value))) as OptionObject[])
         : null,
-    [hrefField],
+    [hrefField, excludeDestinations],
   );
 
   const names = useMemo(

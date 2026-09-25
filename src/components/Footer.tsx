@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import Wordmark from "@/components/Wordmark";
 import { contactDetails } from "@/lib/contact-details";
+import { LEGAL_LINKS } from "@/lib/footer-limits";
 import { getInstagramQrSvg } from "@/lib/instagram-qr";
 import { serverURL } from "@/lib/server-url";
 import { useScopedLivePreview } from "@/lib/use-scoped-live-preview";
@@ -12,9 +13,10 @@ import type { FinalCtaFooter, SiteSetting } from "@/payload-types";
 // Section 10 of the homepage flow — the closing note / footer — and the
 // site-wide footer rendered on every page via src/app/(site)/layout.tsx.
 //
-// One centred, stacked column: wordmark, a warm sign-off line, the solid Book
-// button (the footer's one point of emphasis), then contact, the Instagram
-// follow block, the utility nav, and the copyright. On the design system:
+// One centred, stacked column: wordmark, her closing line, the solid Book
+// button (the footer's one point of emphasis), then the contact details and
+// Instagram follow block she's switched on, her links, and the fixed
+// copyright + legal links row. On the design system:
 // warm ground, flat (no shadow, no card), Fraunces for the wordmark / sign-off
 // / labels, Inter for values.
 
@@ -71,16 +73,25 @@ export default function Footer({
         ? liveQr.svg
         : null;
 
+  // Which contact details show: switched on in the footer editor AND filled
+  // in on Site Settings. The QR code is never shown on phones (below `sm`),
+  // where it can't be scanned, so a block holding only the QR code is left
+  // out there entirely.
+  const showEmail = data.showEmail !== false && email;
+  const showPhone = data.showPhone !== false && phone;
+  const showHandle = data.showInstagram !== false && instagram;
+  const showQr = data.showQrCode !== false && instagram;
+  const qrOnly = showQr && !showEmail && !showPhone && !showHandle;
+  const siteName = settings.siteName || "Hamlett Visuals";
+
   return (
     <footer id="footer" className="border-t border-hairline bg-canvas-tint">
-      <div className="mx-auto flex max-w-md flex-col items-center px-gutter pt-section pb-16 text-center">
-        <Wordmark
-          siteName={settings.siteName || "Hamlett Visuals"}
-          logo={settings.logo}
-          variant="footer"
-        />
+      {/* pb-28 keeps the last line clear of the fixed "Ask a question" button
+          (AskQuestion/FloatingAskButton.tsx) when scrolled to the bottom. */}
+      <div className="mx-auto flex max-w-5xl flex-col items-center px-gutter pt-section pb-28 text-center">
+        <Wordmark siteName={siteName} logo={settings.logo} variant="footer" />
 
-        <p className="mt-5 font-display text-title text-ink">
+        <p className="mt-5 max-w-md font-display text-title text-ink">
           {data.signOffLine}
         </p>
 
@@ -88,59 +99,89 @@ export default function Footer({
           {data.ctaLabel || "Book a session"}
         </Link>
 
-        {(email || phone) && (
-          <div className="mt-14 flex flex-col items-center gap-1.5 text-caption text-muted">
-            {email && (
-              <a href={`mailto:${email}`} className="link">
-                {email}
-              </a>
+        {(showEmail || showPhone || showHandle || showQr) && (
+          <div className={`mt-14 flex-col items-center ${qrOnly ? "hidden sm:flex" : "flex"}`}>
+            {(showEmail || showPhone) && (
+              <div className="flex flex-col items-center gap-1.5 text-caption text-muted">
+                {showEmail && (
+                  <a href={`mailto:${email}`} className="link">
+                    {email}
+                  </a>
+                )}
+                {showPhone && phone && (
+                  <a href={phone.href} className="link">
+                    {phone.display}
+                  </a>
+                )}
+              </div>
             )}
-            {phone && (
-              <a href={phone.href} className="link">
-                {phone.display}
-              </a>
+
+            {instagram && (showHandle || showQr) && (
+              <div
+                className={`flex-col items-center gap-3 ${showEmail || showPhone ? "mt-10" : ""} ${
+                  showHandle ? "flex" : "hidden sm:flex"
+                }`}
+              >
+                <h2 className="text-body text-ink">Follow on Instagram</h2>
+                {showHandle && (
+                  <a
+                    href={instagram.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="link text-caption text-ink"
+                  >
+                    {instagram.handle}
+                  </a>
+                )}
+                {showQr && (
+                  <a
+                    href={instagram.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={`Open ${instagram.handle} on Instagram`}
+                    className="mt-1 hidden min-h-[128px] min-w-[128px] border border-hairline sm:inline-block"
+                    dangerouslySetInnerHTML={{ __html: qr ?? "" }}
+                  />
+                )}
+              </div>
             )}
           </div>
         )}
 
-        {instagram && (
-          <div className="mt-10 flex flex-col items-center gap-3">
-            <h2 className="text-body text-ink">Follow on Instagram</h2>
-            <a
-              href={instagram.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="link text-caption text-ink"
-            >
-              {instagram.handle}
-            </a>
-            <a
-              href={instagram.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label={`Open ${instagram.handle} on Instagram`}
-              className="mt-1 inline-block min-h-[128px] min-w-[128px] border border-hairline"
-              dangerouslySetInnerHTML={{ __html: qr ?? "" }}
-            />
-          </div>
+        {/* Her links: one per line, centred, on phones and tablets; one row
+            from `lg` (1024px) up, where FOOTER_LINKS_MAX links at the label
+            cap fit without wrapping (lib/footer-limits.ts). */}
+        {(data.footerNav ?? []).length > 0 && (
+          <nav
+            aria-label="Footer"
+            className="mt-16 flex flex-col items-center gap-2 lg:flex-row lg:justify-center lg:gap-x-6"
+          >
+            {(data.footerNav ?? []).map((item) => (
+              <Link
+                key={item.id ?? item.href}
+                href={item.href}
+                className="link whitespace-nowrap text-caption text-ink"
+              >
+                {item.label}
+              </Link>
+            ))}
+          </nav>
         )}
 
-        <nav className="mt-16 flex flex-wrap justify-center gap-x-5 gap-y-2">
-          {(data.footerNav ?? []).map((item) => (
-            <Link
-              key={item.id ?? item.href}
-              href={item.href}
-              className="link text-caption text-ink"
-            >
-              {item.label}
-            </Link>
-          ))}
-        </nav>
-
-        <p className="mt-6 text-caption text-muted">
-          &copy; {new Date().getFullYear()} {data.copyrightName || "Hamlett Visuals"}
-          . All rights reserved.
-        </p>
+        {/* Fixed, not editable: the copyright line (studio name from Site
+            Settings, this year) and the legal pages beside it. */}
+        <div className="mt-8 flex flex-col items-center gap-1.5 text-caption text-muted sm:flex-row sm:flex-wrap sm:justify-center sm:gap-x-4">
+          <p>
+            &copy; {new Date().getFullYear()} {siteName}. All rights reserved.
+          </p>
+          <nav aria-label="Legal" className="flex gap-x-4">
+            {LEGAL_LINKS.map((link) => (
+              <Link key={link.href} href={link.href} className="link text-muted">
+                {link.label}
+              </Link>
+            ))}
+          </nav>
+        </div>
       </div>
     </footer>
   );

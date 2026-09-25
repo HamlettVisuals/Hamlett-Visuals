@@ -1470,7 +1470,7 @@ export interface TestimonialsTeaser {
   createdAt?: string | null;
 }
 /**
- * The very bottom of every page: the closing message, the 'Book' button, and the small links row (Portfolio, Backstage, Privacy Policy, etc.). Contact details and the Instagram link shown here come from Site Settings.
+ * The bottom of every page: your closing line and button, your footer links and which contact details to show. Privacy Policy, Terms and the copyright line are always there.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "final-cta-footer".
@@ -1478,29 +1478,20 @@ export interface TestimonialsTeaser {
 export interface FinalCtaFooter {
   id: number;
   /**
-   * The closing message shown above the 'Book' button.
+   * The message above the button. Up to 60 characters, so it stays within two lines on phones.
    */
   signOffLine: string;
   /**
-   * The text on the 'Book' button.
+   * The text on the button, which goes to your booking page. Up to 26 characters, so it stays on one line.
    */
   ctaLabel?: string | null;
   /**
    * Where the button sends people. Locked to the booking page.
    */
   ctaHref?: string | null;
-  /**
-   * The small row of links at the very bottom of the page. Add, remove, reorder, or rename any of them, and pick where each one goes from the dropdown.
-   */
   footerNav?:
     | {
-        /**
-         * The word or short phrase shown for this link.
-         */
         label: string;
-        /**
-         * Where this link goes. Pick from the real pages and sections on the site — this can't be typed in, so it can't end up pointing somewhere that doesn't exist.
-         */
         href:
           | '/'
           | '/#categories'
@@ -1518,9 +1509,13 @@ export interface FinalCtaFooter {
         id?: string | null;
       }[]
     | null;
+  showEmail?: boolean | null;
+  showPhone?: boolean | null;
+  showInstagram?: boolean | null;
   /**
-   * The name shown in the copyright line at the very bottom of the page (e.g. "© 2026 [this name]. All rights reserved.").
+   * Never shown on phones, where it can't be scanned.
    */
+  showQrCode?: boolean | null;
   copyrightName?: string | null;
   updatedAt?: string | null;
   createdAt?: string | null;
@@ -1735,6 +1730,10 @@ export interface FinalCtaFooterSelect<T extends boolean = true> {
         href?: T;
         id?: T;
       };
+  showEmail?: T;
+  showPhone?: T;
+  showInstagram?: T;
+  showQrCode?: T;
   copyrightName?: T;
   updatedAt?: T;
   createdAt?: T;
