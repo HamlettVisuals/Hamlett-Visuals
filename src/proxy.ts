@@ -2,21 +2,22 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { safeAdminRedirect } from "@/lib/admin-redirect";
 
-// The Categories list is reordered by dragging (Categories.ts `orderable`),
-// which only works with every row on one page and sorted by the drag order.
+// The Categories and Packages lists are reordered by dragging (`orderable`
+// in Categories.ts / PricingRows.ts), which only works with every row on one page and sorted by the drag order.
 // Payload's list view prefers the user's saved per-page and sort settings
 // over the collection's defaultLimit/defaultSort, and it saves whatever the
 // URL says back into those settings. So any list load that asks for
 // something else is redirected to limit=100&sort=_order, which also
 // overwrites a stale saved setting on the first visit. GET only: Payload's
 // server actions POST to this same path.
-const CATEGORY_LIST_QUERY = { limit: "100", sort: "_order" };
+const DRAG_LIST_QUERY = { limit: "100", sort: "_order" };
+const DRAG_LISTS = ["/hv-studio/collections/categories", "/hv-studio/collections/pricing-rows"];
 
-function forceCategoryListQuery(request: NextRequest) {
+function forceDragListQuery(request: NextRequest) {
   if (request.method !== "GET") return null;
   const url = request.nextUrl.clone();
   let changed = false;
-  for (const [key, value] of Object.entries(CATEGORY_LIST_QUERY)) {
+  for (const [key, value] of Object.entries(DRAG_LIST_QUERY)) {
     if (url.searchParams.get(key) !== value) {
       url.searchParams.set(key, value);
       changed = true;
@@ -46,8 +47,9 @@ function restrictLoginRedirect(request: NextRequest) {
 }
 
 export function proxy(request: NextRequest) {
-  if (request.nextUrl.pathname.startsWith("/hv-studio/collections/categories")) {
-    return forceCategoryListQuery(request) ?? NextResponse.next();
+  const { pathname } = request.nextUrl;
+  if (DRAG_LISTS.some((list) => pathname === list || pathname === `${list}/trash`)) {
+    return forceDragListQuery(request) ?? NextResponse.next();
   }
   return restrictLoginRedirect(request);
 }
@@ -59,5 +61,7 @@ export const config = {
     "/hv-studio/login",
     "/hv-studio/collections/categories",
     "/hv-studio/collections/categories/trash",
+    "/hv-studio/collections/pricing-rows",
+    "/hv-studio/collections/pricing-rows/trash",
   ],
 };

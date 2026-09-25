@@ -8,7 +8,8 @@ import Offers from "@/components/home/Offers";
 import BookingCta from "@/components/home/BookingCta";
 import Instagram from "@/components/home/Instagram";
 import Testimonials from "@/components/home/Testimonials";
-import { resolveCategory } from "@/lib/pricing-rows";
+import { SAMPLE_PHOTOS } from "@/lib/package-limits";
+import { resolveCategory, sampleAlbumId, type SamplePhotosByPackage } from "@/lib/pricing-rows";
 
 // Single flowing homepage. Sections render in this exact order:
 //  1. Hero            (<Hero />)
@@ -40,8 +41,9 @@ export default async function Home() {
   const featuredOffer = await payload.findGlobal({ slug: "featured-offer", depth: 2 });
   const { docs: allPricingRows } = await payload.find({
     collection: "pricing-rows",
+    where: { published: { equals: true } },
     depth: 1,
-    sort: "order",
+    sort: "_order", // drag order from the Packages list (PricingRows.ts `orderable`)
     limit: 0,
   });
   // `category` is required, so a null here means it's in the Trash (Payload
@@ -50,6 +52,30 @@ export default async function Home() {
   // "Book" links to a category visitors can't open — the same rule as the
   // Featured Offer's package picker (lib/featured-package.ts).
   const pricingRows = allPricingRows.filter((row) => resolveCategory(row.category)?.published);
+
+  // Each package's first few album photos (in the album's own order, as on
+  // its category page), for the spotlight. One query for every package's
+  // album; photos without a url are skipped. A package with no usable album
+  // or photos gets none, and the spotlight leaves the space out entirely.
+  const albumIds = [...new Set(pricingRows.map(sampleAlbumId).filter((id) => id !== null))];
+  const { docs: albumPhotos } = albumIds.length
+    ? await payload.find({
+        collection: "photos",
+        where: { event: { in: albumIds } },
+        sort: "createdAt",
+        depth: 0,
+        limit: 0,
+      })
+    : { docs: [] };
+  const samplePhotos: SamplePhotosByPackage = {};
+  for (const row of pricingRows) {
+    const albumId = sampleAlbumId(row);
+    if (albumId === null) continue;
+    samplePhotos[row.id] = albumPhotos
+      .filter((photo) => photo.event === albumId && photo.url)
+      .slice(0, SAMPLE_PHOTOS)
+      .map((photo) => ({ id: photo.id, url: photo.url as string, alt: photo.alt }));
+  }
   const testimonialsTeaser = await payload.findGlobal({
     slug: "testimonials-teaser",
   });
@@ -74,7 +100,7 @@ export default async function Home() {
       <About about={about} />
 
       {/* 4. Hot offer */}
-      <FeaturedOffer featuredOffer={featuredOffer} />
+      <FeaturedOffer featuredOffer={featuredOffer} samplePhotos={samplePhotos} />
 
       {/* 5. Offers & pricing */}
       <Offers pricingRows={pricingRows} featuredOffer={featuredOffer} />

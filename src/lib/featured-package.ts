@@ -1,9 +1,9 @@
 import type { Where } from "payload";
 import type { PricingRow } from "#src/payload-types.ts";
 
-// Which Pricing / Offer Rows the Featured Offer global can spotlight: not in
-// the Trash, and in a category that's shown on the site and not in the Trash
-// either (a hidden category's portfolio page 404s, so its "View gallery"
+// Which Packages (the `pricing-rows` collection) the Featured Offer global
+// can spotlight: shown on the site ("Show on website") and not in the Trash,
+// in a category that's shown on the site and not in the Trash either (a hidden category's portfolio page 404s, so its "View gallery"
 // link would too). One rule, three places:
 //   - AVAILABLE_PACKAGE_WHERE: the dropdown's options
 //     (components/admin/FeaturedPackageField.tsx) and the field's
@@ -18,6 +18,7 @@ import type { PricingRow } from "#src/payload-types.ts";
 export const AVAILABLE_PACKAGE_WHERE: Where = {
   and: [
     { deletedAt: { exists: false } },
+    { published: { equals: true } },
     { "category.published": { equals: true } },
     { "category.deletedAt": { exists: false } },
   ],
@@ -29,7 +30,7 @@ export const AVAILABLE_PACKAGE_WHERE: Where = {
 export function availablePackage(value: unknown): PricingRow | null {
   if (typeof value !== "object" || value === null) return null;
   const row = value as PricingRow;
-  if (row.deletedAt) return null;
+  if (row.deletedAt || row.published === false) return null;
   const category = row.category;
   if (typeof category !== "object" || category === null) return null;
   if (!category.published || category.deletedAt) return null;

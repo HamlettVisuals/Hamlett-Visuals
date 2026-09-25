@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import FeatureList from "@/components/home/FeatureList";
 import OfferActions from "@/components/home/OfferActions";
@@ -9,17 +9,22 @@ import OfferPrice from "@/components/home/OfferPrice";
 import OfferTerms from "@/components/home/OfferTerms";
 import { resolveCategory } from "@/lib/pricing-rows";
 import { serverURL } from "@/lib/server-url";
+import {
+  LIVE_PREVIEW_DOC_PARAM,
+  useScopedCollectionLivePreview,
+} from "@/lib/use-scoped-collection-live-preview";
 import { useScopedLivePreview } from "@/lib/use-scoped-live-preview";
 import type { FeaturedOffer as FeaturedOfferGlobal, PricingRow } from "@/payload-types";
 
-// Offers & pricing section (#offers). Every offer, in category order — the
-// featured one included. Plain rows are hairline-divided; the featured row is
+// Offers & pricing section (#offers). Every package shown on the site, in
+// the Packages list's drag order — the featured one included. Plain rows are hairline-divided; the featured row is
 // an accent-bordered box (.accent-frame, the shared static look) plus
 // .offer-row-featured (the hover-lift layered on top, since this row is
 // clickable) carrying the same accent title + price as the standalone Hot
 // offer section, so it reads as the same offer wherever you meet it.
 //
-// The "Hot deal" badge sits on the row's own border rather than inside its
+// The featured row's badge (the Featured Offer global's Badge text, same as
+// the spotlight's) sits on the row's own border rather than inside its
 // padding: absolutely positioned (.offer-row-featured is the positioned
 // ancestor), left-aligned with the row's padding, `top-0 -translate-y-1/2` so
 // it straddles the border line. It carries its own small neutral drop shadow
@@ -33,19 +38,56 @@ import type { FeaturedOffer as FeaturedOfferGlobal, PricingRow } from "@/payload
 // (.offer-disclosure) — no animation library, still under
 // prefers-reduced-motion.
 //
-// "Featured" is the package picked in the Featured Offer global, followed
+// "Featured" and the badge text are the Featured Offer global's, followed
 // live while that global is open in Live Preview. With no rows to show the
 // whole section is left out rather than leaving a bare heading.
+//
+// Each row follows the Packages editor's unsaved title, price prefix,
+// price, summary and features when it's the package being previewed
+// (`?lpDoc=<id>`, see PricingRows.ts livePreview.url), and opens its
+// details so feature edits are visible. `package-<id>` is what that preview
+// URL scrolls to.
 
-function OfferRow({ offer, isFeatured }: { offer: PricingRow; isFeatured: boolean }) {
-  const [open, setOpen] = useState(false);
+// The preview URL doesn't change while the page is open.
+const noSubscribe = () => () => {};
+
+function OfferRow({
+  offer,
+  isFeatured,
+  badge,
+}: {
+  offer: PricingRow;
+  isFeatured: boolean;
+  badge: string;
+}) {
+  const { data } = useScopedCollectionLivePreview<PricingRow>({
+    initialData: offer,
+    serverURL,
+    collectionSlug: "pricing-rows",
+    apiRoute: "/hv-studio/api",
+    depth: 1,
+  });
+  // Previewed rows start open; a click still toggles. Read from the URL
+  // after hydration (false on the server), so markup matches.
+  const isPreviewed = useSyncExternalStore(
+    noSubscribe,
+    () => new URLSearchParams(window.location.search).get(LIVE_PREVIEW_DOC_PARAM) === String(offer.id),
+    () => false,
+  );
+  const [toggled, setToggled] = useState<boolean | null>(null);
+  const open = toggled ?? isPreviewed;
   const detailsId = `offer-details-${offer.id}`;
-  const category = resolveCategory(offer.category);
+  // Category links only change after saving; keep the saved one if the
+  // unsaved form's category hasn't populated.
+  const category = resolveCategory(data.category) ?? resolveCategory(offer.category);
   const categorySlug = category?.slug ?? "";
-  const features = (offer.features ?? []).map((feature) => feature.text);
+  const features = (data.features ?? [])
+    .map((feature) => feature?.text?.trim() ?? "")
+    .filter(Boolean);
 
   return (
     <li
+      id={`package-${offer.id}`}
       className={
         isFeatured
           ? "accent-frame offer-row-featured"
@@ -60,7 +102,7 @@ function OfferRow({ offer, isFeatured }: { offer: PricingRow; isFeatured: boolea
             }`}
           >
             <Link href={`/portfolio/${categorySlug}`} className="link-quiet">
-              {offer.title}
+              {data.title}
             </Link>
           </h3>
           {category && (
@@ -68,23 +110,23 @@ function OfferRow({ offer, isFeatured }: { offer: PricingRow; isFeatured: boolea
           )}
         </div>
         <OfferPrice
-          lead={offer.priceLead || "From"}
-          amount={offer.priceAmount}
+          lead={data.priceLead || "From"}
+          amount={data.priceAmount}
           accent={isFeatured}
         />
       </div>
 
       {isFeatured && (
         <div className="absolute left-6 top-0 -translate-y-1/2 sm:left-8">
-          <OfferBadge label="Hot deal" className="offer-badge-on-border" />
+          <OfferBadge label={badge} className="offer-badge-on-border" />
         </div>
       )}
 
-      <p className="mt-3 max-w-measure text-body text-muted">{offer.summary}</p>
+      <p className="mt-3 max-w-measure text-body text-muted">{data.summary}</p>
 
       <button
         type="button"
-        onClick={() => setOpen((value) => !value)}
+        onClick={() => setToggled(!open)}
         aria-expanded={open}
         aria-controls={detailsId}
         className="link-chip link-chip-inline offer-details-toggle mt-4"
@@ -112,8 +154,8 @@ function OfferRow({ offer, isFeatured }: { offer: PricingRow; isFeatured: boolea
       >
         <div>
           <div className="offer-disclosure-inner">
-            <FeatureList items={features} className="pt-4" />
-            <OfferTerms className="mt-4" />
+            {features.length > 0 && <FeatureList items={features} className="pt-4" />}
+            <OfferTerms className={features.length > 0 ? "mt-4" : "pt-4"} />
           </div>
         </div>
       </div>
@@ -139,6 +181,7 @@ export default function Offers({
   });
   const picked = data.featuredPackage;
   const featuredId = typeof picked === "object" && picked !== null ? picked.id : picked;
+  const badge = data.badgeLabel || "Hot offer";
 
   if (pricingRows.length === 0) return null;
 
@@ -150,7 +193,12 @@ export default function Offers({
         </h2>
         <ul className="mt-8">
           {pricingRows.map((offer) => (
-            <OfferRow key={offer.id} offer={offer} isFeatured={offer.id === featuredId} />
+            <OfferRow
+              key={offer.id}
+              offer={offer}
+              isFeatured={offer.id === featuredId}
+              badge={badge}
+            />
           ))}
         </ul>
       </div>

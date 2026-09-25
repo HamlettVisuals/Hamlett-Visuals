@@ -10,8 +10,8 @@ type FeatureListProps = {
 export default function FeatureList({ items, className = "" }: FeatureListProps) {
   return (
     <ul className={`flex flex-col gap-2 text-body text-muted ${className}`}>
-      {items.map((item) => (
-        <li key={item} className="flex gap-2.5">
+      {items.map((item, i) => (
+        <li key={`${i}-${item}`} className="flex gap-2.5">
           <svg
             viewBox="0 0 16 16"
             fill="none"
@@ -26,7 +26,7 @@ export default function FeatureList({ items, className = "" }: FeatureListProps)
               strokeLinejoin="round"
             />
           </svg>
-          <span>{item}</span>
+          <span className="min-w-0 [overflow-wrap:anywhere]">{item}</span>
         </li>
       ))}
     </ul>

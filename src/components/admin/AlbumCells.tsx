@@ -47,7 +47,7 @@ function loadCategories(apiBase: string): Promise<CategoryOption[]> {
   return categoriesPromise;
 }
 
-function useCategories(): CategoryOption[] {
+export function useCategories(): CategoryOption[] {
   const { config } = useConfig();
   const [categories, setCategories] = useState<CategoryOption[]>([]);
   const apiBase = `${config.serverURL ?? ""}${config.routes.api}`;

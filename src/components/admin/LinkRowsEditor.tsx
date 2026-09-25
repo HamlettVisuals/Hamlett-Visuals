@@ -21,11 +21,12 @@ import {
 } from "@payloadcms/ui";
 import { CounterBadge } from "@/components/admin/CharacterCounter";
 
-// A compact list editor for link arrays: one line per link — drag handle,
-// one or more capped text inputs, a "Goes to" dropdown, a Move up / Move
-// down / Remove menu — and one "Add link" button that greys out at the cap.
-// Used by Header/Nav's menu links (NavLinksField.tsx) and About's quick
-// links (AboutQuickLinksField.tsx).
+// A compact list editor for short arrays: one line per row — drag handle,
+// one or more capped text inputs, a "Goes to" dropdown (link lists only),
+// a Move up / Move down / Remove menu — and one "Add …" button that greys
+// out at the cap. Used by Header/Nav's menu links (NavLinksField.tsx),
+// About's quick links (AboutQuickLinksField.tsx) and a package's features
+// (PackageFeaturesField.tsx).
 //
 // Replaces Payload's default array UI (a collapsible card per row with
 // Copy/Paste/Duplicate/Add below actions and Collapse All / Show All) but
@@ -33,8 +34,9 @@ import { CounterBadge } from "@/components/admin/CharacterCounter";
 // form actions (addFieldRow / moveFieldRow / removeFieldRow) and each input
 // is a useField on the same path the default UI would use. Undo/redo
 // (EditHistory.tsx), Live Preview and Publish all read that same form
-// state. Each link's destination sub-field must be named `href` and be a
-// select; its options come from the field config. Caps are also enforced on
+// state. A link's destination sub-field must be named `href` and be a
+// select; its options come from the field config. Arrays without an `href`
+// sub-field (features) get text inputs only, and no duplicate-link note. Caps are also enforced on
 // save by the field config (maxRows, maxLength).
 
 const baseClass = "nav-links";
@@ -104,7 +106,7 @@ function LinkRow({
   index: number;
   count: number;
   textFields: LinkTextField[];
-  options: OptionObject[];
+  options: OptionObject[] | null;
   summary: string;
   notes: React.ReactNode[];
   moveRow: (from: number, to: number) => void;
@@ -136,19 +138,21 @@ function LinkRow({
           {textFields.map((spec) => (
             <LinkTextInput key={spec.name} path={`${rowPath}.${spec.name}`} spec={spec} />
           ))}
-          <SelectInput
-            className={`${baseClass}__href`}
-            name="href"
-            path={href.path}
-            value={textValue(href.value)}
-            options={options}
-            isClearable={false}
-            showError={href.showError}
-            placeholder="Goes to…"
-            onChange={(option) => {
-              if (option && !Array.isArray(option)) href.setValue(option.value);
-            }}
-          />
+          {options && (
+            <SelectInput
+              className={`${baseClass}__href`}
+              name="href"
+              path={href.path}
+              value={textValue(href.value)}
+              options={options}
+              isClearable={false}
+              showError={href.showError}
+              placeholder="Goes to…"
+              onChange={(option) => {
+                if (option && !Array.isArray(option)) href.setValue(option.value);
+              }}
+            />
+          )}
         </div>
         <Popup
           button={<MoreIcon />}
@@ -211,8 +215,10 @@ export type LinkRowsEditorProps = {
   intro: string;
   textFields: LinkTextField[];
   maxRows: number;
-  /** Shown beside the greyed-out "Add link" at the cap. */
+  /** Shown beside the greyed-out "Add …" button at the cap. */
   capHint: string;
+  /** The add button's text. Defaults to "Add link". */
+  addLabel?: string;
   /** Screen-reader name for a row, e.g. "Portfolio → Portfolio (homepage section)". */
   summarize: (row: LinkRowValues, destinationLabel: string | undefined) => string;
   /** Gentle per-row notes (duplicates, empty pages…), beyond the built-in duplicate note. */
@@ -231,6 +237,7 @@ export default function LinkRowsEditor({
   textFields,
   maxRows,
   capHint,
+  addLabel = "Add link",
   summarize,
   rowNotes,
   className,
@@ -247,13 +254,18 @@ export default function LinkRowsEditor({
   const hrefField = field.fields.find((f) => "name" in f && f.name === "href");
   const options = useMemo(
     () =>
-      (hrefField && "options" in hrefField ? hrefField.options : []).map((option) =>
-        typeof option === "string" ? { label: option, value: option } : option,
-      ) as OptionObject[],
+      hrefField && "options" in hrefField
+        ? (hrefField.options.map((option) =>
+            typeof option === "string" ? { label: option, value: option } : option,
+          ) as OptionObject[])
+        : null,
     [hrefField],
   );
 
-  const names = useMemo(() => [...textFields.map((f) => f.name), "href"], [textFields]);
+  const names = useMemo(
+    () => [...textFields.map((f) => f.name), ...(options ? ["href"] : [])],
+    [textFields, options],
+  );
 
   // Every row's values, for summaries and notes. Joined into one string so
   // the selector's result only changes when one of them does.
@@ -270,19 +282,17 @@ export default function LinkRowsEditor({
   const atCap = rows.length >= maxRows;
 
   const addRow = useCallback(() => {
-    const used = new Set(values.map((row) => row.href));
-    const destination = String((options.find((o) => !used.has(o.value)) ?? options[0])?.value ?? "");
     const rowIndex = rows.length;
     const empty = { value: "", initialValue: "", valid: true, passesCondition: true };
-    addFieldRow({
-      path,
-      schemaPath,
-      rowIndex,
-      subFieldState: {
-        ...Object.fromEntries(textFields.map((f) => [f.name, { ...empty }])),
-        href: { value: destination, initialValue: destination, valid: true, passesCondition: true },
-      },
-    });
+    const subFieldState: Record<string, typeof empty> = Object.fromEntries(
+      textFields.map((f) => [f.name, { ...empty }]),
+    );
+    if (options) {
+      const used = new Set(values.map((row) => row.href));
+      const destination = String((options.find((o) => !used.has(o.value)) ?? options[0])?.value ?? "");
+      subFieldState.href = { value: destination, initialValue: destination, valid: true, passesCondition: true };
+    }
+    addFieldRow({ path, schemaPath, rowIndex, subFieldState });
     setTimeout(() => {
       document.getElementById(`field-${path}__${rowIndex}__${firstText}`)?.focus();
     }, 0);
@@ -312,9 +322,9 @@ export default function LinkRowsEditor({
         <ol className={`${baseClass}__rows`}>
           {rows.map((row, i) => {
             const rowValues = values[i] ?? {};
-            const optionLabel = options.find((o) => o.value === rowValues.href)?.label;
+            const optionLabel = options?.find((o) => o.value === rowValues.href)?.label;
             const destination = typeof optionLabel === "string" ? optionLabel : undefined;
-            const other = rowValues.href
+            const other = options && rowValues.href
               ? values.findIndex((r, j) => j !== i && r.href === rowValues.href)
               : -1;
             const notes: React.ReactNode[] = [];
@@ -356,7 +366,7 @@ export default function LinkRowsEditor({
           onClick={addRow}
           disabled={atCap}
         >
-          Add link
+          {addLabel}
         </Button>
         {atCap && <span className={`${baseClass}__hint`}>{capHint}</span>}
       </div>

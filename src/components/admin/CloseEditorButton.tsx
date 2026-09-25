@@ -5,7 +5,7 @@ import { Link, useConfig } from "@payloadcms/ui";
 import { formatAdminURL } from "payload/shared";
 
 // The ✕ in the top bar of a website-collection editor (Categories, Events,
-// Photos, Pricing Rows, Testimonials, Backstage), returning to that
+// Photos, Pricing Rows (Packages), Testimonials, Backstage), returning to that
 // collection's own list. Wired up per collection via
 // admin.components.views.edit.default.actions, which Payload renders in the
 // app header next to the breadcrumbs, away from the Save/Undo bar that's

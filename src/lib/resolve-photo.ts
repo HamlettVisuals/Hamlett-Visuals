@@ -1,7 +1,7 @@
 import type { Photo } from "@/payload-types";
 
 // Shared narrowing helper for upload-relationship fields (Category.coverPhoto,
-// Category.heroPhoto, PricingRow.gallery, etc.) — Payload's generated types
+// Category.heroPhoto, etc.) — Payload's generated types
 // always include the unpopulated (bare id) case alongside the populated
 // object, since the type can't know the query's depth at the call site.
 export function resolvePhoto(

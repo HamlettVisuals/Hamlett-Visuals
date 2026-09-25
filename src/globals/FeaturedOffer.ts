@@ -5,9 +5,10 @@ import { AVAILABLE_PACKAGE_WHERE } from "#src/lib/featured-package.ts";
 import { serverURL } from "#src/lib/server-url.ts";
 
 // The "Popular right now" spotlight (src/components/home/FeaturedOffer.tsx):
-// which Pricing / Offer Row it features, plus the heading and badge text
-// around it. With no package picked, or one that's since been trashed or
-// whose category is hidden or trashed, the section isn't shown at all.
+// which Package it features, plus the heading and badge text around it
+// (the badge text also marks that package in Offers & pricing). With no
+// package picked, or one that's since been hidden or trashed or whose
+// category is hidden or trashed, the section isn't shown at all.
 export const FeaturedOffer: GlobalConfig = {
   slug: "featured-offer",
   label: "Featured Offer",
@@ -42,7 +43,7 @@ export const FeaturedOffer: GlobalConfig = {
   versions: true,
   fields: [
     {
-      // Replaces the old per-row `featured` checkbox on Pricing / Offer Rows
+      // Replaces the old per-row `featured` checkbox on Packages
       // (kept there, hidden, so the column isn't dropped). A dropdown with a
       // "None" choice (components/admin/FeaturedPackageField.tsx) listing
       // only packages the site can show; filterOptions is the same rule,
@@ -77,7 +78,7 @@ export const FeaturedOffer: GlobalConfig = {
       defaultValue: "Hot offer",
       maxLength: BADGE_TEXT_MAX,
       admin: {
-        description: `The small highlighted tag on the featured package. Up to ${BADGE_TEXT_MAX} characters.`,
+        description: `The small highlighted tag on the featured package, here and on its row in Offers & pricing. Up to ${BADGE_TEXT_MAX} characters.`,
       },
     },
   ],

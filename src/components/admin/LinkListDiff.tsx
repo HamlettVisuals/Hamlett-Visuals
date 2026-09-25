@@ -11,22 +11,30 @@ import {
 import { navDestinations } from "@/lib/nav-destinations";
 
 // History's comparison for a link list (Header/Nav's menu links, About's
-// quick links). Payload's default labels each array row "Item 01",
+// quick links) or a package's features. Payload's default labels each array row "Item 01",
 // "Item 02" with no way to override it, so this shows each version's list
 // as one readable line per link and highlights what changed between them.
 
-export type LinkRow = { label?: string | null; title?: string | null; href?: string | null };
+export type LinkRow = {
+  label?: string | null;
+  title?: string | null;
+  href?: string | null;
+  text?: string | null;
+};
 
 export const destinationLabel = (href: string | null | undefined) =>
   navDestinations.find((d) => d.value === href)?.label ?? href ?? "";
 
-function toHTML(value: unknown, toLine: (link: LinkRow) => string): string {
+function toHTML(value: unknown, toLine: (link: LinkRow) => string, empty: string): string {
   const links = Array.isArray(value) ? (value as LinkRow[]) : [];
-  if (links.length === 0) return "<p>(no links)</p>";
+  if (links.length === 0) return `<p>${escapeDiffHTML(empty)}</p>`;
   return links.map((link) => `<p>${escapeDiffHTML(toLine(link))}</p>`).join("");
 }
 
-export function makeLinkListDiff(toLine: (link: LinkRow) => string): ArrayFieldDiffClientComponent {
+export function makeLinkListDiff(
+  toLine: (link: LinkRow) => string,
+  empty = "(no links)",
+): ArrayFieldDiffClientComponent {
   const LinkListDiff: ArrayFieldDiffClientComponent = ({
     comparisonValue,
     versionValue,
@@ -36,8 +44,8 @@ export function makeLinkListDiff(toLine: (link: LinkRow) => string): ArrayFieldD
   }) => {
     const { i18n } = useTranslation();
     const { From, To } = getHTMLDiffComponents({
-      fromHTML: toHTML(comparisonValue, toLine),
-      toHTML: toHTML(versionValue, toLine),
+      fromHTML: toHTML(comparisonValue, toLine, empty),
+      toHTML: toHTML(versionValue, toLine, empty),
       postProcess: unescapeDiffHTML,
     });
     return (

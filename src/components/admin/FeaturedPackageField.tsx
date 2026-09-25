@@ -13,8 +13,8 @@ import { AVAILABLE_PACKAGE_WHERE } from "@/lib/featured-package";
 // (EditHistory.tsx), History and Live Preview treat it exactly like the
 // default input.
 //
-// Options come from lib/featured-package.ts (no trashed packages, none in a
-// hidden or trashed category), the same rule the field's filterOptions
+// Options come from lib/featured-package.ts (no hidden or trashed packages,
+// none in a hidden or trashed category), in the Packages list's drag order, the same rule the field's filterOptions
 // enforces on save. A package picked earlier that has since become
 // unavailable stays selected, labelled as hidden, so it's clear why the
 // section isn't showing.
@@ -46,7 +46,7 @@ const FeaturedPackageField: RelationshipFieldClientComponent = ({ field, path, r
   useEffect(() => {
     let cancelled = false;
     const params = whereParams(AVAILABLE_PACKAGE_WHERE);
-    params.set("sort", "order");
+    params.set("sort", "_order"); // the Packages list's drag order
     params.set("limit", "100");
     params.set("depth", "1");
     params.set("select[title]", "true");

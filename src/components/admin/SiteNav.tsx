@@ -84,7 +84,7 @@ const siteTree: TreeNode[] = [
         label: "Pricing",
         children: [
           { kind: "global", slug: "featured-offer", label: "Featured Offer" },
-          { kind: "collection", slug: "pricing-rows", label: "Pricing / Offer Rows" },
+          { kind: "collection", slug: "pricing-rows", label: "Packages" },
         ],
       },
       { kind: "global", slug: "booking-cta", label: "Booking" },

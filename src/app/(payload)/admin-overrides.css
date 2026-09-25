@@ -893,6 +893,77 @@ button.category-status:focus-visible {
   }
 }
 
+/* Packages list view (collections/PricingRows.ts, slug pricing-rows;
+   components/admin/PackageCells.tsx). A handful of rows reordered by
+   dragging, so the same treatment as Categories: bulk-select checkboxes
+   and their bar, the search/Columns/Filters row, per-page and page
+   controls, column sorting and Payload's "Create New" pill go; the
+   "+ Add package" button and the Trash tab stay. */
+.collection-list--pricing-rows .list-create-new-doc__create-new-button,
+.collection-list--pricing-rows .list-controls,
+.collection-list--pricing-rows .list-selection,
+.collection-list--pricing-rows .page-controls,
+.collection-list--pricing-rows .collection-list__list-selection,
+.collection-list--pricing-rows .cell-_select,
+.collection-list--pricing-rows #heading-_select,
+.collection-list--pricing-rows thead .sort-column__buttons,
+.collection-list--pricing-rows #heading-_dragHandle > * {
+  display: none;
+}
+
+/* PackagesEmptyState shows "No packages yet" on the main list instead. */
+.collection-list--pricing-rows:has(.albums-empty) .no-results {
+  display: none;
+}
+
+.collection-list--pricing-rows #heading-thumbnail,
+.collection-list--pricing-rows #heading-title,
+.collection-list--pricing-rows #heading-category,
+.collection-list--pricing-rows #heading-priceAmount,
+.collection-list--pricing-rows #heading-published,
+.collection-list--pricing-rows .cell-thumbnail,
+.collection-list--pricing-rows .cell-title,
+.collection-list--pricing-rows .cell-category,
+.collection-list--pricing-rows .cell-priceAmount,
+.collection-list--pricing-rows .cell-published {
+  min-width: 0;
+}
+
+.collection-list--pricing-rows #heading-thumbnail,
+.collection-list--pricing-rows #heading-published {
+  width: 1%;
+}
+
+.package-price-cell {
+  white-space: nowrap;
+}
+
+/* Phones: Category and Price move into the small line under the title
+   (PackageTitleCell), as on the Albums list. */
+@media (max-width: 768px) {
+  .collection-list--pricing-rows #heading-category,
+  .collection-list--pricing-rows #heading-priceAmount,
+  .collection-list--pricing-rows .cell-category,
+  .collection-list--pricing-rows .cell-priceAmount {
+    display: none;
+  }
+}
+
+/* A package's features (PackageFeaturesField.tsx): the compact link rows
+   with one text input and no "Goes to" dropdown. */
+.nav-links--features .nav-links__fields {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+/* Under "Sample photos from album" when the picked album no longer fits
+   (AlbumMatchNote.tsx). */
+.album-match-note {
+  margin: 6px 0 0;
+  color: var(--theme-warning-700, #92400e);
+  font-size: 13px;
+  line-height: 1.4;
+}
+
 /* History comparisons: internal fields render nothing
    (components/admin/HiddenDiff.tsx via lib/hide-internal-history.ts), so
    drop the empty row they'd leave. Payload's own system fields (the
@@ -908,7 +979,7 @@ button.category-status:focus-visible {
   display: none;
 }
 
-/* New Album / Category: Payload's "Creating new Album" line in the
+/* New Album / Category / Package: Payload's "Creating new Album" line in the
    document controls repeats the "New album" heading, so it goes.
    NewDocumentTitle.tsx leaves the marker only before the first save;
    these collections have no drafts, so that line is all the block holds,

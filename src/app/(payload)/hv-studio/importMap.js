@@ -14,6 +14,14 @@ import { default as default_f7ada3d495e51370acd8dcac7a5e5f13 } from '../../../co
 import { AlbumTitleCell as AlbumTitleCell_271eec196f6613c6ae3ecc547136025a } from '../../../components/admin/AlbumCells'
 import { AlbumsListToolbar as AlbumsListToolbar_271eec196f6613c6ae3ecc547136025a } from '../../../components/admin/AlbumCells'
 import { AlbumsListDescription as AlbumsListDescription_271eec196f6613c6ae3ecc547136025a } from '../../../components/admin/AlbumCells'
+import { default as default_f21c27ddc71a218bc5a17d940513ff86 } from '../../../components/admin/PackageThumbnailCell'
+import { PackageTitleCell as PackageTitleCell_24f49b6f3fd3d212d674670488897cc5 } from '../../../components/admin/PackageCells'
+import { PackagePriceCell as PackagePriceCell_24f49b6f3fd3d212d674670488897cc5 } from '../../../components/admin/PackageCells'
+import { default as default_cd53eada52cbc797d358ed4a85ef4d43 } from '../../../components/admin/PackageFeaturesField'
+import { default as default_554936a9b2e04b5e82d7d858818681c6 } from '../../../components/admin/FeaturesDiff'
+import { default as default_f559e1636d8d747f6f20d562b8cbb552 } from '../../../components/admin/AlbumMatchNote'
+import { PackagesEmptyState as PackagesEmptyState_24f49b6f3fd3d212d674670488897cc5 } from '../../../components/admin/PackageCells'
+import { PackagesListDescription as PackagesListDescription_24f49b6f3fd3d212d674670488897cc5 } from '../../../components/admin/PackageCells'
 import { default as default_f0b47ff3ed1c349a2095a4c32239e4c7 } from '../../../components/admin/InquiryStatusCell'
 import { default as default_e64e3227e8fc271149c5bbc76b35348c } from '../../../components/admin/TestimonialRequestBanner'
 import { default as default_0858cef9b5d1128067511307e25157f9 } from '../../../components/admin/BackToBoardLink'
@@ -70,6 +78,14 @@ export const importMap = {
   "/components/admin/AlbumCells#AlbumTitleCell": AlbumTitleCell_271eec196f6613c6ae3ecc547136025a,
   "/components/admin/AlbumCells#AlbumsListToolbar": AlbumsListToolbar_271eec196f6613c6ae3ecc547136025a,
   "/components/admin/AlbumCells#AlbumsListDescription": AlbumsListDescription_271eec196f6613c6ae3ecc547136025a,
+  "/components/admin/PackageThumbnailCell#default": default_f21c27ddc71a218bc5a17d940513ff86,
+  "/components/admin/PackageCells#PackageTitleCell": PackageTitleCell_24f49b6f3fd3d212d674670488897cc5,
+  "/components/admin/PackageCells#PackagePriceCell": PackagePriceCell_24f49b6f3fd3d212d674670488897cc5,
+  "/components/admin/PackageFeaturesField#default": default_cd53eada52cbc797d358ed4a85ef4d43,
+  "/components/admin/FeaturesDiff#default": default_554936a9b2e04b5e82d7d858818681c6,
+  "/components/admin/AlbumMatchNote#default": default_f559e1636d8d747f6f20d562b8cbb552,
+  "/components/admin/PackageCells#PackagesEmptyState": PackagesEmptyState_24f49b6f3fd3d212d674670488897cc5,
+  "/components/admin/PackageCells#PackagesListDescription": PackagesListDescription_24f49b6f3fd3d212d674670488897cc5,
   "/components/admin/InquiryStatusCell#default": default_f0b47ff3ed1c349a2095a4c32239e4c7,
   "/components/admin/TestimonialRequestBanner#default": default_e64e3227e8fc271149c5bbc76b35348c,
   "/components/admin/BackToBoardLink#default": default_0858cef9b5d1128067511307e25157f9,

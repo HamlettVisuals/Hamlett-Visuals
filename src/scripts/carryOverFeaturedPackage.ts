@@ -1,9 +1,9 @@
 import { getPayload } from "payload";
 import config from "#src/payload.config.ts";
 
-// One-time carry-over from the old per-row `featured` checkbox on Pricing /
-// Offer Rows to the Featured Offer global's "Featured package" field. Picks
-// the row that's checked (the lowest `order` if more than one was), and only
+// One-time carry-over from the old per-row `featured` checkbox on Packages
+// (pricing-rows) to the Featured Offer global's "Featured package" field. Picks
+// the row that's checked (the first in the list's order if more than one was), and only
 // runs while the global has nothing picked, so it can't undo a later choice.
 // Trashed rows are skipped, like the dropdown skips them. Run with
 // `payload run src/scripts/carryOverFeaturedPackage.ts --disable-transpile`.
@@ -20,7 +20,7 @@ async function carryOver() {
   const { docs } = await payload.find({
     collection: "pricing-rows",
     where: { featured: { equals: true } },
-    sort: ["order", "createdAt"],
+    sort: ["_order", "order", "createdAt"],
     depth: 0,
     limit: 1,
   });

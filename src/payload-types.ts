@@ -357,53 +357,50 @@ export interface Testimonial {
   deletedAt?: string | null;
 }
 /**
- * Your packages and pricing, shown in the Offers & Pricing section. To spotlight one in the 'Popular right now' section, pick it on the Featured Offer page.
+ * Your packages and prices, shown in the Offers & pricing section of your homepage. Drag to set their order. To spotlight one in 'Popular right now', pick it on the Featured Offer page.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "pricing-rows".
  */
 export interface PricingRow {
   id: number;
+  _order?: string | null;
   /**
-   * The package name, e.g. "Wedding Day Coverage".
+   * The package name, e.g. "Wedding Day Coverage". Up to 28 characters, so it fits on two lines beside the price on phones.
    */
   title: string;
   /**
-   * Which category this package belongs to.
+   * Turn off to hide this package from your site.
+   */
+  published?: boolean | null;
+  /**
+   * Which category this package belongs to. Its View gallery button opens that category's page.
    */
   category: number | Category;
   /**
-   * The small word above the price, e.g. "From".
+   * The small word above the price, e.g. "From" or "Starting at". Up to 13 characters.
    */
   priceLead?: string | null;
   /**
-   * The price itself, e.g. "$2,800".
+   * Any text, e.g. "$2,800", "$450/hr" or "Custom quote". Up to 12 characters, so it leaves room for the name on phones.
    */
   priceAmount: string;
   /**
-   * One short line describing this package.
+   * A sentence or two describing this package. Up to 100 characters, about three lines on a phone.
    */
   summary: string;
-  /**
-   * The bullet-point list of what's included in this package.
-   */
   features?:
     | {
-        /**
-         * One included item, e.g. "Up to 10 hours of coverage".
-         */
         text: string;
         id?: string | null;
       }[]
     | null;
   /**
-   * A small set of sample photos shown with this package.
+   * Optional. A few photos from this album show beside the package when it's in 'Popular right now', and its first photo is the thumbnail in this list. Only live albums in this package's category are listed.
    */
+  album?: (number | null) | Event;
   gallery?: (number | Photo)[] | null;
   featured?: boolean | null;
-  /**
-   * Controls the order packages appear in — lower numbers show up first.
-   */
   order?: number | null;
   updatedAt: string;
   createdAt: string;
@@ -995,7 +992,9 @@ export interface TestimonialsSelect<T extends boolean = true> {
  * via the `definition` "pricing-rows_select".
  */
 export interface PricingRowsSelect<T extends boolean = true> {
+  _order?: T;
   title?: T;
+  published?: T;
   category?: T;
   priceLead?: T;
   priceAmount?: T;
@@ -1006,6 +1005,7 @@ export interface PricingRowsSelect<T extends boolean = true> {
         text?: T;
         id?: T;
       };
+  album?: T;
   gallery?: T;
   featured?: T;
   order?: T;
@@ -1405,7 +1405,7 @@ export interface FeaturedOffer {
    */
   heading: string;
   /**
-   * The small highlighted tag on the featured package. Up to 20 characters.
+   * The small highlighted tag on the featured package, here and on its row in Offers & pricing. Up to 24 characters.
    */
   badgeLabel?: string | null;
   updatedAt?: string | null;

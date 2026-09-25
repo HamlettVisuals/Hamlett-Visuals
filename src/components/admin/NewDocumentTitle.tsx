@@ -8,7 +8,7 @@ import { useConfig, useDocumentInfo, useDocumentTitle, useTranslation } from "@p
 // a few places (on load and as the field changes), so this watches the
 // heading and swaps only that placeholder, only before the first save.
 // Typing a title replaces it as usual. Mounted through the collection's
-// edit.beforeDocumentControls (Albums, Categories).
+// edit.beforeDocumentControls (Albums, Categories, Packages).
 //
 // Before the first save it also leaves a hidden marker inside Payload's
 // document controls, which admin-overrides.css uses to drop Payload's
