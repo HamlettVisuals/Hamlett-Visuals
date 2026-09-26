@@ -56,6 +56,7 @@ import { Booking } from "#src/globals/Booking.ts";
 import { serverURL } from "#src/lib/server-url.ts";
 import { addCharacterCounters } from "#src/lib/character-counters.ts";
 import { hideInternalFieldsFromHistory } from "#src/lib/hide-internal-history.ts";
+import { revalidateCollectionsOnChange, revalidateGlobalsOnChange } from "#src/lib/revalidate-site.ts";
 import { MB, VIDEO_MAX_MB } from "#src/lib/backstage-limits.ts";
 import { UPLOAD_FOLDERS } from "#src/lib/r2.ts";
 
@@ -181,7 +182,8 @@ export default buildConfig({
   // Every text field with a maxLength gets a live character counter (see
   // lib/character-counters.ts), and fields hidden in the editor are left out
   // of History's comparisons (lib/hide-internal-history.ts).
-  collections: hideInternalFieldsFromHistory(addCharacterCounters([
+  // revalidate*OnChange: a save refreshes the live site (lib/revalidate-site.ts).
+  collections: revalidateCollectionsOnChange(hideInternalFieldsFromHistory(addCharacterCounters([
     Users,
     Categories,
     Events,
@@ -196,8 +198,8 @@ export default buildConfig({
     TestimonialSubmissions,
     TestimonialPhotos,
     Logos,
-  ])),
-  globals: hideInternalFieldsFromHistory(addCharacterCounters([
+  ]))),
+  globals: revalidateGlobalsOnChange(hideInternalFieldsFromHistory(addCharacterCounters([
     HeaderNav,
     Hero,
     CategoriesIntro,
@@ -208,7 +210,7 @@ export default buildConfig({
     FinalCtaFooter,
     SiteSettings,
     Booking,
-  ])),
+  ]))),
   // The largest file any upload may be: Backstage's video cap. For uploads
   // sent straight from the browser to R2 (clientUploads) this size is also
   // written into the signed upload link, so R2 itself refuses anything
