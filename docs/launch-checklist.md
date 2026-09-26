@@ -50,3 +50,6 @@ as it's done.
       them inline with sound from the tap on play; confirm the same in iPhone
       Safari (no full-screen takeover, sound on), including a MOV straight
       from the phone.
+- [ ] **Hero photo positioning (high priority).** Let her set a focal point
+      or drag to position each hero photo in the Studio, since the hero area
+      crops them.
