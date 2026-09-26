@@ -26,15 +26,26 @@ export function limitFileSize({
   return ({ data, req }) => {
     const size = req.file?.size;
     if (typeof size === "number" && size > maxMB * MB) {
-      throw new APIError(
-        `That ${noun} is ${formatMB(size, maxMB)}. ${plural} can be up to ${maxMB}MB.`,
-        400,
-        undefined,
-        true,
-      );
+      throw fileTooLargeError({ size, maxMB, noun, plural });
     }
     return data;
   };
+}
+
+// The refusal itself, shared with photo-resize.ts (which checks the
+// original before shrinking it).
+export function fileTooLargeError({
+  size,
+  maxMB,
+  noun,
+  plural,
+}: {
+  size: number;
+  maxMB: number;
+  noun: string;
+  plural: string;
+}) {
+  return new APIError(`That ${noun} is ${formatMB(size, maxMB)}. ${plural} can be up to ${maxMB}MB.`, 400, undefined, true);
 }
 
 // A file sent straight from the browser is already in R2 before the save

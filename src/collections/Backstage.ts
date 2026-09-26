@@ -31,6 +31,7 @@ import {
 import { RASTER_IMAGE_MIME_TYPES } from "#src/lib/raster-image-types.ts";
 import { UPLOAD_FOLDERS, storedFileKey } from "#src/lib/r2.ts";
 import { removeRefusedUpload } from "#src/lib/upload-limits.ts";
+import { resizeLargePhotos } from "#src/lib/photo-resize.ts";
 import { formatMB } from "#src/lib/upload-sizes.ts";
 import { serverURL } from "#src/lib/server-url.ts";
 
@@ -362,6 +363,9 @@ export const Backstage: CollectionConfig = {
     },
   },
   hooks: {
+    // Photo items: size cap, then shrinks one over 3000px and removes GPS
+    // data (videos are left to handleMedia).
+    beforeOperation: [resizeLargePhotos({ maxMB: PHOTO_MAX_MB, noun: "photo", plural: "Photos" })],
     beforeValidate: [defaultTitle],
     beforeChange: [newItemsFirst, keepOrder, keepFile, handleMedia],
     afterChange: [claimThumbnail, removeReplacedThumbnail],

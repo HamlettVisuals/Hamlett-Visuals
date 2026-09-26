@@ -9,13 +9,15 @@
 // backstage-limits.ts can use it too; part of payload.config.ts's module
 // graph, see the note at the top of that file.
 //
-//   - PHOTO_MAX_MB: full-size phone and camera photos are 3–15MB; 25MB
-//     leaves room for large JPEGs without letting in raw files.
+//   - PHOTO_MAX_MB: full-size phone photos are 3–15MB and high-resolution
+//     camera JPEGs 20–40MB; 50MB takes those without letting in raw
+//     files. What's stored is smaller: a photo over 3000px is shrunk on
+//     save (photo-resize.ts).
 //   - LOGO_MAX_MB: a logo is shown at most 160px tall (Logos.ts), so even
 //     a generous PNG is well under 1MB; 5MB is a stop for the wrong file.
 //   - PUBLIC_PHOTO_MAX_MB: a photo a client adds on the public testimonial
 //     form (testimonial-uploads.ts). Phone photos, HEIC included, fit.
-export const PHOTO_MAX_MB = 25;
+export const PHOTO_MAX_MB = 50;
 export const LOGO_MAX_MB = 5;
 export const PUBLIC_PHOTO_MAX_MB = 15;
 export const MB = 1024 * 1024;
