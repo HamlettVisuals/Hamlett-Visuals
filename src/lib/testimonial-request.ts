@@ -1,32 +1,60 @@
 // Client-side seam for the public testimonial submission form
 // (TestimonialRequestForm.tsx, /testimonial-request/[token]) — mirrors
 // src/lib/inquiries.ts's submitInquiry. Photos are uploaded one at a time
-// via uploadTestimonialPhoto (each its own small request) before the final
-// submitTestimonialRequest call, rather than bundling files + text into one
-// multipart POST — see /api/testimonial-photos/route.ts's header comment
-// for why.
+// via uploadTestimonialPhoto, each straight from the browser to R2 (see
+// lib/testimonial-uploads.ts), before the final submitTestimonialRequest
+// call.
 
 export type UploadPhotoResult = { success: true; id: number } | { success: false; error: string };
+
+const UPLOAD_FAILED = "Failed to upload that photo.";
+
+async function postJSON(url: string, body: unknown) {
+  const response = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  const json = await response.json().catch(() => null);
+  return { ok: response.ok, json };
+}
 
 export async function uploadTestimonialPhoto(
   token: string,
   file: File,
 ): Promise<UploadPhotoResult> {
   try {
-    const formData = new FormData();
-    formData.set("token", token);
-    formData.set("file", file);
-    const response = await fetch("/api/testimonial-photos", {
-      method: "POST",
-      body: formData,
+    // 1. A signed link for this one photo.
+    const link = await postJSON("/api/testimonial-photos/upload-link", {
+      token,
+      size: file.size,
+      type: file.type,
     });
-    const body = await response.json().catch(() => null);
-    if (!response.ok || !body?.success) {
-      return { success: false, error: body?.error ?? "Failed to upload that photo." };
+    if (!link.ok || !link.json?.url) {
+      return { success: false, error: link.json?.error ?? UPLOAD_FAILED };
     }
-    return { success: true, id: body.id };
+
+    // 2. The photo itself, straight to storage. The link only accepts this
+    //    exact size and type.
+    const put = await fetch(link.json.url, {
+      method: "PUT",
+      headers: { "Content-Type": link.json.contentType },
+      body: file,
+    });
+    if (!put.ok) return { success: false, error: UPLOAD_FAILED };
+
+    // 3. Checked and saved.
+    const saved = await postJSON("/api/testimonial-photos", {
+      token,
+      slot: link.json.slot,
+      name: file.name,
+    });
+    if (!saved.ok || !saved.json?.success) {
+      return { success: false, error: saved.json?.error ?? UPLOAD_FAILED };
+    }
+    return { success: true, id: saved.json.id };
   } catch {
-    return { success: false, error: "Failed to upload that photo." };
+    return { success: false, error: UPLOAD_FAILED };
   }
 }
 

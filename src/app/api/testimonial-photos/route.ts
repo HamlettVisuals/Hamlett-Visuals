@@ -1,82 +1,33 @@
 import { getPayload } from "payload";
 import config from "@payload-config";
-import { RASTER_IMAGE_MIME_TYPES } from "@/lib/raster-image-types";
+import { findRequestByToken, takeHeldPhoto } from "@/lib/testimonial-uploads";
 
-// Public, token-gated upload target for the testimonial submission form
-// (/testimonial-request/[token]) — one photo per request, rather than
-// bundling every attached photo into the final submission's own POST.
-//
-// Investigated before building (per Phase 2 discussion): this deployment's
-// server-upload ceiling is ~4.5MB per request (the platform's serverless
-// function body limit — the same constraint Backstage.ts's video uploads
-// needed clientUploads + CORS to get around). A single client testimonial
-// photo is well within that on its own, but a client attaching several
-// photos *plus* the text fields in one multipart request could exceed it
-// even if no individual file is large. Splitting each photo into its own
-// request — capped at MAX_PHOTO_BYTES below — keeps every request small
-// regardless of how many photos are attached, so the existing plain
-// server-side upload pattern (same as Photos/TestimonialPhotos' own admin
-// uploads) is sufficient. No CORS/clientUploads needed here.
+// Public, token-gated: step 3 of adding a photo on the testimonial form
+// (/testimonial-request/[token]), after the browser has uploaded it to the
+// link from ./upload-link. Checks what the file really is and saves it as a
+// Testimonial Photo tied to this link, or refuses it; see
+// lib/testimonial-uploads.ts.
 //
 // Like /api/inquiries/route.ts, this collection's own `create` access stays
 // admin-only (TestimonialPhotos.ts) — the token itself (unguessable,
 // validated against Inquiries.testimonialRequestToken) is what stands in
-// for auth on this public path, same as /api/testimonial-submissions below.
-const MAX_PHOTO_BYTES = 4 * 1024 * 1024;
-
+// for auth on this public path, same as /api/testimonial-submissions.
 export async function POST(request: Request) {
-  const formData = await request.formData().catch(() => null);
-  const token = formData?.get("token");
-  const file = formData?.get("file");
-
-  if (typeof token !== "string" || !token || !(file instanceof File)) {
-    return Response.json({ error: "Invalid upload." }, { status: 400 });
-  }
-
-  if (!RASTER_IMAGE_MIME_TYPES.includes(file.type)) {
-    return Response.json({ error: "Only photo files (JPEG, PNG, WebP, HEIC) are allowed." }, { status: 400 });
-  }
-
-  if (file.size > MAX_PHOTO_BYTES) {
-    return Response.json(
-      { error: "That photo is too large — please choose one under 4MB." },
-      { status: 413 },
-    );
-  }
+  const body = (await request.json().catch(() => null)) as { token?: unknown; slot?: unknown; name?: unknown } | null;
+  if (!body) return Response.json({ error: "Invalid upload." }, { status: 400 });
 
   const payload = await getPayload({ config });
-
-  const { docs } = await payload.find({
-    collection: "inquiries",
-    where: { testimonialRequestToken: { equals: token } },
-    limit: 1,
-    depth: 0,
-    overrideAccess: true,
-  });
-  if (!docs[0]) {
+  const inquiry = await findRequestByToken(payload, body.token);
+  if (!inquiry) {
     return Response.json({ error: "This link isn't valid." }, { status: 404 });
   }
 
-  const buffer = Buffer.from(await file.arrayBuffer());
-
   try {
-    const photo = await payload.create({
-      collection: "testimonial-photos",
-      data: {},
-      file: {
-        data: buffer,
-        mimetype: file.type,
-        name: file.name,
-        size: file.size,
-      },
-      overrideAccess: true,
-    });
-    return Response.json({ success: true, id: photo.id });
+    const result = await takeHeldPhoto({ payload, inquiryId: inquiry.id, slot: body.slot, name: body.name });
+    if ("error" in result) return Response.json({ error: result.error }, { status: result.status });
+    return Response.json({ success: true, id: result.id });
   } catch (error) {
-    payload.logger.error(
-      { err: error },
-      "[testimonial-photos] failed to save an uploaded photo",
-    );
+    payload.logger.error({ err: error }, "[testimonial-photos] failed to save an uploaded photo");
     return Response.json({ error: "Failed to upload that photo." }, { status: 500 });
   }
 }

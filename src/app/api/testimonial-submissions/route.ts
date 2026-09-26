@@ -12,6 +12,12 @@ import config from "@payload-config";
 // through the Inquiry's linked Event, per the correction noted in
 // TestimonialSubmissions.ts. Once the submission is created, the token is
 // cleared so the same link can't be used to submit twice.
+//
+// Only photos uploaded through this same link can be attached
+// (TestimonialPhotos.inquiry, set in lib/testimonial-uploads.ts); any
+// other ids are ignored. Photos uploaded through the link but not attached
+// (removed from the form, or left over from a failed attempt) are deleted
+// once the submission is saved.
 type SubmissionBody = {
   token?: unknown;
   testimonialText?: unknown;
@@ -35,7 +41,7 @@ export async function POST(request: Request) {
     return Response.json({ error: "Invalid submission." }, { status: 400 });
   }
 
-  const photoIds = Array.isArray(body.photoIds)
+  const requestedPhotoIds = Array.isArray(body.photoIds)
     ? body.photoIds.filter((id): id is number => typeof id === "number")
     : [];
 
@@ -52,6 +58,16 @@ export async function POST(request: Request) {
   if (!inquiry) {
     return Response.json({ error: "This link isn't valid." }, { status: 404 });
   }
+
+  const { docs: linkPhotos } = await payload.find({
+    collection: "testimonial-photos",
+    where: { inquiry: { equals: inquiry.id } },
+    limit: 0,
+    depth: 0,
+    overrideAccess: true,
+  });
+  const photoIds = requestedPhotoIds.filter((id) => linkPhotos.some((photo) => photo.id === id));
+  const unattached = linkPhotos.filter((photo) => !photoIds.includes(photo.id)).map((photo) => photo.id);
 
   const event = typeof inquiry.event === "object" && inquiry.event ? inquiry.event : null;
   const category =
@@ -83,6 +99,18 @@ export async function POST(request: Request) {
       data: { testimonialRequestToken: null },
       overrideAccess: true,
     });
+
+    if (unattached.length > 0) {
+      await payload
+        .delete({
+          collection: "testimonial-photos",
+          where: { id: { in: unattached } },
+          overrideAccess: true,
+        })
+        .catch((err) =>
+          payload.logger.warn({ err }, "[testimonial-submissions] couldn't remove unattached photos"),
+        );
+    }
 
     return Response.json({ success: true, id: submission.id });
   } catch (error) {

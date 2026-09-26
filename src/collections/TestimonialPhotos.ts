@@ -1,6 +1,8 @@
 import type { CollectionConfig } from "payload";
 import { isAdmin } from "#src/access/isAdmin.ts";
 import { RASTER_IMAGE_MIME_TYPES } from "#src/lib/raster-image-types.ts";
+import { limitFileSize, removeRefusedUpload } from "#src/lib/upload-limits.ts";
+import { PHOTO_MAX_MB } from "#src/lib/upload-sizes.ts";
 
 // Photos a client attaches to a testimonial submission (see
 // TestimonialSubmissions.ts). Deliberately a separate upload collection from
@@ -38,5 +40,22 @@ export const TestimonialPhotos: CollectionConfig = {
       },
     ],
   },
-  fields: [],
+  // Size cap on save (upload-limits.ts) for one she adds herself; a client's
+  // photo is capped lower before it gets here (testimonial-uploads.ts). A
+  // refused file is removed from R2.
+  hooks: {
+    beforeChange: [limitFileSize({ maxMB: PHOTO_MAX_MB, noun: "photo", plural: "Photos" })],
+    afterError: [removeRefusedUpload],
+  },
+  fields: [
+    {
+      // The testimonial request (Inquiry) whose link the photo was sent
+      // through. Caps how many one link can add, and a submission may only
+      // attach its own link's photos (api/testimonial-submissions).
+      name: "inquiry",
+      type: "relationship",
+      relationTo: "inquiries",
+      admin: { readOnly: true },
+    },
+  ],
 };

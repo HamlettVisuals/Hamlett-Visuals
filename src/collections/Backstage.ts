@@ -22,7 +22,6 @@ import {
   titleFromFilename,
 } from "#src/lib/backstage-limits.ts";
 import {
-  deleteStoredFile,
   downloadToTemp,
   extractFrame,
   incomingFileOnDisk,
@@ -30,6 +29,9 @@ import {
   removeTemp,
 } from "#src/lib/backstage-media.ts";
 import { RASTER_IMAGE_MIME_TYPES } from "#src/lib/raster-image-types.ts";
+import { UPLOAD_FOLDERS, storedFileKey } from "#src/lib/r2.ts";
+import { removeRefusedUpload } from "#src/lib/upload-limits.ts";
+import { formatMB } from "#src/lib/upload-sizes.ts";
 import { serverURL } from "#src/lib/server-url.ts";
 
 const idOf = (value: unknown) =>
@@ -92,7 +94,7 @@ const keepOrder: CollectionBeforeChangeHook = ({ context, data, operation, origi
 // would leave a broken video; its automatic thumbnail may be gone too
 // (removeReplacedThumbnail). Only uploading a file changes the file, and
 // no other save without an upload may point the item at a different one.
-const FILE_FIELDS = ["filename", "mimeType", "filesize", "width", "height", "focalX", "focalY", "url", "thumbnailURL", "sizes"];
+const FILE_FIELDS = ["prefix", "filename", "mimeType", "filesize", "width", "height", "focalX", "focalY", "url", "thumbnailURL", "sizes"];
 const keepFile: CollectionBeforeChangeHook = ({ context, data, operation, originalDoc, req }) => {
   if (operation !== "update" || req.file || !originalDoc?.filename) return data;
   const restoring = context.isRestoringVersion === true;
@@ -147,7 +149,7 @@ async function isGeneratedThumbnail(req: PayloadRequest, id: unknown) {
 // Every item is one uploaded file, a photo or a video:
 //   - Size is checked for both, and a video's length, before anything is
 //     kept. A file sent straight from the browser is already in storage by
-//     now, so a refused one is removed again.
+//     now; a refused one is removed again (removeRefusedUpload).
 //   - A photo is its own thumbnail, so `poster` is cleared.
 //   - A video gets a frame of itself as its thumbnail when it's uploaded, or
 //     when she removes her own thumbnail. A new video replaces a thumbnail
@@ -157,22 +159,17 @@ const handleMedia: CollectionBeforeChangeHook = async ({ data, originalDoc, req 
   const file = req.file;
   const mimeType = data.mimeType ?? originalDoc?.mimeType;
   const filename = data.filename ?? originalDoc?.filename;
-  const fromBrowser = Boolean(file && "clientUploadContext" in file && file.clientUploadContext);
-  const reject = async (message: string) => {
-    if (fromBrowser && filename) await deleteStoredFile(filename).catch(() => {});
-    throw refuse(message);
-  };
 
   if (!isVideoMimeType(mimeType)) {
     if (file && file.size > PHOTO_MAX_MB * MB) {
-      await reject(`That photo is ${Math.round(file.size / MB)}MB. Photos can be up to ${PHOTO_MAX_MB}MB.`);
+      throw refuse(`That photo is ${formatMB(file.size, PHOTO_MAX_MB)}. Photos can be up to ${PHOTO_MAX_MB}MB.`);
     }
     data.poster = null;
     return data;
   }
 
   if (file && file.size > VIDEO_MAX_MB * MB) {
-    await reject(`That video is ${Math.round(file.size / MB)}MB. Videos can be up to ${VIDEO_MAX_MB}MB; under 100MB works best.`);
+    throw refuse(`That video is ${formatMB(file.size, VIDEO_MAX_MB)}. Videos can be up to ${VIDEO_MAX_MB}MB; under 100MB works best.`);
   }
 
   const posterId = idOf(data.poster !== undefined ? data.poster : originalDoc?.poster);
@@ -187,7 +184,8 @@ const handleMedia: CollectionBeforeChangeHook = async ({ data, originalDoc, req 
       videoPath = onDisk.path;
       cleanup = onDisk.cleanup;
     } else if (filename) {
-      const downloaded = await downloadToTemp(filename).catch((err) => {
+      const prefix = data.prefix ?? originalDoc?.prefix ?? UPLOAD_FOLDERS.backstage;
+      const downloaded = await downloadToTemp(storedFileKey(prefix, filename)).catch((err) => {
         req.payload.logger.warn({ err }, "[backstage] couldn't fetch the video to make a thumbnail");
         return null;
       });
@@ -209,7 +207,7 @@ const handleMedia: CollectionBeforeChangeHook = async ({ data, originalDoc, req 
       const total = Math.round(duration);
       const minutes = Math.floor(total / 60);
       const seconds = total % 60;
-      await reject(
+      throw refuse(
         `That video is ${minutes} min${seconds ? ` ${seconds} sec` : ""} long. Videos can be up to ${VIDEO_MAX_SECONDS / 60} minutes.`,
       );
     }
@@ -279,9 +277,10 @@ const removeThumbnails: CollectionBeforeDeleteHook = async ({ id, req }) => {
 // in the order she drags them into (newest at the top). Its own upload
 // collection rather than Photos: Photos' relation is used everywhere (About
 // portrait, Category covers, Testimonials) and stays image-only, and video
-// needs its own upload settings — clientUploads + signedDownloads, see the
-// "backstage" entry in payload.config.ts's s3Storage plugins — so a large
-// clip goes from the browser straight to R2 and plays straight from it.
+// needs its own settings: its own size and length checks here, and signed
+// downloads (the "backstage" entry in payload.config.ts's s3Storage) so a
+// clip plays straight from R2. Like every upload, it goes from the browser
+// straight to R2.
 export const Backstage: CollectionConfig = {
   slug: "backstage",
   labels: {
@@ -367,6 +366,7 @@ export const Backstage: CollectionConfig = {
     beforeChange: [newItemsFirst, keepOrder, keepFile, handleMedia],
     afterChange: [claimThumbnail, removeReplacedThumbnail],
     beforeDelete: [removeThumbnails],
+    afterError: [removeRefusedUpload],
   },
   // Powers the History tab (restore an earlier save). No drafts — Save
   // writes straight through, same as before.

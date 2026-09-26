@@ -2,6 +2,8 @@ import type { CollectionConfig } from "payload";
 import { isAdmin } from "#src/access/isAdmin.ts";
 import { RASTER_IMAGE_MIME_TYPES } from "#src/lib/raster-image-types.ts";
 import { CLOSE_EDITOR_BUTTON } from "#src/lib/admin-components.ts";
+import { limitFileSize, removeRefusedUpload } from "#src/lib/upload-limits.ts";
+import { PHOTO_MAX_MB } from "#src/lib/upload-sizes.ts";
 
 export const Photos: CollectionConfig = {
   slug: "photos",
@@ -48,6 +50,11 @@ export const Photos: CollectionConfig = {
         fit: "cover",
       },
     ],
+  },
+  // Size cap on save (upload-limits.ts); a refused file is removed from R2.
+  hooks: {
+    beforeChange: [limitFileSize({ maxMB: PHOTO_MAX_MB, noun: "photo", plural: "Photos" })],
+    afterError: [removeRefusedUpload],
   },
   // Powers the History tab (restore an earlier save). No drafts — Save
   // writes straight through, same as before.

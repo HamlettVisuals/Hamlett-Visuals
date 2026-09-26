@@ -2,7 +2,8 @@
 // save and shown in the editor by the live counters and help text.
 //
 // Part of payload.config.ts's module graph, so it keeps to "#src/"-style
-// imports only (here: none) — see the note at the top of that file.
+// imports only (here: upload-sizes.ts, which has none of its own) — see
+// the note at the top of that file.
 //
 // Text, measured on the /backstage grid (components/Backstage/BackstageGrid.tsx):
 //   - TITLE_MAX: the tile title is one line of 14px medium text. The tile is
@@ -22,12 +23,10 @@ export const CAPTION_MAX = 150;
 //     but a stray 4K recording doesn't eat a tenth of the free tier.
 //   - VIDEO_MAX_SECONDS: behind-the-scenes clips are short, like Reels (up
 //     to 3 minutes). Longer than that is almost always the wrong file.
-//   - PHOTO_MAX_MB: full-size phone and camera photos are 3–15MB; 25MB
-//     leaves room for large JPEGs without letting in raw files.
+// A photo item has the same cap as Photos (upload-sizes.ts).
 export const VIDEO_MAX_MB = 200;
 export const VIDEO_MAX_SECONDS = 180;
-export const PHOTO_MAX_MB = 25;
-export const MB = 1024 * 1024;
+export { MB, PHOTO_MAX_MB } from "#src/lib/upload-sizes.ts";
 
 // Formats browsers can play inline: MP4 and MOV from phones, WebM from some
 // screen recorders. (A MOV shot as HEVC plays in Safari but not in every

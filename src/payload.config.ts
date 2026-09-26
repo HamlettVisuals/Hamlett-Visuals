@@ -57,6 +57,7 @@ import { serverURL } from "#src/lib/server-url.ts";
 import { addCharacterCounters } from "#src/lib/character-counters.ts";
 import { hideInternalFieldsFromHistory } from "#src/lib/hide-internal-history.ts";
 import { MB, VIDEO_MAX_MB } from "#src/lib/backstage-limits.ts";
+import { UPLOAD_FOLDERS } from "#src/lib/r2.ts";
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -212,7 +213,7 @@ export default buildConfig({
   // sent straight from the browser to R2 (clientUploads) this size is also
   // written into the signed upload link, so R2 itself refuses anything
   // bigger before it's sent. Smaller per-collection caps are checked on save
-  // (Backstage.ts).
+  // (lib/upload-limits.ts, and Backstage.ts for videos).
   upload: {
     limits: { fileSize: VIDEO_MAX_MB * MB },
   },
@@ -244,50 +245,43 @@ export default buildConfig({
   }),
   sharp,
   plugins: [
+    // Every upload lives in one R2 bucket, each collection in its own folder
+    // (`prefix`, see lib/r2.ts) so two files of the same name in different
+    // collections never overwrite each other.
+    //
+    // clientUploads: the studio's uploads go from the browser straight to
+    // R2 through a short-lived signed link, rather than through the server,
+    // whose request bodies are capped at ~4.5MB on Vercel. The link carries
+    // the file's exact size, capped at upload.limits.fileSize above, so R2
+    // itself refuses anything bigger; each collection's own, smaller cap is
+    // checked on save (lib/upload-limits.ts). Only a signed-in studio user
+    // can get a link. Payload then reads the file back from R2 to check what
+    // it really is and to make the resized versions, as for any upload. The
+    // bucket's CORS rules must allow this site's origin to PUT.
+    //
+    // The public testimonial form doesn't use these links: it has its own,
+    // token-checked ones (lib/testimonial-uploads.ts).
     s3Storage({
       collections: {
-        photos: true,
-        "testimonial-photos": true,
-        logos: true,
-      },
-      bucket: process.env.R2_BUCKET ?? "",
-      config: {
-        region: "auto",
-        endpoint: process.env.R2_ENDPOINT,
-        forcePathStyle: true,
-        credentials: {
-          accessKeyId: process.env.R2_ACCESS_KEY_ID ?? "",
-          secretAccessKey: process.env.R2_SECRET_ACCESS_KEY ?? "",
-        },
-      },
-    }),
-    // Separate s3Storage() registration for Backstage, not a second entry
-    // in the plugin call above — `clientUploads` is a top-level plugin
-    // option (applies to every collection that instance covers), not a
-    // per-collection one, so giving Backstage's video uploads
-    // `clientUploads: true` without also turning it on for Photos (and
-    // changing Photos' upload behavior) requires its own s3Storage()
-    // instance. Same bucket, same credentials — just a different upload
-    // path: the browser PUTs the video straight to R2 instead of routing
-    // through the Next.js server (see Backstage.ts's header comment), which
-    // needs the bucket's CORS config to allow that origin + PUT. `filename`
-    // collisions between the two instances aren't a concern: Payload scopes
-    // uniqueness by collection, not bucket path.
-    s3Storage({
-      collections: {
+        photos: { prefix: UPLOAD_FOLDERS.photos },
+        logos: { prefix: UPLOAD_FOLDERS.logos },
+        "testimonial-photos": { prefix: UPLOAD_FOLDERS["testimonial-photos"] },
         // Videos play straight from R2 (a redirect to a signed link) rather
         // than streaming through the server. Photos don't: next/image
         // can't follow that redirect, so they're served like Photos'.
         backstage: {
+          prefix: UPLOAD_FOLDERS.backstage,
           signedDownloads: {
             shouldUseSignedURL: ({ filename }) => /\.(mp4|mov|m4v|webm)$/i.test(filename),
           },
         },
         // Video thumbnails (BackstageThumbnails.ts): the automatic ones are
-        // made on the server, the ones she uploads go browser -> R2 too.
-        "backstage-thumbnails": true,
+        // made on the server, the ones she uploads come from the browser.
+        "backstage-thumbnails": { prefix: UPLOAD_FOLDERS["backstage-thumbnails"] },
       },
-      clientUploads: true,
+      clientUploads: {
+        access: ({ req }) => Boolean(req.user),
+      },
       bucket: process.env.R2_BUCKET ?? "",
       config: {
         region: "auto",

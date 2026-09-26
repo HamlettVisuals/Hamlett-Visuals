@@ -21,14 +21,21 @@ as it's done.
       connected.** Placeholder posts are visible now
       (`src/lib/instagram-posts.ts`).
 - [ ] **Delete the `.backups/` folder** after the first successful deploy.
-- [ ] **Direct-to-R2 uploads so large files work on Vercel.** Vercel rejects
-      request bodies over ~4.5MB, and Photos, Logos, Testimonial Photos and the
-      public testimonial form still upload through the server (Backstage
-      already goes browser → R2). Turn on `clientUploads` for them (one
-      `s3Storage` instance), give the public form its own token-checked signed
-      upload, and add the production domain to the R2 bucket's CORS rules
-      (today only `http://localhost:3000` is allowed). Test with a >5MB photo
-      and a large video on a Vercel preview.
+- [ ] **Add the production domain to the R2 bucket's CORS rules (Cloudflare
+      dashboard).** Every upload now goes from the browser straight to R2
+      (the studio's through `clientUploads`, the public testimonial form
+      through its own signed links), and today only `http://localhost:3000`
+      may `PUT` there. Allow the production origin with `PUT` and the
+      `Content-Type` header.
+- [ ] **Test a >5MB photo, a large video, and the public testimonial form on
+      a Vercel preview.** Vercel rejects request bodies over ~4.5MB, which is
+      what the direct-to-R2 uploads get around; confirm on a real deploy.
+- [ ] **Add an R2 lifecycle rule for the `testimonial-uploads/` folder**
+      (Cloudflare dashboard, delete objects after 1 day). It's the holding
+      spot for photos sent from the public testimonial form; a photo is
+      deleted from there once it's saved or refused, and one that's never
+      saved (the page closed mid-upload) is only cleared on that link's next
+      upload otherwise (`src/lib/testimonial-uploads.ts`).
 - [ ] **Check Backstage video thumbnails on the first Vercel deploy.** They
       come from the `ffmpeg-static` binary, which its install script
       downloads from GitHub during the build and `next.config.ts` traces into

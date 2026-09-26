@@ -1,6 +1,8 @@
 import type { CollectionConfig } from "payload";
 import { isAdmin } from "#src/access/isAdmin.ts";
 import { RASTER_IMAGE_MIME_TYPES } from "#src/lib/raster-image-types.ts";
+import { limitFileSize, removeRefusedUpload } from "#src/lib/upload-limits.ts";
+import { PHOTO_MAX_MB } from "#src/lib/upload-sizes.ts";
 
 // The grid images for Backstage videos (collections/Backstage.ts, `poster`).
 // Most are made automatically from a frame of the video when it's uploaded
@@ -33,6 +35,11 @@ export const BackstageThumbnails: CollectionConfig = {
       // The studio list's small square (components/admin/BackstageCells.tsx).
       { name: "thumbnail", width: 400, height: 400, fit: "cover" },
     ],
+  },
+  // Size cap on save (upload-limits.ts); a refused file is removed from R2.
+  hooks: {
+    beforeChange: [limitFileSize({ maxMB: PHOTO_MAX_MB, noun: "thumbnail", plural: "Thumbnails" })],
+    afterError: [removeRefusedUpload],
   },
   fields: [
     {

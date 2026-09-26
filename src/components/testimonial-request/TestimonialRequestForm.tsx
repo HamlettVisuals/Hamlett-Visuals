@@ -5,6 +5,7 @@ import {
   submitTestimonialRequest,
   uploadTestimonialPhoto,
 } from "@/lib/testimonial-request";
+import { MB, PUBLIC_PHOTO_MAX_MB } from "@/lib/upload-sizes";
 
 // The real form on /testimonial-request/[token], once the page has already
 // validated the token server-side and rendered the read-only name/email/
@@ -12,12 +13,12 @@ import {
 // actual submit — the carried-forward fields live server-side (see
 // /api/testimonial-submissions/route.ts), never as editable inputs.
 //
-// Selected photos upload one at a time (see uploadTestimonialPhoto) before
-// the final submit, each capped client-side at MAX_PHOTO_BYTES to match the
-// server's own limit — see /api/testimonial-photos/route.ts for why a photo
-// this size is fine over a plain request but the whole form bundled
-// together might not be.
-const MAX_PHOTO_BYTES = 4 * 1024 * 1024;
+// Selected photos upload one at a time, each straight to storage (see
+// uploadTestimonialPhoto and lib/testimonial-uploads.ts), before the final
+// submit. The size and count caps here match the server's own, so a photo
+// that's too big or one too many is caught before anything is sent.
+const MAX_PHOTO_BYTES = PUBLIC_PHOTO_MAX_MB * MB;
+const MAX_PHOTOS = 10; // lib/testimonial-uploads.ts, MAX_PHOTOS_PER_LINK
 
 type Status = "idle" | "submitting" | "success" | "error";
 
@@ -38,6 +39,9 @@ export default function TestimonialRequestForm({
 
   const textRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  // Photos already uploaded, so "Try again" after a failed submit doesn't
+  // upload them a second time (and count them twice towards the cap).
+  const uploadedIds = useRef(new Map<File, number>());
 
   // A client's camera roll is all indistinguishable IMG_XXXX.jpg names —
   // the thumbnail, not the filename, is what actually lets them confirm
@@ -57,12 +61,19 @@ export default function TestimonialRequestForm({
   const handleFilesChosen = (fileList: FileList | null) => {
     const chosen = fileList ? Array.from(fileList) : [];
     const oversized = chosen.filter((file) => file.size > MAX_PHOTO_BYTES);
-    if (oversized.length > 0) {
-      setFileError(
-        `${oversized.map((file) => file.name).join(", ")} — over 4MB. Please choose smaller photos.`,
-      );
+    const refuse = (message: string) => {
+      setFileError(message);
       setFiles([]);
       if (fileInputRef.current) fileInputRef.current.value = "";
+    };
+    if (oversized.length > 0) {
+      refuse(
+        `${oversized.map((file) => file.name).join(", ")} — over ${PUBLIC_PHOTO_MAX_MB}MB. Please choose smaller photos.`,
+      );
+      return;
+    }
+    if (chosen.length > MAX_PHOTOS) {
+      refuse(`Please choose up to ${MAX_PHOTOS} photos.`);
       return;
     }
     setFileError(null);
@@ -92,9 +103,14 @@ export default function TestimonialRequestForm({
     try {
       const photoIds: number[] = [];
       for (const file of files) {
-        const result = await uploadTestimonialPhoto(token, file);
-        if (!result.success) throw new Error(result.error);
-        photoIds.push(result.id);
+        let id = uploadedIds.current.get(file);
+        if (id === undefined) {
+          const result = await uploadTestimonialPhoto(token, file);
+          if (!result.success) throw new Error(result.error);
+          id = result.id;
+          uploadedIds.current.set(file, id);
+        }
+        photoIds.push(id);
       }
 
       const result = await submitTestimonialRequest({
@@ -168,8 +184,8 @@ export default function TestimonialRequestForm({
           className="field-input"
         />
         <p className="mt-2 text-caption text-muted">
-          Up to 4MB each. These stay private until she chooses to feature
-          one.
+          Up to {MAX_PHOTOS} photos, {PUBLIC_PHOTO_MAX_MB}MB each. These stay
+          private until she chooses to feature one.
         </p>
         {fileError && (
           <p className="mt-2 text-caption text-accent-text">{fileError}</p>

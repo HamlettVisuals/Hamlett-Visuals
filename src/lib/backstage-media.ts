@@ -7,7 +7,8 @@ import os from "node:os";
 import path from "node:path";
 import type { Readable } from "node:stream";
 import { pipeline } from "node:stream/promises";
-import { DeleteObjectCommand, GetObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { GetObjectCommand } from "@aws-sdk/client-s3";
+import { r2, r2Bucket } from "#src/lib/r2.ts";
 
 // Server-side video helpers for Backstage (collections/Backstage.ts): how
 // long a clip is, and a still frame to use as its thumbnail. Both run the
@@ -16,7 +17,7 @@ import { DeleteObjectCommand, GetObjectCommand, S3Client } from "@aws-sdk/client
 // kept out of the bundle and traced in by hand).
 //
 // Part of payload.config.ts's module graph, so it keeps to "#src/"-style
-// imports only (here: none) — see the note at the top of that file.
+// imports only — see the note at the top of that file.
 
 // Resolved at call time, and through createRequire rather than an import,
 // so the bundler leaves the package (and the path it computes from its own
@@ -82,37 +83,15 @@ export async function extractFrame(filePath: string, durationSeconds: number | n
   return null;
 }
 
-// The same bucket and credentials as payload.config.ts's s3Storage().
-let client: S3Client | null = null;
-function r2(): S3Client {
-  client ??= new S3Client({
-    region: "auto",
-    endpoint: process.env.R2_ENDPOINT,
-    forcePathStyle: true,
-    credentials: {
-      accessKeyId: process.env.R2_ACCESS_KEY_ID ?? "",
-      secretAccessKey: process.env.R2_SECRET_ACCESS_KEY ?? "",
-    },
-  });
-  return client;
-}
-
 // Copies a stored Backstage file to a temp file for ffmpeg, e.g. to
-// re-make a thumbnail after she removes her own. Backstage files have no
-// prefix in the bucket, so the key is the filename.
-export async function downloadToTemp(filename: string): Promise<string> {
-  const tempPath = path.join(os.tmpdir(), `backstage-${randomUUID()}${path.extname(filename)}`);
-  const { Body } = await r2().send(new GetObjectCommand({ Bucket: process.env.R2_BUCKET, Key: filename }));
-  if (!Body) throw new Error(`No file in storage for ${filename}.`);
+// re-make a thumbnail after she removes her own. `key` is the file's key
+// in the bucket (r2.ts, storedFileKey: its folder and file name).
+export async function downloadToTemp(key: string): Promise<string> {
+  const tempPath = path.join(os.tmpdir(), `backstage-${randomUUID()}${path.extname(key)}`);
+  const { Body } = await r2().send(new GetObjectCommand({ Bucket: r2Bucket(), Key: key }));
+  if (!Body) throw new Error(`No file in storage for ${key}.`);
   await pipeline(Body as Readable, createWriteStream(tempPath));
   return tempPath;
-}
-
-// A file uploaded straight from the browser is already in R2 before the
-// save runs, so a save that's refused (too big, too long) has to remove it
-// again or it would sit there unused.
-export async function deleteStoredFile(filename: string): Promise<void> {
-  await r2().send(new DeleteObjectCommand({ Bucket: process.env.R2_BUCKET, Key: filename }));
 }
 
 // The incoming upload as a file on disk: a browser upload has already been

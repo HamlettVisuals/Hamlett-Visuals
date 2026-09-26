@@ -257,6 +257,7 @@ export interface Photo {
    * Check this to make the photo eligible for use on the homepage.
    */
   featured?: boolean | null;
+  prefix?: string | null;
   updatedAt: string;
   createdAt: string;
   deletedAt?: string | null;
@@ -627,6 +628,7 @@ export interface Backstage {
   reelUrl?: string | null;
   thumbnail?: (number | null) | Photo;
   order?: number | null;
+  prefix?: string | null;
   updatedAt: string;
   createdAt: string;
   deletedAt?: string | null;
@@ -663,6 +665,7 @@ export interface BackstageThumbnail {
    */
   generated?: boolean | null;
   item?: (number | null) | Backstage;
+  prefix?: string | null;
   updatedAt: string;
   createdAt: string;
   url?: string | null;
@@ -744,6 +747,8 @@ export interface TestimonialSubmission {
  */
 export interface TestimonialPhoto {
   id: number;
+  inquiry?: (number | null) | Inquiry;
+  prefix?: string | null;
   updatedAt: string;
   createdAt: string;
   url?: string | null;
@@ -774,6 +779,7 @@ export interface TestimonialPhoto {
  */
 export interface Logo {
   id: number;
+  prefix?: string | null;
   updatedAt: string;
   createdAt: string;
   url?: string | null;
@@ -984,6 +990,7 @@ export interface PhotosSelect<T extends boolean = true> {
   event?: T;
   category?: T;
   featured?: T;
+  prefix?: T;
   updatedAt?: T;
   createdAt?: T;
   deletedAt?: T;
@@ -1155,6 +1162,7 @@ export interface BackstageSelect<T extends boolean = true> {
   reelUrl?: T;
   thumbnail?: T;
   order?: T;
+  prefix?: T;
   updatedAt?: T;
   createdAt?: T;
   deletedAt?: T;
@@ -1189,6 +1197,7 @@ export interface BackstageSelect<T extends boolean = true> {
 export interface BackstageThumbnailsSelect<T extends boolean = true> {
   generated?: T;
   item?: T;
+  prefix?: T;
   updatedAt?: T;
   createdAt?: T;
   url?: T;
@@ -1238,6 +1247,8 @@ export interface TestimonialSubmissionsSelect<T extends boolean = true> {
  * via the `definition` "testimonial-photos_select".
  */
 export interface TestimonialPhotosSelect<T extends boolean = true> {
+  inquiry?: T;
+  prefix?: T;
   updatedAt?: T;
   createdAt?: T;
   url?: T;
@@ -1269,6 +1280,7 @@ export interface TestimonialPhotosSelect<T extends boolean = true> {
  * via the `definition` "logos_select".
  */
 export interface LogosSelect<T extends boolean = true> {
+  prefix?: T;
   updatedAt?: T;
   createdAt?: T;
   url?: T;
