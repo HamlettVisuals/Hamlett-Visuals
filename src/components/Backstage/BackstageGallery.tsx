@@ -7,7 +7,7 @@ import BackstageGrid from "./BackstageGrid";
 import BackstageLightbox from "./BackstageLightbox";
 
 type BackstageGalleryProps = {
-  /** Already in display order (Payload's `order` field) — see page.tsx. */
+  /** Already in display order (the studio's drag order) — see page.tsx. */
   items: BackstageItem[];
 };
 
@@ -19,14 +19,10 @@ export default function BackstageGallery({ items }: BackstageGalleryProps) {
   // close — same convention as FloatingAskButton's triggerRef.
   const openerRef = useRef<HTMLButtonElement | null>(null);
 
-  // A "reel_embed" tile links straight out to Instagram (see BackstageGrid)
-  // rather than opening the lightbox, so the lightbox only ever cycles
-  // through the video items — its prev/next index math is scoped to this
-  // subset, not the full grid.
-  const videoItems = items.filter((item) => item.type === "video");
-
+  // Every tile, photo or video, opens the same lightbox, which steps
+  // through the whole feed in order.
   function handleItemClick(item: BackstageItem, opener: HTMLButtonElement) {
-    const index = videoItems.findIndex((video) => video.id === item.id);
+    const index = items.findIndex((other) => other.id === item.id);
     if (index === -1) return;
     openerRef.current = opener;
     setLightboxIndex(index);
@@ -46,7 +42,7 @@ export default function BackstageGallery({ items }: BackstageGalleryProps) {
         <>
           <BackstageGrid items={items} onItemClick={handleItemClick} />
           <BackstageLightbox
-            items={videoItems}
+            items={items}
             isOpen={lightboxOpen}
             startIndex={lightboxIndex}
             onClose={handleClose}

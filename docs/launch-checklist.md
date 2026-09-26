@@ -21,3 +21,21 @@ as it's done.
       connected.** Placeholder posts are visible now
       (`src/lib/instagram-posts.ts`).
 - [ ] **Delete the `.backups/` folder** after the first successful deploy.
+- [ ] **Direct-to-R2 uploads so large files work on Vercel.** Vercel rejects
+      request bodies over ~4.5MB, and Photos, Logos, Testimonial Photos and the
+      public testimonial form still upload through the server (Backstage
+      already goes browser → R2). Turn on `clientUploads` for them (one
+      `s3Storage` instance), give the public form its own token-checked signed
+      upload, and add the production domain to the R2 bucket's CORS rules
+      (today only `http://localhost:3000` is allowed). Test with a >5MB photo
+      and a large video on a Vercel preview.
+- [ ] **Check Backstage video thumbnails on the first Vercel deploy.** They
+      come from the `ffmpeg-static` binary, which its install script
+      downloads from GitHub during the build and `next.config.ts` traces into
+      the Payload API route. Upload a short video and confirm it gets a
+      thumbnail (if ffmpeg is missing, items still save, just without one
+      and without the 3-minute length check).
+- [ ] **Play a Backstage video on a real iPhone.** Desktop Chrome plays
+      them inline with sound from the tap on play; confirm the same in iPhone
+      Safari (no full-screen takeover, sound on), including a MOV straight
+      from the phone.

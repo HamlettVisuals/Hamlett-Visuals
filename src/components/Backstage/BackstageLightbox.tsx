@@ -49,10 +49,16 @@ function ChevronIcon({ direction }: { direction: "left" | "right" }) {
  * (prev/next, Escape to close, a Tab focus trap, focus restored to the
  * opener on close) but a distinct, more editorial visual treatment: wider
  * margins around the stage, and the full title/caption set below the media
- * rather than a compact header bar. A video opens on its poster frame with a
- * large centered play button — playback only ever starts on that explicit
- * click — and gets its own minimal controls (seek bar + mute) instead of the
- * browser's native <video controls> UI.
+ * rather than a compact header bar. It steps through photos and videos
+ * alike. A photo shows as an image. A video sits on its thumbnail with a
+ * large centered play button, plays in place (never the phone's full-screen
+ * player: `playsInline`), and gets its own minimal controls (seek bar +
+ * mute) instead of the browser's native <video controls> UI.
+ *
+ * Playback only ever starts from a tap on play, and play() is called inside
+ * that tap itself: iPhone Safari only lets a video start with its sound on
+ * from a direct user gesture, so starting it after a re-render (an
+ * `autoPlay` attribute on a newly mounted element) could be blocked there.
  */
 export default function BackstageLightbox({
   items,
@@ -62,18 +68,29 @@ export default function BackstageLightbox({
 }: BackstageLightboxProps) {
   const [currentIndex, setCurrentIndex] = useState(startIndex);
   const [isPlaying, setIsPlaying] = useState(false);
+  // Once a video has started, its seek bar and mute button stay up while
+  // it's paused; before that only the play button shows.
+  const [hasStarted, setHasStarted] = useState(false);
   const [muted, setMuted] = useState(false);
   const [duration, setDuration] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
-  // The media's natural width/height ratio — drives the stage box's size for
-  // a video (see mediaBoxStyle) so it renders edge-to-edge with no
-  // letterboxing, the same way object-contain already does for a photo
-  // filling its own fixed box.
+  // The video's natural width/height ratio — drives the stage box's size
+  // (see mediaBoxStyle) so it renders edge-to-edge with no letterboxing, the
+  // same way object-contain already does for a photo filling its own fixed
+  // box.
   const [aspectRatio, setAspectRatio] = useState<number | null>(null);
 
   const dialogRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
+
+  function resetMedia() {
+    setIsPlaying(false);
+    setHasStarted(false);
+    setAspectRatio(null);
+    setDuration(0);
+    setCurrentTime(0);
+  }
 
   // Reset to the requested item whenever the lightbox transitions from
   // closed to open — adjusted during render (not an effect) per
@@ -83,23 +100,18 @@ export default function BackstageLightbox({
     setWasOpen(isOpen);
     if (isOpen) {
       setCurrentIndex(startIndex);
-      setIsPlaying(false);
-      setAspectRatio(null);
-      setDuration(0);
-      setCurrentTime(0);
+      resetMedia();
     }
   }
 
   // Never carry a playing video (or its previous item's aspect ratio/seek
   // position) across a prev/next navigation — every item that comes into
-  // view opens fresh, on its poster frame.
+  // view opens fresh, on its thumbnail. The stage is keyed by item, so the
+  // old <video> is unmounted, and stops, with it.
   const [indexAtLastRender, setIndexAtLastRender] = useState(currentIndex);
   if (currentIndex !== indexAtLastRender) {
     setIndexAtLastRender(currentIndex);
-    setIsPlaying(false);
-    setAspectRatio(null);
-    setDuration(0);
-    setCurrentTime(0);
+    resetMedia();
   }
 
   useEffect(() => {
@@ -156,7 +168,7 @@ export default function BackstageLightbox({
   // element's `muted` property isn't reliably settable as a plain React prop.
   useEffect(() => {
     if (videoRef.current) videoRef.current.muted = muted;
-  }, [muted, isPlaying]);
+  }, [muted, currentIndex, isOpen]);
 
   const current = items[currentIndex];
 
@@ -170,21 +182,25 @@ export default function BackstageLightbox({
     setCurrentIndex((i) => (i + 1) % items.length);
   }
 
+  // Called straight from the click/tap handlers (see the note above).
   function togglePlayback() {
     const video = videoRef.current;
     if (!video) return;
-    if (video.paused) video.play();
-    else video.pause();
+    if (video.paused) {
+      video.play().catch(() => setIsPlaying(false));
+    } else {
+      video.pause();
+    }
   }
 
-  // Sizes the stage box to the video's own rendered aspect ratio (once
-  // known) so it fills that box edge-to-edge — the largest box of that ratio
-  // that still fits the available width (min(100%, 56rem), matching the
-  // photo stage's max-w-4xl) and height (100vh minus the header/caption
-  // budget). Left undefined until the ratio is known, or for a plain image,
-  // so that path keeps its existing fixed max-w-4xl/object-contain box.
+  // Sizes the stage box to the video's own aspect ratio (once known) so it
+  // fills that box edge-to-edge — the largest box of that ratio that still
+  // fits the available width (min(100%, 56rem), matching the photo stage's
+  // max-w-4xl) and height (100vh minus the header/caption budget). Left
+  // undefined until the ratio is known, or for a photo, so that path keeps
+  // its fixed max-w-4xl/object-contain box.
   const mediaBoxStyle: CSSProperties | undefined =
-    current.type === "video" && aspectRatio
+    current.kind === "video" && aspectRatio
       ? {
           aspectRatio: `${aspectRatio}`,
           width: `min(min(100%, 56rem), calc((100vh - ${STAGE_VERTICAL_BUDGET}) * ${aspectRatio}))`,
@@ -227,24 +243,34 @@ export default function BackstageLightbox({
           style={mediaBoxStyle}
           onClick={(event) => event.stopPropagation()}
         >
-          {current.type === "video" && isPlaying ? (
+          {current.kind === "video" ? (
             <>
               <video
                 ref={videoRef}
-                // Every item that reaches the lightbox is a "video" item
-                // (see BackstageGallery's videoItems filter), so mediaUrl is
-                // always populated here — the `| null` in BackstageItem's
-                // type only covers the (never-reached-here) reel_embed case.
-                src={current.mediaUrl ?? undefined}
-                poster={current.thumbnailUrl}
-                autoPlay
+                // A video with no thumbnail opens a moment in, so there's a
+                // frame to show rather than a black box (iPhone Safari
+                // doesn't draw one from the metadata alone).
+                src={
+                  current.mediaUrl
+                    ? `${current.mediaUrl}${current.imageUrl ? "" : "#t=0.1"}`
+                    : undefined
+                }
+                poster={current.imageUrl ?? undefined}
                 playsInline
+                preload="metadata"
                 muted={muted}
                 onClick={togglePlayback}
+                onPlay={() => {
+                  setIsPlaying(true);
+                  setHasStarted(true);
+                }}
+                onPause={() => setIsPlaying(false)}
                 onLoadedMetadata={(event) => {
                   const video = event.currentTarget;
                   setDuration(video.duration);
-                  setAspectRatio(video.videoWidth / video.videoHeight);
+                  if (video.videoWidth && video.videoHeight) {
+                    setAspectRatio(video.videoWidth / video.videoHeight);
+                  }
                 }}
                 onTimeUpdate={(event) =>
                   setCurrentTime(event.currentTarget.currentTime)
@@ -252,73 +278,71 @@ export default function BackstageLightbox({
                 className="absolute inset-0 h-full w-full cursor-pointer object-contain"
               />
 
-              {/* Subtle legibility gradient sized to the seek bar only — not
-                  a full dark control strip. */}
-              <div
-                aria-hidden="true"
-                className="pointer-events-none absolute inset-x-0 bottom-0 h-7 bg-gradient-to-t from-ink/45 to-transparent"
-              />
+              {hasStarted && (
+                <>
+                  {/* Subtle legibility gradient sized to the seek bar only —
+                      not a full dark control strip. */}
+                  <div
+                    aria-hidden="true"
+                    className="pointer-events-none absolute inset-x-0 bottom-0 h-7 bg-gradient-to-t from-ink/45 to-transparent"
+                  />
 
-              <input
-                type="range"
-                aria-label="Seek"
-                min={0}
-                max={duration || 0}
-                step={0.01}
-                value={currentTime}
-                onChange={(event) => {
-                  const value = Number(event.target.value);
-                  setCurrentTime(value);
-                  if (videoRef.current) videoRef.current.currentTime = value;
-                }}
-                onClick={(event) => event.stopPropagation()}
-                style={{ ["--progress" as string]: `${progressPercent}%` }}
-                className="video-progress absolute inset-x-0 bottom-0 z-10"
-              />
+                  <input
+                    type="range"
+                    aria-label="Seek"
+                    min={0}
+                    max={duration || 0}
+                    step={0.01}
+                    value={currentTime}
+                    onChange={(event) => {
+                      const value = Number(event.target.value);
+                      setCurrentTime(value);
+                      if (videoRef.current) videoRef.current.currentTime = value;
+                    }}
+                    onClick={(event) => event.stopPropagation()}
+                    style={{ ["--progress" as string]: `${progressPercent}%` }}
+                    className="video-progress absolute inset-x-0 bottom-0 z-10"
+                  />
 
-              <button
-                type="button"
-                onClick={(event) => {
-                  event.stopPropagation();
-                  setMuted((value) => !value);
-                }}
-                aria-label={muted ? "Unmute" : "Mute"}
-                className="absolute right-3 top-3 z-10 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-ink/55 text-canvas transition hover:bg-ink/70"
-              >
-                <SpeakerIcon muted={muted} className="h-4 w-4" />
-              </button>
-            </>
-          ) : (
-            <>
-              <Image
-                src={current.thumbnailUrl}
-                alt={current.title}
-                fill
-                quality={95}
-                sizes="90vw"
-                className="object-contain"
-                priority
-                onLoad={(event) => {
-                  if (current.type !== "video") return;
-                  const img = event.currentTarget;
-                  setAspectRatio(img.naturalWidth / img.naturalHeight);
-                }}
-              />
-              {current.type === "video" && (
+                  <button
+                    type="button"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      setMuted((value) => !value);
+                    }}
+                    aria-label={muted ? "Unmute" : "Mute"}
+                    className="absolute right-3 top-3 z-10 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-ink/55 text-canvas transition hover:bg-ink/70"
+                  >
+                    <SpeakerIcon muted={muted} className="h-4 w-4" />
+                  </button>
+                </>
+              )}
+
+              {!isPlaying && (
                 <button
                   type="button"
                   onClick={(event) => {
                     event.stopPropagation();
-                    setIsPlaying(true);
+                    togglePlayback();
                   }}
-                  aria-label="Play video"
-                  className="absolute left-1/2 top-1/2 flex h-16 w-16 -translate-x-1/2 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full bg-ink/55 text-canvas transition duration-150 ease-standard hover:scale-105 hover:bg-ink/70"
+                  aria-label={hasStarted ? "Resume video" : "Play video"}
+                  className="absolute left-1/2 top-1/2 z-10 flex h-16 w-16 -translate-x-1/2 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full bg-ink/55 text-canvas transition duration-150 ease-standard hover:scale-105 hover:bg-ink/70"
                 >
                   <PlayIcon className="h-6 w-6 translate-x-0.5" />
                 </button>
               )}
             </>
-          )}
+          ) : current.imageUrl ? (
+            <Image
+              src={current.imageUrl}
+              alt={current.title}
+              fill
+              quality={95}
+              sizes="90vw"
+              className="object-contain"
+              priority
+            />
+          ) : null}
         </div>
 
         {items.length > 1 && (

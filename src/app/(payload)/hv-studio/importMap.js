@@ -25,6 +25,10 @@ import { PackagesListDescription as PackagesListDescription_24f49b6f3fd3d212d674
 import { default as default_f0b47ff3ed1c349a2095a4c32239e4c7 } from '../../../components/admin/InquiryStatusCell'
 import { default as default_e64e3227e8fc271149c5bbc76b35348c } from '../../../components/admin/TestimonialRequestBanner'
 import { default as default_0858cef9b5d1128067511307e25157f9 } from '../../../components/admin/BackToBoardLink'
+import { default as default_4d37a70e641ec184dcdc17bda0739dd6 } from '../../../components/admin/BackstageThumbnailCell'
+import { BackstageEmptyState as BackstageEmptyState_a35edf2bebff5c9765c6a701ac6beb14 } from '../../../components/admin/BackstageCells'
+import { BackstageListDescription as BackstageListDescription_a35edf2bebff5c9765c6a701ac6beb14 } from '../../../components/admin/BackstageCells'
+import { BackstageUploadHint as BackstageUploadHint_a35edf2bebff5c9765c6a701ac6beb14 } from '../../../components/admin/BackstageCells'
 import { default as default_1b650ef99724fbd75de054d026e34ba4 } from '../../../components/admin/TestimonialPublishPanel'
 import { default as default_3ff6a48a77222379c05feba297b20132 } from '../../../components/admin/NavLinksField'
 import { default as default_45f306dc284acabb8024fc7078f1d047 } from '../../../components/admin/NavLinksDiff'
@@ -93,6 +97,10 @@ export const importMap = {
   "/components/admin/InquiryStatusCell#default": default_f0b47ff3ed1c349a2095a4c32239e4c7,
   "/components/admin/TestimonialRequestBanner#default": default_e64e3227e8fc271149c5bbc76b35348c,
   "/components/admin/BackToBoardLink#default": default_0858cef9b5d1128067511307e25157f9,
+  "/components/admin/BackstageThumbnailCell#default": default_4d37a70e641ec184dcdc17bda0739dd6,
+  "/components/admin/BackstageCells#BackstageEmptyState": BackstageEmptyState_a35edf2bebff5c9765c6a701ac6beb14,
+  "/components/admin/BackstageCells#BackstageListDescription": BackstageListDescription_a35edf2bebff5c9765c6a701ac6beb14,
+  "/components/admin/BackstageCells#BackstageUploadHint": BackstageUploadHint_a35edf2bebff5c9765c6a701ac6beb14,
   "/components/admin/TestimonialPublishPanel#default": default_1b650ef99724fbd75de054d026e34ba4,
   "/components/admin/NavLinksField#default": default_3ff6a48a77222379c05feba297b20132,
   "/components/admin/NavLinksDiff#default": default_45f306dc284acabb8024fc7078f1d047,

@@ -2,18 +2,18 @@ import Link from "next/link";
 import { getPayload } from "payload";
 import config from "@payload-config";
 import BackstageGallery from "@/components/Backstage/BackstageGallery";
-import { resolvePhoto } from "@/lib/resolve-photo";
-import type { BackstageItem } from "@/lib/backstage-items";
+import { isVideoMimeType } from "@/lib/backstage-limits";
+import { uploadUrl, type BackstageItem } from "@/lib/backstage-items";
 
-// Backstage feed — a single continuous, unbounded grid of admin-uploaded
-// video clips and linked Instagram Reels, in manual `order`, no category
-// split. Mirrors the shell of the other sub-pages (/testimonials, /terms,
-// /privacy-policy); the grid, lightbox and empty state live in
-// src/components/Backstage/. Plain Live Preview only (see the "backstage"
-// entry in payload.config.ts's livePreview.collections) — same as
-// Categories/Events/Photos/Testimonials: RefreshRouteOnSave (mounted in
-// (site)/layout.tsx) refreshes this page with fresh server data on save,
-// no scroll-to-highlight or per-record targeting.
+// Backstage feed — a single continuous grid of the photos and video clips
+// uploaded in the studio (collections/Backstage.ts), in her drag order
+// (newest at the top unless she moves them), no category split. Mirrors the
+// shell of the other sub-pages (/testimonials, /terms, /privacy-policy);
+// the grid, lightbox and empty state live in src/components/Backstage/.
+// Item-scoped Live Preview: Backstage.ts's livePreview.url points here with
+// `?lpDoc=<id>`, and that one tile follows the unsaved title, caption and
+// thumbnail (BackstageGrid.tsx). RefreshRouteOnSave (mounted in
+// (site)/layout.tsx) refreshes the page on save.
 
 export const metadata = {
   title: "Backstage — Hamlett Visuals",
@@ -24,23 +24,24 @@ export default async function BackstagePage() {
   const { docs } = await payload.find({
     collection: "backstage",
     where: { published: { equals: true } },
-    sort: "order",
+    sort: "_order",
     depth: 1,
     limit: 0,
   });
 
-  const items: BackstageItem[] = docs.map((doc) => {
-    const thumbnail = resolvePhoto(doc.thumbnail);
-    return {
-      id: String(doc.id),
-      type: doc.type,
-      mediaUrl: doc.type === "video" ? (doc.url ?? null) : null,
-      thumbnailUrl: thumbnail?.url ?? "",
-      reelUrl: doc.type === "reel_embed" ? (doc.reelUrl ?? null) : null,
-      title: doc.title,
-      caption: doc.caption,
-    };
-  });
+  const items: BackstageItem[] = docs
+    .filter((doc) => doc.url)
+    .map((doc) => {
+      const isVideo = isVideoMimeType(doc.mimeType);
+      return {
+        id: String(doc.id),
+        kind: isVideo ? "video" : "photo",
+        mediaUrl: isVideo ? (doc.url ?? null) : null,
+        imageUrl: isVideo ? uploadUrl(doc.poster) : (doc.url ?? null),
+        title: doc.title ?? "",
+        caption: doc.caption,
+      };
+    });
 
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col px-gutter py-section">
@@ -52,7 +53,7 @@ export default async function BackstagePage() {
         </p>
       </header>
 
-      <div className="mt-12">
+      <div id="backstage-feed" className="mt-12">
         <BackstageGallery items={items} />
       </div>
 

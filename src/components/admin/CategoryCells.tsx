@@ -20,9 +20,18 @@ const isOther = (rowData: DefaultCellComponentProps["rowData"], collectionSlug =
 // The collection description, plus (on the main list only) a primary
 // "+ Add …" button that stands in for Payload's small "Create New" pill.
 // Payload renders this same Description on the edit view and the Trash tab
-// too, where the button doesn't belong. Shared with the Albums list
-// (AlbumCells.tsx).
-export function ListIntro({ collectionSlug, addLabel }: { collectionSlug: string; addLabel: string }) {
+// too, where the button doesn't belong. Shared with the Albums, Packages
+// and Backstage lists; `children` are extra buttons beside it (Backstage's
+// "Upload several").
+export function ListIntro({
+  collectionSlug,
+  addLabel,
+  children,
+}: {
+  collectionSlug: string;
+  addLabel: string;
+  children?: React.ReactNode;
+}) {
   const { config } = useConfig();
   const pathname = usePathname();
   const listPath = formatAdminURL({ adminRoute: config.routes.admin, path: `/collections/${collectionSlug}` });
@@ -36,16 +45,19 @@ export function ListIntro({ collectionSlug, addLabel }: { collectionSlug: string
         <p className="categories-list-intro__text">{description}</p>
       )}
       {isList && (
-        <Button
-          el="link"
-          to={`${listPath}/create`}
-          buttonStyle="primary"
-          size="medium"
-          margin={false}
-          className="categories-list-intro__add"
-        >
-          {addLabel}
-        </Button>
+        <div className="categories-list-intro__actions">
+          <Button
+            el="link"
+            to={`${listPath}/create`}
+            buttonStyle="primary"
+            size="medium"
+            margin={false}
+            className="categories-list-intro__add"
+          >
+            {addLabel}
+          </Button>
+          {children}
+        </div>
       )}
     </div>
   );

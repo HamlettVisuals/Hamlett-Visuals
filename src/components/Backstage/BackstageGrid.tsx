@@ -1,9 +1,10 @@
 "use client";
 
-import type { BackstageItem } from "@/lib/backstage-items";
+import { uploadUrl, type BackstageItem } from "@/lib/backstage-items";
 import HoverZoomImage from "@/components/HoverZoomImage";
+import { serverURL } from "@/lib/server-url";
+import { useScopedCollectionLivePreview } from "@/lib/use-scoped-collection-live-preview";
 import PlayIcon from "./PlayIcon";
-import InstagramIcon from "./InstagramIcon";
 
 /** 2 columns mobile, 3 desktop — narrower than PhotoGrid's 2/3/4 track since
  * this feed has no per-event grouping to break up a wide row. */
@@ -14,27 +15,61 @@ type BackstageGridProps = {
   onItemClick: (item: BackstageItem, opener: HTMLButtonElement) => void;
 };
 
+type LiveFields = {
+  id: string;
+  title?: string | null;
+  caption?: string | null;
+  poster?: unknown;
+};
+
+// The tile follows the Backstage editor's unsaved title, caption and
+// thumbnail in Live Preview, but only when it's the item being edited
+// (`?lpDoc=<id>`, see Backstage.ts livePreview.url and
+// lib/use-scoped-collection-live-preview.ts). The file itself always comes
+// from the server. A cleared title shows the saved one: the server fills a
+// blank title in from the file name on save.
+function useLiveItem(item: BackstageItem): BackstageItem {
+  const { data } = useScopedCollectionLivePreview<LiveFields>({
+    initialData: { id: item.id, title: item.title, caption: item.caption },
+    serverURL,
+    collectionSlug: "backstage",
+    apiRoute: "/hv-studio/api",
+    depth: 1,
+  });
+  const posterChanged = "poster" in data;
+  return {
+    ...item,
+    title: data.title?.trim() || item.title,
+    caption: data.caption,
+    imageUrl: item.kind === "video" && posterChanged ? uploadUrl(data.poster) : item.imageUrl,
+  };
+}
+
 function Tile({ item }: { item: BackstageItem }) {
   return (
     <div className="relative">
-      <HoverZoomImage
-        src={item.thumbnailUrl}
-        alt={item.title}
-        sizes="(min-width: 640px) 31vw, 46vw"
-        className="aspect-[3/4] w-full"
-      />
-      <span
-        className="pointer-events-none absolute inset-0 flex items-center justify-center"
-        aria-hidden="true"
-      >
-        <span className="flex h-8 w-8 items-center justify-center rounded-full bg-ink/55 text-canvas">
-          {item.type === "video" ? (
+      {item.imageUrl ? (
+        <HoverZoomImage
+          src={item.imageUrl}
+          alt={item.title}
+          sizes="(min-width: 640px) 31vw, 46vw"
+          className="aspect-[3/4] w-full"
+        />
+      ) : (
+        // A video without a thumbnail: a plain tile rather than a broken image.
+        <div className="aspect-[3/4] w-full bg-ink/10" role="img" aria-label={item.title} />
+      )}
+      {item.kind === "video" && <span className="sr-only">Video: </span>}
+      {item.kind === "video" && (
+        <span
+          className="pointer-events-none absolute inset-0 flex items-center justify-center"
+          aria-hidden="true"
+        >
+          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-ink/55 text-canvas">
             <PlayIcon className="h-3 w-3 translate-x-0.5" />
-          ) : (
-            <InstagramIcon className="h-3.5 w-3.5" />
-          )}
+          </span>
         </span>
-      </span>
+      )}
     </div>
   );
 }
@@ -56,39 +91,36 @@ function Caption({ item }: { item: BackstageItem }) {
   );
 }
 
+function GridItem({
+  item: savedItem,
+  onItemClick,
+}: {
+  item: BackstageItem;
+  onItemClick: BackstageGridProps["onItemClick"];
+}) {
+  const item = useLiveItem(savedItem);
+  return (
+    <button
+      id={`backstage-${item.id}`}
+      type="button"
+      onClick={(event) => onItemClick(savedItem, event.currentTarget)}
+      className="cursor-pointer text-left"
+    >
+      <Tile item={item} />
+      <Caption item={item} />
+    </button>
+  );
+}
+
 export default function BackstageGrid({
   items,
   onItemClick,
 }: BackstageGridProps) {
   return (
     <div className={BACKSTAGE_GRID_CLASS} aria-label="Backstage feed">
-      {items.map((item) =>
-        // A Reel embed has nothing to play here — it links out to the real
-        // post on Instagram (same convention as the homepage Instagram
-        // section) instead of opening the lightbox.
-        item.type === "reel_embed" ? (
-          <a
-            key={item.id}
-            href={item.reelUrl ?? undefined}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-left"
-          >
-            <Tile item={item} />
-            <Caption item={item} />
-          </a>
-        ) : (
-          <button
-            key={item.id}
-            type="button"
-            onClick={(event) => onItemClick(item, event.currentTarget)}
-            className="cursor-pointer text-left"
-          >
-            <Tile item={item} />
-            <Caption item={item} />
-          </button>
-        ),
-      )}
+      {items.map((item) => (
+        <GridItem key={item.id} item={item} onItemClick={onItemClick} />
+      ))}
     </div>
   );
 }

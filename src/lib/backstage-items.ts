@@ -4,13 +4,22 @@
 // it's already been fetched and mapped (see (site)/backstage/page.tsx).
 export type BackstageItem = {
   id: string;
-  type: "video" | "reel_embed";
-  /** The playable video file's URL. Only set when `type` is "video". */
+  kind: "video" | "photo";
+  /** The playable video file. Only set for a video. */
   mediaUrl: string | null;
-  /** Grid tile image — a poster frame for a video, a preview image for a Reel. */
-  thumbnailUrl: string;
-  /** The Reel's Instagram permalink. Only set when `type` is "reel_embed". */
-  reelUrl: string | null;
+  /**
+   * The tile image: the photo itself, or a video's thumbnail. Null for a
+   * video whose thumbnail couldn't be made; the tile is then plain.
+   */
+  imageUrl: string | null;
   title: string;
   caption?: string | null;
 };
+
+// A populated upload relation (the video's `poster`) or the photo's own
+// file, down to a URL.
+export function uploadUrl(value: unknown): string | null {
+  if (!value || typeof value !== "object") return null;
+  const url = (value as { url?: unknown }).url;
+  return typeof url === "string" && url ? url : null;
+}

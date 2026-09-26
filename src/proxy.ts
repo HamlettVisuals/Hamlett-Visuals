@@ -2,8 +2,8 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { safeAdminRedirect } from "@/lib/admin-redirect";
 
-// The Categories and Packages lists are reordered by dragging (`orderable`
-// in Categories.ts / PricingRows.ts), which only works with every row on one page and sorted by the drag order.
+// The Categories, Packages and Backstage lists are reordered by dragging
+// (`orderable` in Categories.ts / PricingRows.ts / Backstage.ts), which only works with every row on one page and sorted by the drag order.
 // Payload's list view prefers the user's saved per-page and sort settings
 // over the collection's defaultLimit/defaultSort, and it saves whatever the
 // URL says back into those settings. So any list load that asks for
@@ -11,7 +11,11 @@ import { safeAdminRedirect } from "@/lib/admin-redirect";
 // overwrites a stale saved setting on the first visit. GET only: Payload's
 // server actions POST to this same path.
 const DRAG_LIST_QUERY = { limit: "100", sort: "_order" };
-const DRAG_LISTS = ["/hv-studio/collections/categories", "/hv-studio/collections/pricing-rows"];
+const DRAG_LISTS = [
+  "/hv-studio/collections/categories",
+  "/hv-studio/collections/pricing-rows",
+  "/hv-studio/collections/backstage",
+];
 
 function forceDragListQuery(request: NextRequest) {
   if (request.method !== "GET") return null;
@@ -63,5 +67,7 @@ export const config = {
     "/hv-studio/collections/categories/trash",
     "/hv-studio/collections/pricing-rows",
     "/hv-studio/collections/pricing-rows/trash",
+    "/hv-studio/collections/backstage",
+    "/hv-studio/collections/backstage/trash",
   ],
 };

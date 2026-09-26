@@ -527,6 +527,14 @@
   flex-shrink: 0;
 }
 
+/* The add button plus any extras beside it (Backstage's "Upload several"). */
+.categories-list-intro__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
 /* Payload gives every column a 150px minimum, which pushes the status pill
    off-screen on a phone. The thumbnail and status columns only need their
    content's width; the name takes the rest. */
@@ -993,6 +1001,83 @@ button.category-status:focus-visible {
   }
 }
 
+/* Backstage list view (collections/Backstage.ts; components/admin/
+   BackstageCells.tsx, BackstageThumbnailCell.tsx). Reordered by dragging,
+   so the same treatment as Packages. Payload's "Create New" pill and its
+   "Bulk Upload" button go too: "+ Add item" and "Upload several" (the same
+   drawer) stand in for them in the description. */
+.collection-list--backstage .list-create-new-doc__create-new-button,
+.collection-list--backstage .list-header__title-actions button[aria-label="Bulk Upload"],
+.collection-list--backstage .list-controls,
+.collection-list--backstage .list-selection,
+.collection-list--backstage .page-controls,
+.collection-list--backstage .collection-list__list-selection,
+.collection-list--backstage .cell-_select,
+.collection-list--backstage #heading-_select,
+.collection-list--backstage thead .sort-column__buttons,
+.collection-list--backstage #heading-_dragHandle > * {
+  display: none;
+}
+
+.collection-list--backstage:has(.albums-empty) .no-results {
+  display: none;
+}
+
+.collection-list--backstage #heading-preview,
+.collection-list--backstage #heading-title,
+.collection-list--backstage #heading-published,
+.collection-list--backstage .cell-preview,
+.collection-list--backstage .cell-title,
+.collection-list--backstage .cell-published {
+  min-width: 0;
+}
+
+.collection-list--backstage #heading-preview,
+.collection-list--backstage #heading-published {
+  width: 1%;
+}
+
+.backstage-thumb {
+  position: relative;
+  display: block;
+  width: 44px;
+}
+
+.backstage-thumb__kind {
+  position: absolute;
+  right: -4px;
+  bottom: -4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--theme-elevation-800);
+  color: var(--theme-elevation-0);
+  box-shadow: 0 0 0 2px var(--theme-bg);
+}
+
+.backstage-thumb__kind svg {
+  width: 12px;
+  height: 12px;
+}
+
+/* "Videos under 100MB work best…" in the Backstage upload dropzone, on its
+   own line under the Select a file button. */
+.file-field__dropzoneButtons:has(.backstage-upload-hint) {
+  flex-wrap: wrap;
+}
+
+.backstage-upload-hint {
+  flex-basis: 100%;
+  margin: 8px 0 0;
+  color: var(--theme-elevation-500);
+  font-size: 13px;
+  line-height: 1.4;
+  text-align: center;
+}
+
 /* A package's features (PackageFeaturesField.tsx): the compact link rows
    with one text input and no "Goes to" dropdown. */
 .nav-links--features .nav-links__fields {
@@ -1036,13 +1121,20 @@ button.category-status:focus-visible {
   display: none;
 }
 
-/* New Album / Category / Package: Payload's "Creating new Album" line in the
+/* New Album / Category / Package / Backstage item: Payload's "Creating new Album" line in the
    document controls repeats the "New album" heading, so it goes.
    NewDocumentTitle.tsx leaves the marker only before the first save;
    these collections have no drafts, so that line is all the block holds,
    and the whole block goes so it doesn't leave an empty strip on phones. */
 .doc-controls:has(.new-document-marker) .doc-controls__content {
   display: none;
+}
+
+/* The same marker keeps the heading hidden until NewDocumentTitle has
+   swapped "[Untitled]" for "New album" etc., so a freshly loaded create
+   page never shows the placeholder. */
+body:has(.new-document-marker:not([data-titled])) .doc-header__title {
+  visibility: hidden;
 }
 
 /* Above Payload's 1024px breakpoint the controls share a row with that

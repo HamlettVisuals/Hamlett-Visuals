@@ -11,6 +11,15 @@ const r2Hostname = process.env.R2_ENDPOINT
   : undefined;
 
 const nextConfig: NextConfig = {
+  // Backstage makes video thumbnails and checks clip length with the ffmpeg
+  // binary from `ffmpeg-static` (lib/backstage-media.ts). It's loaded at run
+  // time from its own folder, so it stays out of the bundle, and the
+  // binary is traced in by hand — only into the Payload API route, where
+  // uploads are saved (~78MB on Linux; the function limit is 250MB).
+  serverExternalPackages: ["ffmpeg-static"],
+  outputFileTracingIncludes: {
+    "/hv-studio/api/[...slug]": ["./node_modules/ffmpeg-static/ffmpeg*"],
+  },
   // Required now that the app has two root layouts — (site) and (payload) —
   // so there's no single layout to compose a global 404 from. See
   // app/global-not-found.tsx and node_modules/next/dist/docs/.../not-found.md.

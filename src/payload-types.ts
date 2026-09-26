@@ -77,6 +77,7 @@ export interface Config {
     clients: Client;
     'checklist-templates': ChecklistTemplate;
     backstage: Backstage;
+    'backstage-thumbnails': BackstageThumbnail;
     'testimonial-submissions': TestimonialSubmission;
     'testimonial-photos': TestimonialPhoto;
     logos: Logo;
@@ -97,6 +98,7 @@ export interface Config {
     clients: ClientsSelect<false> | ClientsSelect<true>;
     'checklist-templates': ChecklistTemplatesSelect<false> | ChecklistTemplatesSelect<true>;
     backstage: BackstageSelect<false> | BackstageSelect<true>;
+    'backstage-thumbnails': BackstageThumbnailsSelect<false> | BackstageThumbnailsSelect<true>;
     'testimonial-submissions': TestimonialSubmissionsSelect<false> | TestimonialSubmissionsSelect<true>;
     'testimonial-photos': TestimonialPhotosSelect<false> | TestimonialPhotosSelect<true>;
     logos: LogosSelect<false> | LogosSelect<true>;
@@ -597,41 +599,34 @@ export interface ChecklistTemplate {
   createdAt: string;
 }
 /**
- * The behind-the-scenes feed on /backstage — uploaded video clips and linked Instagram Reels.
+ * The photos and video clips on your Backstage page. Drag to set their order; new ones go to the top.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "backstage".
  */
 export interface Backstage {
   id: number;
+  _order?: string | null;
   /**
-   * A short label for this item, shown on the grid tile.
+   * Optional. Shown under the tile and in the viewer. Left blank, it comes from the file name. Up to 30 characters.
    */
-  title: string;
+  title?: string | null;
   /**
-   * An uploaded video file, or a link to a Reel that's already on Instagram.
+   * Turn off to hide this item from your Backstage page.
    */
-  type: 'video' | 'reel_embed';
+  published?: boolean | null;
   /**
-   * The Reel's Instagram permalink, e.g. https://www.instagram.com/reel/abc123/
-   */
-  reelUrl?: string | null;
-  /**
-   * The grid tile image — a poster frame for a video, or a preview image for a Reel. Needed either way.
-   */
-  thumbnail: number | Photo;
-  /**
-   * An optional caption shown when this item is opened.
+   * Optional. Two lines show under the tile; all of it shows in the viewer. Up to 150 characters.
    */
   caption?: string | null;
   /**
-   * Controls where this item falls in the feed — lower numbers show up first.
+   * Made automatically from a frame of the video. To use your own image, remove this and upload one; remove yours to go back to the automatic one.
    */
+  poster?: (number | null) | BackstageThumbnail;
+  type: 'video' | 'reel_embed';
+  reelUrl?: string | null;
+  thumbnail?: (number | null) | Photo;
   order?: number | null;
-  /**
-   * Turn off to hide this item from the live site.
-   */
-  published?: boolean | null;
   updatedAt: string;
   createdAt: string;
   deletedAt?: string | null;
@@ -644,6 +639,51 @@ export interface Backstage {
   height?: number | null;
   focalX?: number | null;
   focalY?: number | null;
+  sizes?: {
+    thumbnail?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+  };
+}
+/**
+ * Thumbnails for your Backstage videos. Most are made automatically from the video; you can upload your own from a video's editor.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "backstage-thumbnails".
+ */
+export interface BackstageThumbnail {
+  id: number;
+  /**
+   * Made automatically from the video.
+   */
+  generated?: boolean | null;
+  item?: (number | null) | Backstage;
+  updatedAt: string;
+  createdAt: string;
+  url?: string | null;
+  thumbnailURL?: string | null;
+  filename?: string | null;
+  mimeType?: string | null;
+  filesize?: number | null;
+  width?: number | null;
+  height?: number | null;
+  focalX?: number | null;
+  focalY?: number | null;
+  sizes?: {
+    thumbnail?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+  };
 }
 /**
  * Testimonials clients have submitted through their request link — review, correct, and publish the ones you'd like to show on the site.
@@ -819,6 +859,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'backstage';
         value: number | Backstage;
+      } | null)
+    | ({
+        relationTo: 'backstage-thumbnails';
+        value: number | BackstageThumbnail;
       } | null)
     | ({
         relationTo: 'testimonial-submissions';
@@ -1102,13 +1146,15 @@ export interface ChecklistTemplatesSelect<T extends boolean = true> {
  * via the `definition` "backstage_select".
  */
 export interface BackstageSelect<T extends boolean = true> {
+  _order?: T;
   title?: T;
+  published?: T;
+  caption?: T;
+  poster?: T;
   type?: T;
   reelUrl?: T;
   thumbnail?: T;
-  caption?: T;
   order?: T;
-  published?: T;
   updatedAt?: T;
   createdAt?: T;
   deletedAt?: T;
@@ -1121,6 +1167,53 @@ export interface BackstageSelect<T extends boolean = true> {
   height?: T;
   focalX?: T;
   focalY?: T;
+  sizes?:
+    | T
+    | {
+        thumbnail?:
+          | T
+          | {
+              url?: T;
+              width?: T;
+              height?: T;
+              mimeType?: T;
+              filesize?: T;
+              filename?: T;
+            };
+      };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "backstage-thumbnails_select".
+ */
+export interface BackstageThumbnailsSelect<T extends boolean = true> {
+  generated?: T;
+  item?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  url?: T;
+  thumbnailURL?: T;
+  filename?: T;
+  mimeType?: T;
+  filesize?: T;
+  width?: T;
+  height?: T;
+  focalX?: T;
+  focalY?: T;
+  sizes?:
+    | T
+    | {
+        thumbnail?:
+          | T
+          | {
+              url?: T;
+              width?: T;
+              height?: T;
+              mimeType?: T;
+              filesize?: T;
+              filename?: T;
+            };
+      };
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1478,7 +1571,7 @@ export interface TestimonialsTeaser {
 export interface FinalCtaFooter {
   id: number;
   /**
-   * The message above the button. Up to 60 characters, so it stays within two lines on phones.
+   * The message above the button. Up to 48 characters, so it stays within two lines on phones.
    */
   signOffLine: string;
   /**

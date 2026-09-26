@@ -1,6 +1,6 @@
 # Collection Live Preview: showing unsaved edits
 
-Status: **built for Categories, Albums and Packages** (lib/use-scoped-collection-live-preview.ts).
+Status: **built for Categories, Albums, Packages and Backstage** (lib/use-scoped-collection-live-preview.ts).
 Categories: Categories.ts livePreview.url, components/home/CategoryTile.tsx —
 the homepage tile follows name, blurb and cover photo. Albums (`events`):
 Events.ts livePreview.url, components/Gallery/LiveEventRow.tsx — the album's
@@ -11,6 +11,9 @@ PricingRows.ts livePreview.url, components/home/Offers.tsx — the package's row
 in Offers & pricing (and the "Popular right now" card, when it's the featured
 one) follows title, price prefix, price, summary and features, with its
 details opened; it falls back to the section (`#offers`) when the row isn't
+there. Backstage: Backstage.ts livePreview.url, components/Backstage/BackstageGrid.tsx
+— the item's tile on /backstage follows title, caption and (for a video) the
+thumbnail; it falls back to the feed (`#backstage-feed`) when the tile isn't
 there. Add it per collection as
 each page comes up in the cleanup.
 

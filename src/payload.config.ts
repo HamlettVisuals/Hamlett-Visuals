@@ -38,6 +38,7 @@ import { Inquiries } from "#src/collections/Inquiries.ts";
 import { Clients } from "#src/collections/Clients.ts";
 import { ChecklistTemplates } from "#src/collections/ChecklistTemplates.ts";
 import { Backstage } from "#src/collections/Backstage.ts";
+import { BackstageThumbnails } from "#src/collections/BackstageThumbnails.ts";
 import { TestimonialSubmissions } from "#src/collections/TestimonialSubmissions.ts";
 import { TestimonialPhotos } from "#src/collections/TestimonialPhotos.ts";
 import { Logos } from "#src/collections/Logos.ts";
@@ -55,6 +56,7 @@ import { Booking } from "#src/globals/Booking.ts";
 import { serverURL } from "#src/lib/server-url.ts";
 import { addCharacterCounters } from "#src/lib/character-counters.ts";
 import { hideInternalFieldsFromHistory } from "#src/lib/hide-internal-history.ts";
+import { MB, VIDEO_MAX_MB } from "#src/lib/backstage-limits.ts";
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -189,6 +191,7 @@ export default buildConfig({
     Clients,
     ChecklistTemplates,
     Backstage,
+    BackstageThumbnails,
     TestimonialSubmissions,
     TestimonialPhotos,
     Logos,
@@ -205,6 +208,14 @@ export default buildConfig({
     SiteSettings,
     Booking,
   ])),
+  // The largest file any upload may be: Backstage's video cap. For uploads
+  // sent straight from the browser to R2 (clientUploads) this size is also
+  // written into the signed upload link, so R2 itself refuses anything
+  // bigger before it's sent. Smaller per-collection caps are checked on save
+  // (Backstage.ts).
+  upload: {
+    limits: { fileSize: VIDEO_MAX_MB * MB },
+  },
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET ?? "",
   typescript: {
@@ -264,9 +275,17 @@ export default buildConfig({
     // uniqueness by collection, not bucket path.
     s3Storage({
       collections: {
+        // Videos play straight from R2 (a redirect to a signed link) rather
+        // than streaming through the server. Photos don't: next/image
+        // can't follow that redirect, so they're served like Photos'.
         backstage: {
-          signedDownloads: true,
+          signedDownloads: {
+            shouldUseSignedURL: ({ filename }) => /\.(mp4|mov|m4v|webm)$/i.test(filename),
+          },
         },
+        // Video thumbnails (BackstageThumbnails.ts): the automatic ones are
+        // made on the server, the ones she uploads go browser -> R2 too.
+        "backstage-thumbnails": true,
       },
       clientUploads: true,
       bucket: process.env.R2_BUCKET ?? "",
