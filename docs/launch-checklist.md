@@ -14,7 +14,7 @@ as it's done.
       Offer foreign key name (64 characters, cut to 63 by Postgres) no
       longer matters: only dev push compared names against the live
       database, and new migrations compare against the saved snapshot.
-- [ ] **Record the baseline migration as run on the live database** before
+- [x] **Record the baseline migration as run on the live database** before
       the first deploy: `node --env-file=.env.local src/scripts/markInitialMigrationApplied.mjs`,
       then `npm run payload migrate:status` should show it as run.
 - [ ] **Separate the dev and production databases**, or clean all test data out
