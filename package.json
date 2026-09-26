@@ -10,10 +10,10 @@
   },
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "payload migrate --disable-transpile && next build",
     "start": "next start",
     "lint": "eslint",
-    "payload": "payload"
+    "payload": "payload --disable-transpile"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1141.0",

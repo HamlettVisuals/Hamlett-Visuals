@@ -242,6 +242,19 @@ export default buildConfig({
     // this isn't). In transaction mode (port 6543) session-level features
     // (e.g. LISTEN/NOTIFY, advisory locks) aren't available, but Payload
     // doesn't rely on those.
+    //
+    // Schema changes go through migrations (src/migrations), never dev-mode
+    // push: local dev and the live site share one database, so a push from
+    // `npm run dev` would change production's tables directly, and Payload
+    // refuses to run migrations on a database that's been pushed to. After
+    // changing a collection/global: `npm run payload migrate:create <name>`,
+    // then `npm run payload migrate`. `npm run build` runs `payload migrate`
+    // first, so a Vercel deploy applies any new ones before building.
+    // Each new migration file needs one hand edit: mark its type imports
+    // (`import { type MigrateUpArgs, type MigrateDownArgs, sql }`), or the
+    // CLI's --disable-transpile loader fails on them.
+    push: false,
+    migrationDir: path.resolve(dirname, "migrations"),
   }),
   sharp,
   plugins: [

@@ -8,11 +8,15 @@ as it's done.
       organization repos.
 - [ ] **Set Vercel's Ignored Build Step to skip the `admin-cms` branch** before
       the first push.
-- [ ] **Set up proper Payload migrations.** The repo has none, and production
-      needs every schema change. While doing this, fix the too-long Featured
-      Offer foreign key name: `_featured_offer_v_version_featured_package_id_pricing_rows_id_fk`
-      is 64 characters, so Postgres cuts it to 63 (`…_pricing_rows_id_f`).
-      Because of that, the dev schema push drops and re-adds it every time.
+- [x] **Set up proper Payload migrations.** Baseline is
+      `src/migrations/20260926_182105_initial.ts`; dev push is off and
+      `npm run build` runs `payload migrate` first. The too-long Featured
+      Offer foreign key name (64 characters, cut to 63 by Postgres) no
+      longer matters: only dev push compared names against the live
+      database, and new migrations compare against the saved snapshot.
+- [ ] **Record the baseline migration as run on the live database** before
+      the first deploy: `node --env-file=.env.local src/scripts/markInitialMigrationApplied.mjs`,
+      then `npm run payload migrate:status` should show it as run.
 - [ ] **Separate the dev and production databases**, or clean all test data out
       of the shared Supabase database before launch.
 - [ ] **Replace the placeholder Privacy Policy and Terms text.** Visitors can
