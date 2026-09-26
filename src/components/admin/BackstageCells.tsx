@@ -16,9 +16,34 @@ import { ListIntro } from "@/components/admin/CategoryCells";
 // Payload's bulk upload drawer, relabelled: pick several photos and videos
 // at once. Each gets its title from its file name and, for a video, a
 // thumbnail from a frame of it, so she doesn't have to open any of them.
+//
+// The drawer saves the files one after another in its own order, and each
+// new item goes to the top of the feed (Backstage.ts, newItemsFirst), so
+// the batch would land reversed. Once they're saved, one call to Payload's
+// reorder endpoint (the list's drag uses the same one) moves the rest just
+// above the last one saved, which is already on top: the first file in the
+// drawer ends up first in the feed.
+async function keepPickedOrder(docs: Array<{ id?: unknown; _order?: unknown }>, apiRoute: string) {
+  const last = docs.at(-1);
+  if (docs.length < 2 || !last?.id || typeof last._order !== "string") return;
+  await fetch(`${apiRoute}/reorder`, {
+    method: "POST",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      collectionSlug: "backstage",
+      orderableFieldName: "_order",
+      newKeyWillBe: "less",
+      target: { id: last.id, key: last._order },
+      docsToMove: docs.slice(0, -1).map((doc) => doc.id),
+    }),
+  }).catch(() => {});
+}
+
 function UploadSeveralButton() {
   const { drawerSlug, setCollectionSlug, setOnSuccess } = useBulkUpload();
   const { openModal } = useModal();
+  const { config } = useConfig();
   const router = useRouter();
 
   return (
@@ -28,7 +53,13 @@ function UploadSeveralButton() {
       margin={false}
       onClick={() => {
         setCollectionSlug("backstage");
-        setOnSuccess(() => router.refresh());
+        setOnSuccess(async (uploaded) => {
+          await keepPickedOrder(
+            uploaded.map(({ doc }) => doc),
+            config.routes.api,
+          );
+          router.refresh();
+        });
         openModal(drawerSlug);
       }}
     >
