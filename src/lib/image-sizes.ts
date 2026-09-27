@@ -39,11 +39,19 @@ export function photoSizes({
   zoom?: number;
 }): string {
   const photoAspect = photo.width && photo.height ? photo.width / photo.height : frameAspect;
-  const scale = Math.max(1, photoAspect / frameAspect) * zoom;
+  return frameSizes({ frameWidths, zoom: Math.max(1, photoAspect / frameAspect) * zoom });
+}
+
+/**
+ * `sizes` for an image drawn exactly at its frame's size (no crop, e.g. a
+ * frame already shaped like its photo): each breakpoint's frame width × zoom,
+ * rounded up to a whole px (or vw).
+ */
+export function frameSizes({ frameWidths, zoom = 1 }: { frameWidths: FrameWidth[]; zoom?: number }): string {
   return frameWidths
     .map(({ media, width, unit }) => {
       // The epsilon keeps float noise (e.g. 280 × 1.25 = 350.00000000000006) from rounding up a whole unit.
-      const drawn = `${Math.ceil(width * scale - 1e-9)}${unit}`;
+      const drawn = `${Math.ceil(width * zoom - 1e-9)}${unit}`;
       return media ? `${media} ${drawn}` : drawn;
     })
     .join(", ");

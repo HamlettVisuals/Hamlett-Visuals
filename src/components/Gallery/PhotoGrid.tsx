@@ -6,8 +6,6 @@ import { DEFAULT_LOCATION, generateAltText } from "@/lib/generate-alt-text";
 import { HOVER_ZOOM, photoSizes, type FrameWidth } from "@/lib/image-sizes";
 import { PHOTO_GRID_CLASS } from "./photoGridClass";
 
-export { PHOTO_GRID_CLASS };
-
 type PhotoGridProps = {
   photos: GalleryPhoto[];
   eventName: string;

@@ -4,8 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import type { GalleryPhoto } from "./types";
 import HoverZoomImage from "@/components/HoverZoomImage";
 import { DEFAULT_LOCATION, generateAltText } from "@/lib/generate-alt-text";
-import { HOVER_ZOOM, photoSizes, type FrameWidth } from "@/lib/image-sizes";
 import GalleryEmptyState from "./GalleryEmptyState";
+import { GALLERY_ROW_CLASS, GALLERY_TILE_CLASS, tileAspect, tileSizes, tileStyle } from "./galleryRow";
 
 export type EventRowProps = {
   name: string;
@@ -41,13 +41,6 @@ function formatAlbumDate(value: string | null | undefined): string | null {
   if (Number.isNaN(date.getTime())) return null;
   return date.toLocaleDateString("en-US", { month: "long", year: "numeric", timeZone: "UTC" });
 }
-
-/** Each tile's frame: 4:5, 280px wide from sm up (Tailwind's 640px), 68vw below. Matches the tile's classes below. */
-const TILE_ASPECT = 4 / 5;
-const TILE_WIDTHS: FrameWidth[] = [
-  { media: "(min-width: 640px)", width: 280, unit: "px" },
-  { width: 68, unit: "vw" },
-];
 
 /** Net pointer movement below this, in px, still counts as a click rather than a drag. */
 const DRAG_CLICK_THRESHOLD = 5;
@@ -291,18 +284,20 @@ export default function EventRow({
             onMouseLeave={stopDragging}
             onClickCapture={handleClickCapture}
             onDragStart={(event) => event.preventDefault()}
-            className={`no-scrollbar flex gap-1 overflow-x-auto ${
+            className={`no-scrollbar overflow-x-auto ${GALLERY_ROW_CLASS} ${
               isDragging ? "cursor-grabbing" : "cursor-grab"
             }`}
           >
+            {/* Each tile is shaped like its photo — see galleryRow.ts. */}
             {photos.map((photo, index) => (
               <button
                 key={photo.filename}
                 type="button"
                 onClick={() => onPhotoClick(index)}
-                className={`flex-none ${
+                className={`${GALLERY_TILE_CLASS} ${
                   isDragging ? "cursor-grabbing" : "cursor-pointer"
                 }`}
+                style={tileStyle(tileAspect(photo))}
               >
                 <HoverZoomImage
                   src={photo.url}
@@ -315,13 +310,8 @@ export default function EventRow({
                       location: DEFAULT_LOCATION,
                     })
                   }
-                  sizes={photoSizes({
-                    photo,
-                    frameAspect: TILE_ASPECT,
-                    frameWidths: TILE_WIDTHS,
-                    zoom: HOVER_ZOOM,
-                  })}
-                  className="aspect-[4/5] w-[68vw] sm:w-[280px]"
+                  sizes={tileSizes(tileAspect(photo))}
+                  className="h-full w-full"
                 />
               </button>
             ))}

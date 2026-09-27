@@ -1,6 +1,5 @@
 /**
- * Shared with GallerySkeleton (and the homepage Instagram section) so their
- * tiles line up with the real photo grid. A fixed column count per breakpoint
+ * The dev-only sparse preview's grid (PhotoGrid). A fixed column count per breakpoint
  * rather than an auto-fill/auto-fit track list: those need to resolve a
  * definite container width to pick a column count, which breaks down inside
  * this app's nested flex page shells, and they stretch a sparse row's tiles

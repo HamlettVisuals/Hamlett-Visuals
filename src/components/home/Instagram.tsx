@@ -10,8 +10,8 @@ import type { SiteSetting } from "@/payload-types";
 // Recent on Instagram section (#instagram), between the Booking CTA and the
 // Testimonials teaser.
 //
-// Tiles reuse the site's photo treatment — the same 3:4 crop and hover-zoom
-// as Gallery/PhotoGrid — so this reads as a natural extension of the
+// Tiles reuse the site's photo treatment — a cropped frame and the same
+// hover-zoom as the galleries — so this reads as a natural extension of the
 // galleries rather than a third-party widget. The grid itself is its own
 // INSTAGRAM_GRID_CLASS rather than PhotoGrid's PHOTO_GRID_CLASS: this section
 // tops out at 3 columns on desktop instead of 4, deliberately independent
