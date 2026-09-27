@@ -45,3 +45,6 @@ next-env.d.ts
 
 # local pre-migration DB backups — never commit
 /.backups/
+
+# Local copies of photos from Google Drive, for testing; uploaded through the admin.
+/Test Photos/
