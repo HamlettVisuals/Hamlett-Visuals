@@ -238,6 +238,78 @@
   .btn:hover { opacity: 0.88; }
   .btn:active { opacity: 0.78; }
 
+  /* Light button, for use over photos (the hero's call to action): white
+     with ink text. Hover and press step the white down to warm greys
+     rather than fading it, which over a photo would let the image through
+     and read as disabled. */
+  .btn-light {
+    border-color: #fff;
+    background: #fff;
+    color: var(--color-ink);
+    transition: background-color 150ms var(--ease-standard), border-color 150ms var(--ease-standard);
+  }
+  .btn-light:hover { opacity: 1; background: #ebe9e4; border-color: #ebe9e4; }
+  .btn-light:active { opacity: 1; background: #dedbd4; border-color: #dedbd4; }
+
+  /* Hero scrim (components/home/Hero.tsx): a dark wash behind the text only,
+     eased through many stops so it has no visible edge. Below 1024px the
+     text runs most of the width, so it rises from the bottom edge and is
+     gone a little past half height. From 1024px it's an ellipse anchored
+     bottom-left, clear by roughly the middle of the hero. */
+  .hero-scrim {
+    background: linear-gradient(
+      to top,
+      rgb(23 22 20 / 0.55) 0%,
+      rgb(23 22 20 / 0.5) 8%,
+      rgb(23 22 20 / 0.42) 17%,
+      rgb(23 22 20 / 0.32) 26%,
+      rgb(23 22 20 / 0.22) 35%,
+      rgb(23 22 20 / 0.13) 44%,
+      rgb(23 22 20 / 0.06) 52%,
+      rgb(23 22 20 / 0.02) 58%,
+      rgb(23 22 20 / 0) 64%
+    );
+  }
+  @media (min-width: 64rem) {
+    .hero-scrim {
+      background: radial-gradient(
+        ellipse 58% 90% at 10% 100%,
+        rgb(23 22 20 / 0.52) 0%,
+        rgb(23 22 20 / 0.48) 12%,
+        rgb(23 22 20 / 0.41) 24%,
+        rgb(23 22 20 / 0.32) 36%,
+        rgb(23 22 20 / 0.22) 48%,
+        rgb(23 22 20 / 0.13) 60%,
+        rgb(23 22 20 / 0.06) 72%,
+        rgb(23 22 20 / 0.02) 84%,
+        rgb(23 22 20 / 0) 100%
+      );
+    }
+  }
+
+  /* Hero slide indicators: the active bar fills over the slide's hold time,
+     and the slide advances when the fill ends (animationend), so pausing
+     the animation pauses the slideshow at exactly the same point. Under
+     reduced motion the fill is static (no animation to end). */
+  /* A tight dark halo (so a white bar still has an edge on white fur or
+     sky) under a soft, wider shadow. */
+  .hero-indicators {
+    filter: drop-shadow(0 0 1px rgb(0 0 0 / 0.5)) drop-shadow(0 1px 4px rgb(0 0 0 / 0.35));
+  }
+  .hero-indicator-fill {
+    position: absolute;
+    inset: 0;
+    background: #fff;
+    transform-origin: left;
+  }
+  .hero-indicator-fill--animated {
+    transform: scaleX(0);
+    animation: hero-indicator-fill linear forwards;
+  }
+  @keyframes hero-indicator-fill {
+    to { transform: scaleX(1); }
+  }
+
   /* Text link: full-contrast ink text with a hairline underline that warms to
      the taupe accent on hover. The accent only ever tints decoration, never
      the text itself (taupe fails AA at body size). */

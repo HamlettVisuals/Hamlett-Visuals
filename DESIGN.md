@@ -230,10 +230,12 @@ on the site is italic either).
 **Two ambient/hover movements, plus three user-triggered ones (a reveal, one
 scoped hover-lift, and the mobile nav panel). Nothing else animates.**
 
-1. **Hero image crossfade** — ambient, non-interactive. Token
-   `--hero-fade-duration` (1200ms) + `--ease-standard`. (Hero section still to
-   be built; when it is, it must also stop rotating under
-   `prefers-reduced-motion` and expose a pause control — WCAG auto-rotation.)
+1. **Hero image crossfade** — ambient. Token `--hero-fade-duration`
+   (1200ms) + `--ease-standard`. Its slide indicators are part of the same
+   movement: the active bar fills (linear) over the slide's hold, and the
+   slide changes when it's full. Pauses on hover, keyboard focus, a hidden
+   tab and the pause button; never rotates by itself under
+   `prefers-reduced-motion` (WCAG auto-rotation).
 2. **Photo hover-zoom** — the site's signature interaction. Every photo
    thumbnail sits in a fixed, `overflow: hidden` frame and the image scales to
    `--zoom-scale` (1.06) over `--zoom-duration` (350ms) `--ease-standard`.

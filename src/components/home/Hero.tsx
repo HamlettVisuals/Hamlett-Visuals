@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { getImageProps } from "next/image";
 import Link from "next/link";
 import { generateAltText } from "@/lib/generate-alt-text";
@@ -19,18 +19,25 @@ import type { Category, Hero as HeroGlobal, Photo } from "@/payload-types";
 // 1024px (the header's breakpoint) a slide's mobile image, if it has one,
 // replaces the main image, positioned by its own focal point; a <picture>
 // source means each device downloads only the image it shows. The photo
-// carries the section;
-// the scrim is kept to a soft patch behind the text only, so the image stays
-// bright and true everywhere else.
+// carries the section; the scrim is kept to a soft wash behind the text
+// only, so the image stays bright and true everywhere else.
 //
-// Motion rules (see DESIGN.md → Motion): the crossfade is one of only two
-// sanctioned movements on the site. Under prefers-reduced-motion it does not
-// rotate at all — a single static image, no transition — and while it does
-// rotate a pause control is always offered (WCAG 2.2.2).
+// Controls: a row of slide indicators (the active bar fills over the hold)
+// with a pause/play button, arrow keys while the hero has focus, and swipe
+// on touch. Autoplay pauses on mouse hover, keyboard focus and a hidden tab.
+//
+// Motion rules (see DESIGN.md → Motion): the crossfade and the indicator
+// fill are the hero's only movements. Under prefers-reduced-motion it never
+// rotates by itself: it starts on the first slide, the indicators still
+// switch slides (a cut, no fade), and the pause button is left out. While it
+// does rotate, pause is always offered (WCAG 2.2.2).
 
 // How long each image is held fully visible before advancing, in ms. The
 // --hero-fade-duration (1200ms) crossfade overlaps the tail of this window.
 const HOLD_MS = 4500;
+
+// A horizontal swipe at least this long (and mostly sideways) changes slide.
+const SWIPE_MIN_PX = 40;
 
 type HeroSlide = {
   key: string;
@@ -139,9 +146,18 @@ export default function Hero({
   });
 
   const heroSlides = pickedSlides.length > 0 ? pickedSlides : categorySlides;
+  const slideCount = heroSlides.length;
   const [index, setIndex] = useState(0);
+  // Bumped on every slide change, to restart the active bar's fill.
+  const [cycle, setCycle] = useState(0);
+  // The pause/play button. Hover, keyboard focus and a hidden tab pause too,
+  // but only for as long as they last.
   const [paused, setPaused] = useState(false);
+  const [hovered, setHovered] = useState(false);
+  const [keyboardFocus, setKeyboardFocus] = useState(false);
+  const [tabHidden, setTabHidden] = useState(false);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+  const touchStart = useRef<{ x: number; y: number } | null>(null);
 
   // Track the reduced-motion preference (and react if it changes at runtime).
   useEffect(() => {
@@ -152,47 +168,92 @@ export default function Hero({
     return () => mq.removeEventListener("change", update);
   }, []);
 
-  // Auto-advance, unless reduced motion is preferred or the viewer paused it.
-  // The slide count can change under Live Preview (photos added, removed or
-  // reordered), so it restarts the timer and the index wraps against it.
-  const slideCount = heroSlides.length;
   useEffect(() => {
-    if (prefersReducedMotion || paused || slideCount <= 1) return;
-    const id = setInterval(() => {
-      setIndex((current) => (current + 1) % slideCount);
-    }, HOLD_MS);
-    return () => clearInterval(id);
-  }, [prefersReducedMotion, paused, slideCount]);
+    const update = () => setTabHidden(document.visibilityState === "hidden");
+    update();
+    document.addEventListener("visibilitychange", update);
+    return () => document.removeEventListener("visibilitychange", update);
+  }, []);
 
-  // Reduced motion: render a single static image (first category), no stacked
-  // layers, and force the active layer back to that first image regardless of
-  // where the rotation had reached before the preference was turned on.
-  const slides = prefersReducedMotion ? heroSlides.slice(0, 1) : heroSlides;
-  const activeIndex = prefersReducedMotion ? 0 : index % Math.max(slideCount, 1);
+  // The slide count can change under Live Preview (slides added, removed or
+  // reordered), so the index wraps against it.
+  const activeIndex = index % Math.max(slideCount, 1);
+  const hasControls = slideCount > 1;
+  const running =
+    hasControls && !prefersReducedMotion && !paused && !hovered && !keyboardFocus && !tabHidden;
+
+  const goTo = (next: number) => {
+    setIndex(((next % slideCount) + slideCount) % slideCount);
+    setCycle((value) => value + 1);
+  };
 
   return (
     <section
       id="top"
       aria-label="Featured work"
-      className="relative isolate flex min-h-[88svh] w-full items-end overflow-hidden bg-ink"
+      aria-roledescription={hasControls ? "carousel" : undefined}
+      // Focusable so the arrow keys work once it has focus; focus from the
+      // keyboard also pauses it.
+      tabIndex={hasControls ? 0 : undefined}
+      className="relative isolate flex min-h-[88svh] w-full touch-pan-y items-end overflow-hidden bg-ink focus-visible:outline-2 focus-visible:-outline-offset-4 focus-visible:outline-canvas"
+      onKeyDown={(event) => {
+        if (!hasControls || event.altKey || event.ctrlKey || event.metaKey) return;
+        if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
+        event.preventDefault();
+        goTo(activeIndex + (event.key === "ArrowRight" ? 1 : -1));
+      }}
+      onFocus={(event) => {
+        if (event.target.matches(":focus-visible")) setKeyboardFocus(true);
+      }}
+      onBlur={(event) => {
+        if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setKeyboardFocus(false);
+      }}
+      // Mouse only: a tap on a touch screen fires pointerenter but never
+      // pointerleave, which would leave it paused.
+      onPointerEnter={(event) => {
+        if (event.pointerType === "mouse") setHovered(true);
+      }}
+      onPointerLeave={(event) => {
+        if (event.pointerType === "mouse") setHovered(false);
+      }}
+      onTouchStart={(event) => {
+        const touch = event.touches[0];
+        touchStart.current = event.touches.length === 1 ? { x: touch.clientX, y: touch.clientY } : null;
+      }}
+      onTouchEnd={(event) => {
+        const start = touchStart.current;
+        touchStart.current = null;
+        if (!start || !hasControls) return;
+        const touch = event.changedTouches[0];
+        const dx = touch.clientX - start.x;
+        const dy = touch.clientY - start.y;
+        // A clear sideways swipe; anything more vertical is a page scroll.
+        if (Math.abs(dx) < SWIPE_MIN_PX || Math.abs(dx) < Math.abs(dy) * 1.5) return;
+        goTo(activeIndex + (dx < 0 ? 1 : -1));
+      }}
     >
       {/* Image stack — full-bleed background. Sibling layers crossfade by
-          opacity; only the active one is exposed to assistive tech. The
-          crop-frame idea from HoverZoomImage (a fixed, overflow-hidden box the
-          image fills with object-cover) applies here too, minus the hover. */}
-      <div className="absolute inset-0 -z-10">
-        {slides.map((slide, i) => (
+          opacity; only the active one is exposed to assistive tech, which
+          hears about slide changes only while it isn't rotating by itself.
+          The crop-frame idea from HoverZoomImage (a fixed, overflow-hidden
+          box the image fills with object-cover) applies here too, minus the
+          hover. */}
+      <div className="absolute inset-0 -z-10" aria-live={running ? "off" : "polite"}>
+        {heroSlides.map((slide, i) => (
           <div
             key={slide.key}
             className="absolute inset-0"
+            role={hasControls ? "group" : undefined}
+            aria-roledescription={hasControls ? "slide" : undefined}
+            aria-label={hasControls ? `${i + 1} of ${slideCount}` : undefined}
             aria-hidden={i === activeIndex ? undefined : true}
             style={{
               // Makes cqw/cqh in the image's object-position this frame's
               // size — see lib/focal-position.ts.
               containerType: "size",
               opacity: i === activeIndex ? 1 : 0,
-              // Token-driven; the globals.css reduced-motion safety net also
-              // collapses this to ~0ms when the preference is set.
+              // Token-driven; the globals.css reduced-motion safety net
+              // collapses this to ~0ms, so a slide change there is a cut.
               transition: "opacity var(--hero-fade-duration) var(--ease-standard)",
             }}
           >
@@ -201,74 +262,91 @@ export default function Hero({
         ))}
       </div>
 
-      {/* Scrim — a soft radial patch anchored to the lower-left, sized to sit
-          behind the text block only. No full-image wash: the upper and right
-          areas of the photo get no overlay at all. */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 -z-10"
-        style={{
-          background:
-            "radial-gradient(75% 70% at 8% 88%, rgba(23,22,20,0.74) 0%, rgba(23,22,20,0.42) 42%, rgba(23,22,20,0.12) 68%, rgba(23,22,20,0) 82%)",
-        }}
-      />
+      {/* Scrim — behind the text only; see .hero-scrim in globals.css. */}
+      <div aria-hidden className="hero-scrim pointer-events-none absolute inset-0 -z-10" />
 
-      {/* Text block — lower-left. text-shadow is the belt-and-braces contrast
-          guard for bright shots where the scrim alone might not be enough. */}
-      <div className="relative mx-auto w-full max-w-7xl px-gutter pb-14 sm:pb-20">
+      {/* Text block — lower-left, with the slide indicators under it. The
+          soft, wide text-shadow is a last guard for bright photos. */}
+      <div className="relative mx-auto w-full max-w-7xl px-gutter pb-16">
         <div className="max-w-2xl">
           <h1
             className="font-display text-hero font-normal text-canvas"
-            style={{ textShadow: "0 1px 24px rgba(23,22,20,0.4)" }}
+            style={{ textShadow: "0 2px 32px rgb(0 0 0 / 0.28)" }}
           >
             {data.headline}
           </h1>
           {data.subhead && (
             <p
-              className="mt-4 max-w-md text-lead text-canvas/85"
-              style={{ textShadow: "0 1px 16px rgba(23,22,20,0.45)" }}
+              className="mt-4 max-w-md text-lead text-canvas/90"
+              style={{ textShadow: "0 1px 24px rgb(0 0 0 / 0.3)" }}
             >
               {data.subhead}
             </p>
           )}
           <div className="mt-8">
-            <Link href={data.ctaHref || "#booking-cta"} className="btn">
+            <Link href={data.ctaHref || "#booking-cta"} className="btn btn-light">
               {data.ctaLabel || "Book a session"}
             </Link>
           </div>
+          {/* Slide indicators — one short bar per slide, under the button and
+              lined up with the text; the active one fills over the hold
+              (HOLD_MS), then the slideshow moves on (see .hero-indicator-fill
+              in globals.css). Each bar sits in a 28px-tall button so it's easy
+              to hit. In the text's flow rather than pinned to the hero's
+              bottom edge, which on phones is only just above the fixed "Ask a
+              question" button. Hidden with a single slide. Under reduced
+              motion nothing rotates: the active bar is simply full, and the
+              bars still switch slides. */}
+          {hasControls && (
+            <div className="hero-indicators mt-8 flex items-center sm:mt-10">
+              {heroSlides.map((slide, i) => (
+                <button
+                  key={slide.key}
+                  type="button"
+                  onClick={() => goTo(i)}
+                  aria-label={`Show slide ${i + 1} of ${slideCount}`}
+                  aria-current={i === activeIndex ? "true" : undefined}
+                  className="group flex h-7 w-11 cursor-pointer items-center pr-2"
+                >
+                  <span className="relative block h-[3px] w-full overflow-hidden rounded-full bg-white/45 transition-colors group-hover:bg-white/70">
+                    {i === activeIndex &&
+                      (prefersReducedMotion ? (
+                        <span className="hero-indicator-fill" />
+                      ) : (
+                        <span
+                          key={cycle}
+                          className="hero-indicator-fill hero-indicator-fill--animated"
+                          style={{
+                            animationDuration: `${HOLD_MS}ms`,
+                            animationPlayState: running ? "running" : "paused",
+                          }}
+                          onAnimationEnd={() => goTo(activeIndex + 1)}
+                        />
+                      ))}
+                  </span>
+                </button>
+              ))}
+              {!prefersReducedMotion && (
+                <button
+                  type="button"
+                  onClick={() => setPaused((value) => !value)}
+                  aria-label={paused ? "Play the slideshow" : "Pause the slideshow"}
+                  className="ml-1 inline-flex h-7 w-7 cursor-pointer items-center justify-center text-white/75 transition-colors hover:text-white"
+                >
+                  <svg aria-hidden viewBox="0 0 16 16" className="h-3 w-3 fill-current">
+                    {paused ? (
+                      <path d="M5 3.5v9l7-4.5-7-4.5Z" />
+                    ) : (
+                      <path d="M4.5 3h2.5v10H4.5V3ZM9 3h2.5v10H9V3Z" />
+                    )}
+                  </svg>
+                </button>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Pause control — only meaningful while something is auto-rotating, so
-          it is omitted entirely under reduced motion. */}
-      {!prefersReducedMotion && heroSlides.length > 1 && (
-        <button
-          type="button"
-          onClick={() => setPaused((value) => !value)}
-          aria-label={
-            paused ? "Resume the hero slideshow" : "Pause the hero slideshow"
-          }
-          className="absolute bottom-5 right-gutter z-10 inline-flex h-11 w-11 items-center justify-center rounded-full border border-canvas/40 bg-ink/50 text-canvas backdrop-blur-sm transition-opacity hover:opacity-80"
-        >
-          {paused ? (
-            <svg
-              aria-hidden
-              viewBox="0 0 16 16"
-              className="h-4 w-4 fill-current"
-            >
-              <path d="M5 3.5v9l7-4.5-7-4.5Z" />
-            </svg>
-          ) : (
-            <svg
-              aria-hidden
-              viewBox="0 0 16 16"
-              className="h-4 w-4 fill-current"
-            >
-              <path d="M4.5 3h2.5v10H4.5V3ZM9 3h2.5v10H9V3Z" />
-            </svg>
-          )}
-        </button>
-      )}
     </section>
   );
 }
