@@ -34,14 +34,16 @@ export const Logos: CollectionConfig = {
   upload: {
     mimeTypes: ["image/png", "image/webp"],
     imageSizes: [
-      // What the header/footer actually load: 160px tall covers the
-      // default footer height (56px) at ~3x density without shipping a
-      // multi-megabyte original. The footer slider goes up to 120px
-      // (lib/logo-size.ts), where this is only ~1.3x. Width follows the aspect ratio;
-      // smaller originals are left as-is (sharp's withoutEnlargement).
+      // What the header and footer load (Wordmark.tsx reads sizes.display
+      // for both): 400px tall covers the footer's largest size (120px,
+      // lib/logo-size.ts) at ~3.3x density without shipping a
+      // multi-megabyte original. Height only, so width follows the aspect
+      // ratio; withoutEnlargement leaves shorter originals at their own size
+      // (sharp). No formatOptions, so PNG/WebP stay as uploaded, alpha and
+      // all.
       {
         name: "display",
-        height: 160,
+        height: 400,
         withoutEnlargement: true,
       },
     ],
