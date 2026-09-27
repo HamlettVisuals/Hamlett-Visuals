@@ -43,6 +43,11 @@ export const Photos: CollectionConfig = {
   },
   upload: {
     mimeTypes: RASTER_IMAGE_MIME_TYPES,
+    // Both are Payload's defaults, spelled out because the site relies on
+    // them: the hero (components/home/Hero.tsx) positions each photo around
+    // its focal point, and cropping is how she trims a photo in the studio.
+    focalPoint: true,
+    crop: true,
     // Browsers may keep a photo file for an hour, then check back with its
     // ETag (a quick 304 when unchanged). Not longer, and not `immutable`: a
     // file's URL can come to serve different pixels — cropping in the studio

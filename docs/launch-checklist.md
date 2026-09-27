@@ -50,6 +50,12 @@ as it's done.
       them inline with sound from the tap on play; confirm the same in iPhone
       Safari (no full-screen takeover, sound on), including a MOV straight
       from the phone.
-- [ ] **Hero photo positioning (high priority).** Let her set a focal point
-      or drag to position each hero photo in the Studio, since the hero area
-      crops them.
+- [x] **Hero photo positioning (high priority).** Each hero slide is
+      positioned by its photo's focal point (Edit Image in the photo), with
+      an optional mobile image per slide.
+- [ ] **Drop the old "Hero photos" field.** Once the hero_slides change is
+      deployed, remove the hidden `heroPhotos` field from globals/Hero.ts and
+      generate a migration (drops `hero_rels` rows / `_hero_v_rels`). It was
+      kept so the hero_slides migration stayed additive while the live site
+      still read it. Any picks saved to it on the live admin after
+      2026-09-27 18:06 UTC are not in `slides`; re-add them there.

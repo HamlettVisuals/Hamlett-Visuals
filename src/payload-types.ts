@@ -1395,8 +1395,21 @@ export interface HeaderNav {
 export interface Hero {
   id: number;
   /**
-   * Optional. Pick the photos that rotate behind your headline, then drag them into order (up to 8). Leave empty to use your category cover photos. Each photo is cropped around its focal point — set that on the photo itself.
+   * Optional. Add the photos that rotate behind your headline, then drag them into order (up to 8). Leave empty to use your category cover photos.
    */
+  slides?:
+    | {
+        /**
+         * Wide, landscape photos work best here. Click the most important part of the photo to set a focal point so it stays in frame on every screen size.
+         */
+        photo: number | Photo;
+        /**
+         * Optional. Use a tall/portrait photo if the main image doesn't crop well on phones.
+         */
+        mobilePhoto?: (number | null) | Photo;
+        id?: string | null;
+      }[]
+    | null;
   heroPhotos?: (number | Photo)[] | null;
   /**
    * The large title text over the homepage photos.
@@ -1747,6 +1760,13 @@ export interface HeaderNavSelect<T extends boolean = true> {
  * via the `definition` "hero_select".
  */
 export interface HeroSelect<T extends boolean = true> {
+  slides?:
+    | T
+    | {
+        photo?: T;
+        mobilePhoto?: T;
+        id?: T;
+      };
   heroPhotos?: T;
   headline?: T;
   subhead?: T;

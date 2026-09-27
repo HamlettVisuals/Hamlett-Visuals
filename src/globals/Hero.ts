@@ -3,10 +3,11 @@ import { publicReadAdminWrite } from "#src/access/isAdmin.ts";
 import { serverURL } from "#src/lib/server-url.ts";
 import { CTA_LABEL_MAX, HERO_PHOTOS_MAX } from "#src/lib/hero-limits.ts";
 
-// The hero's rotating slides are the photos picked in "Hero photos" below,
-// in the order she drags them into. Left empty, they fall back to one photo
-// per published category (see src/components/home/Hero.tsx). Either way each
-// slide is cropped around the photo's own focal point (set on the photo).
+// The hero's rotating slides are the rows in "Hero slides" below, in the
+// order she drags them into. Left empty, they fall back to one photo per
+// published category (see src/components/home/Hero.tsx). Either way each
+// slide is cropped around the photo's own focal point (set on the photo),
+// and a slide's optional mobile image replaces it on phones and tablets.
 export const Hero: GlobalConfig = {
   slug: "hero",
   label: "Hero",
@@ -44,15 +45,52 @@ export const Hero: GlobalConfig = {
   versions: true,
   fields: [
     {
+      name: "slides",
+      type: "array",
+      maxRows: HERO_PHOTOS_MAX,
+      label: "Hero slides",
+      labels: { singular: "Slide", plural: "Slides" },
+      admin: {
+        description: `Optional. Add the photos that rotate behind your headline, then drag them into order (up to ${HERO_PHOTOS_MAX}). Leave empty to use your category cover photos.`,
+      },
+      fields: [
+        {
+          name: "photo",
+          type: "upload",
+          relationTo: "photos",
+          required: true,
+          label: "Main image",
+          admin: {
+            description:
+              "Wide, landscape photos work best here. Click the most important part of the photo to set a focal point so it stays in frame on every screen size.",
+          },
+        },
+        {
+          // Shown below 1024px wide (the header's breakpoint) in place of
+          // the main image; see components/home/Hero.tsx.
+          name: "mobilePhoto",
+          type: "upload",
+          relationTo: "photos",
+          label: "Mobile image",
+          admin: {
+            description:
+              "Optional. Use a tall/portrait photo if the main image doesn't crop well on phones.",
+          },
+        },
+      ],
+    },
+    {
+      // Replaced by "slides" above; its picks were copied there by the
+      // 20260927 hero_slides migration. Kept (hidden) so that migration
+      // stays additive while the live site still reads it — drop it after
+      // this ships (docs/launch-checklist.md).
       name: "heroPhotos",
       type: "upload",
       relationTo: "photos",
       hasMany: true,
       maxRows: HERO_PHOTOS_MAX,
-      label: "Hero photos",
-      admin: {
-        description: `Optional. Pick the photos that rotate behind your headline, then drag them into order (up to ${HERO_PHOTOS_MAX}). Leave empty to use your category cover photos. Each photo is cropped around its focal point — set that on the photo itself.`,
-      },
+      label: "Hero photos (old)",
+      admin: { hidden: true },
     },
     {
       name: "headline",

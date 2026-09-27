@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Image from "next/image";
+import { getImageProps } from "next/image";
 import Link from "next/link";
 import { generateAltText } from "@/lib/generate-alt-text";
 import { resolvePhoto } from "@/lib/resolve-photo";
@@ -10,11 +10,15 @@ import { useScopedLivePreview } from "@/lib/use-scoped-live-preview";
 import { HERO_PHOTOS_MAX } from "@/lib/hero-limits";
 import type { Category, Hero as HeroGlobal, Photo } from "@/payload-types";
 
-// Filmstrip hero. The slides are the Hero global's "Hero photos", in the
+// Filmstrip hero. The slides are the Hero global's "Hero slides", in the
 // order she picked; left empty, it falls back to one representative image
 // per category (in category order), crossfading on the --hero-fade-duration
 // token. Every slide is cropped around its photo's focal point, so the
-// subject stays in frame at desktop, tablet and phone aspect ratios. The photo carries the section;
+// subject stays in frame at desktop, tablet and phone aspect ratios. Below
+// 1024px (the header's breakpoint) a slide's mobile image, if it has one,
+// replaces the main image, positioned by its own focal point; a <picture>
+// source means each device downloads only the image it shows. The photo
+// carries the section;
 // the scrim is kept to a soft patch behind the text only, so the image stays
 // bright and true everywhere else.
 //
@@ -47,6 +51,53 @@ function focalPosition(photo: Photo) {
   return `${x} ${y}`;
 }
 
+type HeroSlide = {
+  key: string;
+  alt: string;
+  photo: Photo;
+  mobilePhoto: Photo | null;
+};
+
+// Same width-only resizing as next/image (the whole photo, never a
+// pre-cropped copy, so the focal-point positioning has the full frame to
+// work with), split across a <picture> so the mobile image is only fetched
+// below 1024px and the main image only above it. Each has its own focal
+// point, applied per breakpoint through the --focal-* variables. With no
+// mobile image there's no <source>, and the main image is used everywhere.
+function HeroImage({ slide, eager }: { slide: HeroSlide; eager: boolean }) {
+  const common = { alt: slide.alt, fill: true, sizes: "100vw", quality: 90 };
+  const { props } = getImageProps({
+    ...common,
+    src: slide.photo.url!,
+    loading: eager ? "eager" : undefined,
+    fetchPriority: eager ? "high" : undefined,
+  });
+  const mobile = slide.mobilePhoto;
+  const mobileSrcSet = mobile
+    ? getImageProps({ ...common, src: mobile.url! }).props.srcSet
+    : undefined;
+  return (
+    <picture>
+      {mobileSrcSet && (
+        // Matches Tailwind's max-lg (and the header's breakpoint).
+        <source media="(width < 64rem)" srcSet={mobileSrcSet} sizes="100vw" />
+      )}
+      <img
+        {...props}
+        alt={slide.alt}
+        className="object-cover [object-position:var(--focal-mobile)] lg:[object-position:var(--focal-desktop)]"
+        style={
+          {
+            ...props.style,
+            "--focal-desktop": focalPosition(slide.photo),
+            "--focal-mobile": focalPosition(mobile ?? slide.photo),
+          } as React.CSSProperties
+        }
+      />
+    </picture>
+  );
+}
+
 export default function Hero({
   hero,
   categories,
@@ -67,21 +118,23 @@ export default function Hero({
     apiRoute: "/hv-studio/api",
   });
 
-  // The picked photos, in order — any that can't be resolved (e.g. moved to
-  // the Trash, which Payload populates as null) are skipped, as is a repeat
-  // of one already in the list.
+  // The picked slides, in order — any whose main image can't be resolved
+  // (e.g. moved to the Trash, which Payload populates as null) are skipped,
+  // as is a repeat of a main image already in the list. A mobile image that
+  // can't be resolved just falls back to the main image.
   const pickedIds = new Set<number>();
-  const pickedSlides = (data.heroPhotos ?? [])
-    .flatMap((value) => {
-      const photo = resolvePhoto(value);
+  const pickedSlides: HeroSlide[] = (data.slides ?? [])
+    .flatMap((slide) => {
+      const photo = resolvePhoto(slide.photo);
       if (!photo?.url || pickedIds.has(photo.id)) return [];
       pickedIds.add(photo.id);
+      const mobile = resolvePhoto(slide.mobilePhoto);
       return [
         {
           key: `photo-${photo.id}`,
-          src: photo.url,
           alt: photo.alt,
-          objectPosition: focalPosition(photo),
+          photo,
+          mobilePhoto: mobile?.url ? mobile : null,
         },
       ];
     })
@@ -90,16 +143,16 @@ export default function Hero({
   // Fallback: one slide per category — its banner photo, else its tile
   // cover photo. Categories with neither are skipped rather than shown with
   // a missing image.
-  const categorySlides = categories.flatMap((category) => {
+  const categorySlides: HeroSlide[] = categories.flatMap((category) => {
     const photo =
       resolvePhoto(category.heroPhoto) ?? resolvePhoto(category.coverPhoto);
     if (!photo?.url) return [];
     return [
       {
         key: `category-${category.slug}`,
-        src: photo.url,
         alt: generateAltText({ kind: "category", category: category.name }),
-        objectPosition: focalPosition(photo),
+        photo,
+        mobilePhoto: null,
       },
     ];
   });
@@ -162,16 +215,7 @@ export default function Hero({
               transition: "opacity var(--hero-fade-duration) var(--ease-standard)",
             }}
           >
-            <Image
-              src={slide.src}
-              alt={slide.alt}
-              fill
-              preload={i === 0}
-              sizes="100vw"
-              quality={90}
-              className="object-cover"
-              style={{ objectPosition: slide.objectPosition }}
-            />
+            <HeroImage slide={slide} eager={i === 0} />
           </div>
         ))}
       </div>
