@@ -8,6 +8,7 @@ import { resolvePhoto } from "@/lib/resolve-photo";
 import { serverURL } from "@/lib/server-url";
 import { useScopedLivePreview } from "@/lib/use-scoped-live-preview";
 import { HERO_PHOTOS_MAX } from "@/lib/hero-limits";
+import { focalPosition } from "@/lib/focal-position";
 import type { Category, Hero as HeroGlobal, Photo } from "@/payload-types";
 
 // Filmstrip hero. The slides are the Hero global's "Hero slides", in the
@@ -30,26 +31,6 @@ import type { Category, Hero as HeroGlobal, Photo } from "@/payload-types";
 // How long each image is held fully visible before advancing, in ms. The
 // --hero-fade-duration (1200ms) crossfade overlaps the tail of this window.
 const HOLD_MS = 4500;
-
-// object-position that centres the photo's focal point in the frame, as far
-// as the crop allows. Pure CSS so it's right on first paint at any size: the
-// slide's frame is a size container (see below), so cqw/cqh are its width
-// and height, and the object-cover image's rendered size is
-// max(frame, frame scaled to the photo's aspect ratio). The offset is then
-// clamped so the image never pulls away from an edge. Photos without stored
-// dimensions fall back to the plain percentage (focal point in frame, just
-// not centred). No focal point set means 50/50 — the centre, as before.
-function focalPosition(photo: Photo) {
-  const fx = (photo.focalX ?? 50) / 100;
-  const fy = (photo.focalY ?? 50) / 100;
-  if (!photo.width || !photo.height) return `${fx * 100}% ${fy * 100}%`;
-  const ratio = photo.width / photo.height;
-  const renderedWidth = `max(100cqw, 100cqh * ${ratio})`;
-  const renderedHeight = `max(100cqh, 100cqw / ${ratio})`;
-  const x = `clamp(100cqw - ${renderedWidth}, 50cqw - ${fx} * ${renderedWidth}, 0px)`;
-  const y = `clamp(100cqh - ${renderedHeight}, 50cqh - ${fy} * ${renderedHeight}, 0px)`;
-  return `${x} ${y}`;
-}
 
 type HeroSlide = {
   key: string;
@@ -207,7 +188,7 @@ export default function Hero({
             aria-hidden={i === activeIndex ? undefined : true}
             style={{
               // Makes cqw/cqh in the image's object-position this frame's
-              // size — see focalPosition().
+              // size — see lib/focal-position.ts.
               containerType: "size",
               opacity: i === activeIndex ? 1 : 0,
               // Token-driven; the globals.css reduced-motion safety net also

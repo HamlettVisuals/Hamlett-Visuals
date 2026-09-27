@@ -14,6 +14,7 @@ import { default as default_f7ada3d495e51370acd8dcac7a5e5f13 } from '../../../co
 import { AlbumTitleCell as AlbumTitleCell_271eec196f6613c6ae3ecc547136025a } from '../../../components/admin/AlbumCells'
 import { AlbumsListToolbar as AlbumsListToolbar_271eec196f6613c6ae3ecc547136025a } from '../../../components/admin/AlbumCells'
 import { AlbumsListDescription as AlbumsListDescription_271eec196f6613c6ae3ecc547136025a } from '../../../components/admin/AlbumCells'
+import { default as default_3217d5da994dedfd8949de6baed57944 } from '../../../components/admin/CropPreview'
 import { default as default_f21c27ddc71a218bc5a17d940513ff86 } from '../../../components/admin/PackageThumbnailCell'
 import { PackageTitleCell as PackageTitleCell_24f49b6f3fd3d212d674670488897cc5 } from '../../../components/admin/PackageCells'
 import { PackagePriceCell as PackagePriceCell_24f49b6f3fd3d212d674670488897cc5 } from '../../../components/admin/PackageCells'
@@ -87,6 +88,7 @@ export const importMap = {
   "/components/admin/AlbumCells#AlbumTitleCell": AlbumTitleCell_271eec196f6613c6ae3ecc547136025a,
   "/components/admin/AlbumCells#AlbumsListToolbar": AlbumsListToolbar_271eec196f6613c6ae3ecc547136025a,
   "/components/admin/AlbumCells#AlbumsListDescription": AlbumsListDescription_271eec196f6613c6ae3ecc547136025a,
+  "/components/admin/CropPreview#default": default_3217d5da994dedfd8949de6baed57944,
   "/components/admin/PackageThumbnailCell#default": default_f21c27ddc71a218bc5a17d940513ff86,
   "/components/admin/PackageCells#PackageTitleCell": PackageTitleCell_24f49b6f3fd3d212d674670488897cc5,
   "/components/admin/PackageCells#PackagePriceCell": PackagePriceCell_24f49b6f3fd3d212d674670488897cc5,

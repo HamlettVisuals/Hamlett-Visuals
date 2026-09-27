@@ -9,6 +9,7 @@ import {
   useForm,
   useFormModified,
   useModal,
+  useUploadEdits,
 } from "@payloadcms/ui";
 
 // Undo / Redo / Discard for the website-editor screens (every global plus
@@ -32,8 +33,10 @@ const typingGroupMs = 1000;
 // On upload collections (Photos, Backstage) the pending file and its crop /
 // focal-point edits live in Payload's UploadEdits provider, outside form
 // state, so a snapshot can't bring them back. These fields are left out of
-// undo/redo (always kept as they currently are). Discard handles a pending
-// file change by reloading the page — see discard() below.
+// undo/redo (always kept as they currently are). Discard clears the pending
+// crop / focal-point edits (they'd otherwise ride along with the next Save,
+// in the form's action URL) and handles a pending file change by reloading
+// the page — see discard() below.
 const uploadMetaPaths = new Set([
   "file",
   "filename",
@@ -218,6 +221,7 @@ export default function EditHistory() {
   const modified = useFormModified();
   const { data, globalSlug } = useDocumentInfo();
   const { openModal, modalState } = useModal();
+  const { resetUploadEdits } = useUploadEdits();
 
   const [history] = useState(() => new History());
   useSyncExternalStore(history.subscribe, history.getVersion, history.getVersion);
@@ -315,10 +319,11 @@ export default function EditHistory() {
     const fileChanged =
       pendingFile instanceof File || !same(pendingFile ?? null, baseline.state.file?.value ?? null);
     restore(0, { includeUploadMeta: true });
+    resetUploadEdits?.();
     setModified(false);
     history.reset(baseline.state);
     if (fileChanged) setTimeout(() => window.location.reload(), 100);
-  }, [getFields, history, restore, setModified]);
+  }, [getFields, history, resetUploadEdits, restore, setModified]);
 
   // Ctrl+Z / Ctrl+Shift+Z / Ctrl+Y (Cmd on Mac), only outside text boxes and
   // only while no drawer or modal (which may hold its own form) is open.

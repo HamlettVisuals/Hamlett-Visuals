@@ -1168,3 +1168,58 @@ body:has(.new-document-marker:not([data-titled])) .doc-header__title {
     margin-left: auto;
   }
 }
+
+/* A photo's "Crop preview" (components/admin/CropPreview.tsx): each crop
+   frame is a size container, so the focal-point object-position
+   (lib/focal-position.ts) resolves against it exactly as on the site. */
+.crop-preview__note {
+  margin: 0 0 12px;
+  font-size: 13px;
+  color: var(--theme-elevation-500);
+}
+
+.crop-preview__group + .crop-preview__group {
+  margin-top: 16px;
+}
+
+.crop-preview__group-title {
+  margin: 0 0 8px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--theme-elevation-800);
+}
+
+.crop-preview__frames {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.crop-preview__item {
+  max-width: 280px;
+}
+
+.crop-preview__frame {
+  position: relative;
+  overflow: hidden;
+  container-type: size;
+  border-radius: 3px;
+  background: var(--theme-elevation-100);
+}
+
+.crop-preview__label {
+  margin: 6px 0 0;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--theme-elevation-1000);
+}
+
+.crop-preview__detail {
+  margin: 2px 0 0;
+  font-size: 11px;
+  line-height: 1.35;
+  color: var(--theme-elevation-500);
+}

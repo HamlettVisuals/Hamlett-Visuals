@@ -78,6 +78,17 @@ export const Photos: CollectionConfig = {
   versions: true,
   fields: [
     {
+      // The photo in every crop shape the site uses, right under the file
+      // box and its Edit Image button. Not stored. See CropPreview.tsx.
+      name: "cropPreview",
+      type: "ui",
+      admin: {
+        components: {
+          Field: "/components/admin/CropPreview#default",
+        },
+      },
+    },
+    {
       name: "alt",
       type: "text",
       required: true,
