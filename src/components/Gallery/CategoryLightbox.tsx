@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import type { GalleryPhoto } from "./types";
 import { DEFAULT_LOCATION, generateAltText } from "@/lib/generate-alt-text";
@@ -42,6 +42,24 @@ function ChevronIcon({ direction }: { direction: "left" | "right" }) {
   );
 }
 
+/**
+ * Shown while the current photo loads: a softly pulsing panel the photo's
+ * own shape, sized and centred the way the photo will be (an SVG's viewBox
+ * scales like object-contain). Same pulse as the gallery skeleton.
+ */
+function LoadingPlaceholder({ photo }: { photo: GalleryPhoto }) {
+  const width = photo.width || 4;
+  const height = photo.height || 5;
+  return (
+    <div role="status" className="absolute inset-0">
+      <svg viewBox={`0 0 ${width} ${height}`} className="h-full w-full" aria-hidden="true">
+        <rect width={width} height={height} className="lightbox-loading fill-canvas/8" />
+      </svg>
+      <span className="sr-only">Loading photo</span>
+    </div>
+  );
+}
+
 export default function CategoryLightbox({
   category,
   events,
@@ -66,6 +84,12 @@ export default function CategoryLightbox({
 
   const [currentIndex, setCurrentIndex] = useState(startIndex);
   const thumbRefs = useRef<Array<HTMLButtonElement | null>>([]);
+  // Photo URLs that have finished loading (shown, or preloaded as a
+  // neighbour), so the loading placeholder only shows while one is on its way.
+  const [loadedUrls, setLoadedUrls] = useState<ReadonlySet<string>>(() => new Set());
+  const markLoaded = useCallback((url: string) => {
+    setLoadedUrls((prev) => (prev.has(url) ? prev : new Set(prev).add(url)));
+  }, []);
 
   // Reset to the requested photo whenever the lightbox transitions from
   // closed to open — adjusted during render (not an effect) per
@@ -108,9 +132,38 @@ export default function CategoryLightbox({
     });
   }, [isOpen, currentIndex]);
 
+  // The main image is the stored original (see below), up to ~2MB, so only
+  // the photos either side of the current one are fetched ahead — never the
+  // whole album. Their preload images are kept alive until they stop being
+  // neighbours: the browser only hands a preloaded photo to the <img> while
+  // something still holds it (Payload's file route sends no Cache-Control,
+  // so the HTTP cache can't), otherwise the photo downloads twice.
+  const preloads = useRef(new Map<string, HTMLImageElement>());
+  useEffect(() => {
+    const kept = preloads.current;
+    if (!isOpen || flat.length < 2) {
+      kept.clear();
+      return;
+    }
+    const neighbours = new Set(
+      [currentIndex + 1, currentIndex - 1 + flat.length].map((i) => flat[i % flat.length].photo.url),
+    );
+    neighbours.delete(flat[currentIndex].photo.url);
+    for (const url of kept.keys()) if (!neighbours.has(url)) kept.delete(url);
+    for (const url of neighbours) {
+      if (kept.has(url)) continue;
+      const img = new window.Image();
+      img.onload = () => markLoaded(url);
+      img.src = url;
+      kept.set(url, img);
+    }
+  }, [isOpen, currentIndex, flat, markLoaded]);
+
   const current = flat[currentIndex];
 
   if (!isOpen || !current) return null;
+
+  const isLoaded = loadedUrls.has(current.photo.url);
 
   function goPrev() {
     setCurrentIndex((i) => (i - 1 + flat.length) % flat.length);
@@ -159,9 +212,14 @@ export default function CategoryLightbox({
       <div className="relative flex flex-1 items-center justify-center px-4">
         <div
           key={current.photo.url}
-          className="lightbox-image-enter relative h-full max-h-[calc(100vh-150px)] w-full max-w-5xl"
+          className="relative h-full max-h-[calc(100vh-150px)] w-full max-w-5xl"
           onClick={(event) => event.stopPropagation()}
         >
+          {!isLoaded && <LoadingPlaceholder photo={current.photo} />}
+          {/* The stored original, not a copy from Next's image optimizer: at
+              lightbox size the optimizer's copy was often larger than the
+              original and softer. Photos are capped at 3000px on upload
+              (lib/photo-resize.ts). Hidden until loaded, then faded in. */}
           <Image
             src={current.photo.url}
             alt={
@@ -174,10 +232,12 @@ export default function CategoryLightbox({
               })
             }
             fill
-            quality={95}
-            sizes="90vw"
-            className="object-contain"
-            priority
+            unoptimized
+            loading="eager"
+            className={`object-contain ${isLoaded ? "lightbox-image-enter" : "opacity-0"}`}
+            onLoad={() => markLoaded(current.photo.url)}
+            // A photo that fails still stops the placeholder, leaving its alt text.
+            onError={() => markLoaded(current.photo.url)}
           />
         </div>
 

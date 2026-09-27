@@ -602,6 +602,11 @@
   .lightbox-image-enter {
     animation: lightbox-image-in 250ms var(--ease-standard);
   }
+  /* The lightbox's loading placeholder (CategoryLightbox.tsx) — the gallery
+     skeleton's pulse. */
+  .lightbox-loading {
+    animation: gallery-skeleton-pulse 1600ms var(--ease-standard) infinite;
+  }
 
   /* BackstageLightbox's custom video scrub bar
      (src/components/Backstage/BackstageLightbox.tsx) — a native
