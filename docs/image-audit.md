@@ -42,6 +42,8 @@ portfolio page uses the `EventRow` horizontal rows (`CategoryGallery.tsx`).
 ## 3. `next.config.ts` images section
 
 - **`formats`:** `["image/avif", "image/webp"]`, so most browsers get AVIF.
+  *Since changed to `["image/webp"]` only, after an AVIF-vs-WebP comparison
+  at quality 90.*
 - **`qualities`:** `[75, 90, 95]`.
 - **`localPatterns`:** one per upload collection,
   `/hv-studio/api/<slug>/file/**` with `?prefix=<folder>`, plus `/**` with no

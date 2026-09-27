@@ -42,7 +42,9 @@ const nextConfig: NextConfig = {
     ];
   },
   images: {
-    formats: ["image/avif", "image/webp"],
+    // WebP only: at quality 90 it kept grain and fine texture better than
+    // AVIF in a side-by-side (docs/image-audit.md).
+    formats: ["image/webp"],
     // Next.js 16 restricts `quality` to this allowlist by default ([75] only);
     // grid thumbnails use 90, the lightbox uses 95.
     qualities: [75, 90, 95],
