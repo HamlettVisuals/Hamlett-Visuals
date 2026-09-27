@@ -170,6 +170,7 @@ export default function Nav({
         <Wordmark
           siteName={settings.siteName || "Hamlett Visuals"}
           logo={settings.logo}
+          logoHeight={settings.logoHeight}
           onClick={() => setMenuOpen(false)}
         />
 

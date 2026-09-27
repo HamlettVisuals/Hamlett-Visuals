@@ -69,6 +69,23 @@ export const SiteSettings: GlobalConfig = {
       },
     },
     {
+      // Height of the header logo in px (Wordmark.tsx). Phones get ~80% of
+      // it. Only affects the uploaded logo, not the text fallback.
+      name: "logoHeight",
+      type: "number",
+      label: "Logo size",
+      min: 28,
+      max: 56,
+      defaultValue: 40,
+      admin: {
+        description: "How tall your logo is at the top of the page. Phones show it a little smaller.",
+        condition: (data) => Boolean(data?.logo),
+        components: {
+          Field: "/components/admin/LogoSizeField#default",
+        },
+      },
+    },
+    {
       name: "favicon",
       type: "upload",
       relationTo: "photos",

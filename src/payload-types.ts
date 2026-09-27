@@ -1642,6 +1642,10 @@ export interface SiteSetting {
    */
   logo?: (number | null) | Logo;
   /**
+   * How tall your logo is at the top of the page. Phones show it a little smaller.
+   */
+  logoHeight?: number | null;
+  /**
    * The small icon shown in a browser tab. Works best as a simple square image.
    */
   favicon?: (number | null) | Photo;
@@ -1851,6 +1855,7 @@ export interface FinalCtaFooterSelect<T extends boolean = true> {
 export interface SiteSettingsSelect<T extends boolean = true> {
   siteName?: T;
   logo?: T;
+  logoHeight?: T;
   favicon?: T;
   ogImage?: T;
   ogImageAlt?: T;
