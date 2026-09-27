@@ -99,7 +99,7 @@
   color-scheme: light;
 
   /* Photo hover-zoom — the site's one signature interaction. */
-  --zoom-scale: 1.06;
+  --zoom-scale: 1.06; /* keep in sync with HOVER_ZOOM in lib/image-sizes.ts */
   --zoom-duration: 350ms;
 
   /* Hero image crossfade — the only ambient, non-interactive motion. */

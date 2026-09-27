@@ -90,8 +90,11 @@ and bottom aren't cropped. Category tiles are 9:16, so a 4:5 photo loses about
   | Square | 373px | 640w | 746 | ~1.17× |
   | 3:2 landscape | 560px | 640w | 1120 | **~1.75×** |
 
-  On a 1× screen a landscape gets the 384w file stretched to 560px. The hover's
-  1.06× adds to all of these. Category tiles have the same problem, worse
+  *Correction (checked in the browser, same day):* on a 1× screen the gallery
+  isn't affected. Because its `sizes` contains a `vw` value, Next builds its
+  srcset from 640w up (no 384w), and 640w already covers every shape's drawn
+  width. The stretching happens on 2× and 3× screens. The hover's 1.06× adds
+  to all of these. Category tiles have the same problem, worse
   because `336px` is below their real width on wide screens (up to ~389px).
   The hero's `100vw` always picks a large enough file.
 - **Heavy downscaling (moderate cause).** Even with enough pixels, tiles are

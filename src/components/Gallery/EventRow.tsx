@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import type { GalleryPhoto } from "./types";
 import HoverZoomImage from "@/components/HoverZoomImage";
 import { DEFAULT_LOCATION, generateAltText } from "@/lib/generate-alt-text";
+import { HOVER_ZOOM, photoSizes, type FrameWidth } from "@/lib/image-sizes";
 import GalleryEmptyState from "./GalleryEmptyState";
 
 export type EventRowProps = {
@@ -40,6 +41,13 @@ function formatAlbumDate(value: string | null | undefined): string | null {
   if (Number.isNaN(date.getTime())) return null;
   return date.toLocaleDateString("en-US", { month: "long", year: "numeric", timeZone: "UTC" });
 }
+
+/** Each tile's frame: 4:5, 280px wide from sm up (Tailwind's 640px), 68vw below. Matches the tile's classes below. */
+const TILE_ASPECT = 4 / 5;
+const TILE_WIDTHS: FrameWidth[] = [
+  { media: "(min-width: 640px)", width: 280, unit: "px" },
+  { width: 68, unit: "vw" },
+];
 
 /** Net pointer movement below this, in px, still counts as a click rather than a drag. */
 const DRAG_CLICK_THRESHOLD = 5;
@@ -307,8 +315,13 @@ export default function EventRow({
                       location: DEFAULT_LOCATION,
                     })
                   }
-                  sizes="(max-width: 640px) 68vw, 280px"
-                  className="aspect-[3/4] w-[68vw] sm:w-[280px]"
+                  sizes={photoSizes({
+                    photo,
+                    frameAspect: TILE_ASPECT,
+                    frameWidths: TILE_WIDTHS,
+                    zoom: HOVER_ZOOM,
+                  })}
+                  className="aspect-[4/5] w-[68vw] sm:w-[280px]"
                 />
               </button>
             ))}

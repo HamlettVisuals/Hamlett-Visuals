@@ -9,6 +9,9 @@ export type GalleryPhoto = {
   filename: string;
   url: string;
   alt?: string | null;
+  /** Stored pixel size — sizes the srcset request (lib/image-sizes.ts). */
+  width?: number | null;
+  height?: number | null;
 };
 
 export type GalleryEvent = {

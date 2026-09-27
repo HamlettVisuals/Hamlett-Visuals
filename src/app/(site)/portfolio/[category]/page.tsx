@@ -71,6 +71,8 @@ export default async function CategoryPage({
       filename: photo.filename ?? `photo-${photo.id}`,
       url: photo.url,
       alt: photo.alt,
+      width: photo.width,
+      height: photo.height,
     };
     const existing = photosByEventId.get(photo.event);
     if (existing) existing.push(resolved);

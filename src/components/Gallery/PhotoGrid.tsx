@@ -3,6 +3,7 @@
 import type { GalleryPhoto } from "./types";
 import HoverZoomImage from "@/components/HoverZoomImage";
 import { DEFAULT_LOCATION, generateAltText } from "@/lib/generate-alt-text";
+import { HOVER_ZOOM, photoSizes, type FrameWidth } from "@/lib/image-sizes";
 import { PHOTO_GRID_CLASS } from "./photoGridClass";
 
 export { PHOTO_GRID_CLASS };
@@ -13,6 +14,14 @@ type PhotoGridProps = {
   category: string;
   onPhotoClick?: (index: number) => void;
 };
+
+/** Each tile's frame: 4:5, one column of PHOTO_GRID_CLASS at each breakpoint. */
+const TILE_ASPECT = 4 / 5;
+const TILE_WIDTHS: FrameWidth[] = [
+  { media: "(min-width: 1024px)", width: 208, unit: "px" },
+  { media: "(min-width: 640px)", width: 30, unit: "vw" },
+  { width: 45, unit: "vw" },
+];
 
 /**
  * Only reached today via CategoryGallery's dev-only ?galleryState=sparse
@@ -47,8 +56,13 @@ export default function PhotoGrid({
                 location: DEFAULT_LOCATION,
               })
             }
-            sizes="(min-width: 1024px) 208px, (min-width: 640px) 30vw, 45vw"
-            className="aspect-[3/4] w-full"
+            sizes={photoSizes({
+              photo,
+              frameAspect: TILE_ASPECT,
+              frameWidths: TILE_WIDTHS,
+              zoom: HOVER_ZOOM,
+            })}
+            className="aspect-[4/5] w-full"
           />
         </button>
       ))}
