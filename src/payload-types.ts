@@ -1646,6 +1646,10 @@ export interface SiteSetting {
    */
   logoHeight?: number | null;
   /**
+   * How tall your logo is in the footer at the bottom of every page.
+   */
+  footerLogoHeight?: number | null;
+  /**
    * The small icon shown in a browser tab. Works best as a simple square image.
    */
   favicon?: (number | null) | Photo;
@@ -1856,6 +1860,7 @@ export interface SiteSettingsSelect<T extends boolean = true> {
   siteName?: T;
   logo?: T;
   logoHeight?: T;
+  footerLogoHeight?: T;
   favicon?: T;
   ogImage?: T;
   ogImageAlt?: T;

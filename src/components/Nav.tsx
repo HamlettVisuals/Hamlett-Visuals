@@ -20,6 +20,8 @@ import type {
 // always present at 1px (transparent -> hairline) so toggling it never shifts
 // layout. This scroll/border behaviour is unchanged from the previous pass.
 //
+// The header is a fixed height (see the <nav> below and lib/logo-size.ts).
+//
 // The logo is the shared <Wordmark> (also used in the footer): the Site
 // Settings logo upload, or the studio name as text when none is set.
 //
@@ -166,7 +168,12 @@ export default function Nav({
         scrolled ? "border-hairline" : "border-transparent"
       }`}
     >
-      <nav className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
+      {/* Fixed height, not sized by its contents: 76px below `header:`,
+          72px from it up (lib/logo-size.ts). No vertical padding —
+          items-center centres the logo, links, Book button and hamburger,
+          and the logo is clamped to fit (Wordmark.tsx), so nothing in here
+          can make the header taller. */}
+      <nav className="mx-auto flex h-[76px] max-w-7xl items-center justify-between px-6 header:h-[72px]">
         <Wordmark
           siteName={settings.siteName || "Hamlett Visuals"}
           logo={settings.logo}

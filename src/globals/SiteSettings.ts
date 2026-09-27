@@ -5,6 +5,7 @@ import {
   validateInstagramHandle,
   validatePhone,
 } from "#src/lib/contact-details.ts";
+import { FOOTER_LOGO, HEADER_LOGO } from "#src/lib/logo-size.ts";
 import { serverURL } from "#src/lib/server-url.ts";
 
 // Single source of truth for cross-section branding/contact details —
@@ -69,19 +70,42 @@ export const SiteSettings: GlobalConfig = {
       },
     },
     {
-      // Height of the header logo in px (Wordmark.tsx). Phones get ~80% of
-      // it. Only affects the uploaded logo, not the text fallback.
+      // Height of the header logo in px (Wordmark.tsx). Capped below the
+      // fixed header height so it can't make the header taller; phones get
+      // 80% of it, clamped to the smaller phone header. See lib/logo-size.ts.
       name: "logoHeight",
       type: "number",
-      label: "Logo size",
-      min: 28,
-      max: 56,
-      defaultValue: 40,
+      label: "Header logo size",
+      min: HEADER_LOGO.min,
+      max: HEADER_LOGO.max,
+      defaultValue: HEADER_LOGO.default,
       admin: {
         description: "How tall your logo is at the top of the page. Phones show it a little smaller.",
         condition: (data) => Boolean(data?.logo),
         components: {
-          Field: "/components/admin/LogoSizeField#default",
+          Field: {
+            path: "/components/admin/LogoSizeField#default",
+            clientProps: { defaultHeight: HEADER_LOGO.default },
+          },
+        },
+      },
+    },
+    {
+      // Height of the footer logo in px (Wordmark.tsx). See lib/logo-size.ts.
+      name: "footerLogoHeight",
+      type: "number",
+      label: "Footer logo size",
+      min: FOOTER_LOGO.min,
+      max: FOOTER_LOGO.max,
+      defaultValue: FOOTER_LOGO.default,
+      admin: {
+        description: "How tall your logo is in the footer at the bottom of every page.",
+        condition: (data) => Boolean(data?.logo),
+        components: {
+          Field: {
+            path: "/components/admin/LogoSizeField#default",
+            clientProps: { defaultHeight: FOOTER_LOGO.default },
+          },
         },
       },
     },

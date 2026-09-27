@@ -1,24 +1,24 @@
 "use client";
 
-import type { NumberFieldClientComponent } from "payload";
+import type { NumberFieldClientProps } from "payload";
 import { FieldDescription, useField } from "@payloadcms/ui";
-import { DEFAULT_LOGO_HEIGHT } from "@/components/Wordmark";
 
-// Site Settings' `logoHeight` as a range slider with the current size shown
-// next to it, instead of Payload's plain number box. A plain useField on the
-// same path, so Save, Undo/Redo/Discard (EditHistory.tsx) and History treat
-// it like the number field it replaces. Min/max come from the field config
-// (SiteSettings.ts); the header reads the value in Wordmark.tsx, which also
-// owns the default used while the value is empty.
-const FALLBACK = { min: 28, max: 56 };
+// Site Settings' `logoHeight` and `footerLogoHeight` as a range slider with
+// the current size shown next to it, instead of Payload's plain number box.
+// A plain useField on the same path, so Save, Undo/Redo/Discard
+// (EditHistory.tsx) and History treat it like the number field it replaces.
+// Min/max come from the field config and `defaultHeight` (shown while the
+// value is empty) from its clientProps — see SiteSettings.ts and
+// lib/logo-size.ts. Wordmark.tsx reads the values.
+type LogoSizeFieldProps = NumberFieldClientProps & { defaultHeight?: number };
 
-const LogoSizeField: NumberFieldClientComponent = ({ field, path, readOnly }) => {
+const LogoSizeField = ({ field, path, readOnly, defaultHeight }: LogoSizeFieldProps) => {
   const { value, setValue } = useField<number>({ path });
-  const min = field.min ?? FALLBACK.min;
-  const max = field.max ?? FALLBACK.max;
-  const current = typeof value === "number" ? value : DEFAULT_LOGO_HEIGHT;
+  const min = field.min ?? 0;
+  const max = field.max ?? 100;
+  const current = typeof value === "number" ? value : (defaultHeight ?? min);
   const id = `field-${path.replace(/\./g, "__")}`;
-  const label = typeof field.label === "string" ? field.label : "Logo size";
+  const label = typeof field.label === "string" ? field.label : field.name;
 
   return (
     <div className="field-type logo-size">

@@ -35,8 +35,9 @@ export const Logos: CollectionConfig = {
     mimeTypes: ["image/png", "image/webp"],
     imageSizes: [
       // What the header/footer actually load: 160px tall covers the
-      // largest display height (footer, 56px) at ~3x density without
-      // shipping a multi-megabyte original. Width follows the aspect ratio;
+      // default footer height (56px) at ~3x density without shipping a
+      // multi-megabyte original. The footer slider goes up to 120px
+      // (lib/logo-size.ts), where this is only ~1.3x. Width follows the aspect ratio;
       // smaller originals are left as-is (sharp's withoutEnlargement).
       {
         name: "display",

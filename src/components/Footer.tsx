@@ -89,7 +89,12 @@ export default function Footer({
       {/* pb-28 keeps the last line clear of the fixed "Ask a question" button
           (AskQuestion/FloatingAskButton.tsx) when scrolled to the bottom. */}
       <div className="mx-auto flex max-w-5xl flex-col items-center px-gutter pt-section pb-28 text-center">
-        <Wordmark siteName={siteName} logo={settings.logo} variant="footer" />
+        <Wordmark
+          siteName={siteName}
+          logo={settings.logo}
+          logoHeight={settings.footerLogoHeight}
+          variant="footer"
+        />
 
         <p className="mt-5 max-w-md font-display text-title text-ink">
           {data.signOffLine}

@@ -1,5 +1,6 @@
 import type { CSSProperties } from "react";
 import Link from "next/link";
+import { FOOTER_LOGO, HEADER_LOGO } from "@/lib/logo-size";
 import type { Logo } from "@/payload-types";
 
 // The studio mark, shared by the header (Nav) and the footer so both always
@@ -17,27 +18,30 @@ import type { Logo } from "@/payload-types";
 // object-contain shrinks the artwork inside the box instead of cropping or
 // stretching it.
 //
-// The header logo's height is Site Settings' "Logo size" (`logoHeight`,
-// 28–56px, default 40), passed in as the --logo-h custom property. Below the
-// `header:` breakpoint (where the header collapses to the hamburger) it's
-// drawn at 80% of that and capped at 140px wide; from `header:` up it's full
-// height, capped at 180px. The header's own height is set by its tallest
-// control — the Book button (38px) on desktop, the hamburger (44px) below
-// `header:` — so sizes above those grow the header a little.
-
-export const DEFAULT_LOGO_HEIGHT = 40;
+// Both heights come from Site Settings — "Header logo size" (`logoHeight`)
+// and "Footer logo size" (`footerLogoHeight`) — passed in as the --logo-h
+// custom property; ranges and defaults live in lib/logo-size.ts.
+//
+// Header: the header is a fixed height (72px desktop, 76px below `header:`),
+// so the logo is clamped to fit inside it — full height up to 64px from
+// `header:` up, capped at 180px wide; below it 80% of the setting, clamped
+// to 68px and capped at 140px wide. The clamps also cover out-of-range
+// values saved before the slider's range changed.
+//
+// Footer: the setting as-is, capped at 320px wide (80vw on narrow phones).
 
 const LOGO_CLASSES = {
   header:
-    "h-[calc(var(--logo-h)*0.8)] max-w-[140px] object-left header:h-(--logo-h) header:max-w-[180px]",
-  footer: "h-14 max-w-[260px] object-center",
+    "h-[min(calc(var(--logo-h)*0.8),68px)] max-w-[140px] object-left header:h-[min(var(--logo-h),64px)] header:max-w-[180px]",
+  footer: "h-(--logo-h) max-w-[min(80vw,320px)] object-center",
 } as const;
 
 type WordmarkProps = {
   siteName: string;
   logo?: number | Logo | null;
   variant?: keyof typeof LOGO_CLASSES;
-  // Header only: logo height in px (Site Settings' logoHeight).
+  // Logo height in px: Site Settings' logoHeight (header) or
+  // footerLogoHeight (footer). Empty uses the default from lib/logo-size.ts.
   logoHeight?: number | null;
   onClick?: () => void;
 };
@@ -55,6 +59,8 @@ export default function Wordmark({
   const src = display?.url || logoDoc?.url;
   const width = (display?.url && display.width) || logoDoc?.width;
   const height = (display?.url && display.height) || logoDoc?.height;
+  const drawnHeight =
+    logoHeight ?? (variant === "header" ? HEADER_LOGO.default : FOOTER_LOGO.default);
 
   if (src) {
     return (
@@ -69,13 +75,7 @@ export default function Wordmark({
           width={width ?? undefined}
           height={height ?? undefined}
           className={`block w-auto object-contain ${LOGO_CLASSES[variant]}`}
-          style={
-            variant === "header"
-              ? ({
-                  "--logo-h": `${logoHeight ?? DEFAULT_LOGO_HEIGHT}px`,
-                } as CSSProperties)
-              : undefined
-          }
+          style={{ "--logo-h": `${drawnHeight}px` } as CSSProperties}
         />
       </Link>
     );
