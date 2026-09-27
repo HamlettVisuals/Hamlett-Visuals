@@ -1,7 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import Image from "next/image";
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
+import Image, { getImageProps } from "next/image";
 import type { GalleryPhoto } from "./types";
 import { DEFAULT_LOCATION, generateAltText } from "@/lib/generate-alt-text";
 
@@ -42,6 +42,47 @@ function ChevronIcon({ direction }: { direction: "left" | "right" }) {
   );
 }
 
+// Which copy of a photo the main image shows. From 1024px wide, the stored
+// original (capped at 3000px on upload, lib/photo-resize.ts): at that size
+// the optimizer's copy was often larger than the original and softer.
+// Below that, a copy from Next's optimizer sized to the screen, so phones
+// don't download full-size originals. Shared by the main image and the
+// neighbour preloads so both ask for the very same file.
+const LARGE_SCREEN = "(min-width: 1024px)";
+const IMAGE_OPTIONS = {
+  large: { unoptimized: true },
+  small: { sizes: "100vw", quality: 90 },
+} as const;
+type ScreenSize = keyof typeof IMAGE_OPTIONS;
+
+function subscribeToLargeScreen(onChange: () => void) {
+  const query = window.matchMedia(LARGE_SCREEN);
+  query.addEventListener("change", onChange);
+  return () => query.removeEventListener("change", onChange);
+}
+
+/** "large" from 1024px wide. The lightbox only renders after a click, so the server value never shows. */
+function useScreenSize(): ScreenSize {
+  const isLarge = useSyncExternalStore(
+    subscribeToLargeScreen,
+    () => window.matchMedia(LARGE_SCREEN).matches,
+    () => true,
+  );
+  return isLarge ? "large" : "small";
+}
+
+/** Fetches the copy of `url` the main image would show at this screen size. */
+function preloadImage(url: string, screen: ScreenSize): HTMLImageElement {
+  const { props } = getImageProps({ src: url, alt: "", fill: true, ...IMAGE_OPTIONS[screen] });
+  const img = new window.Image();
+  // sizes and srcset before src, so the browser picks from the srcset
+  // exactly as the main image will, rather than fetching src.
+  if (props.sizes) img.sizes = props.sizes;
+  if (props.srcSet) img.srcset = props.srcSet;
+  img.src = props.src;
+  return img;
+}
+
 /**
  * Shown while the current photo loads: a softly pulsing panel the photo's
  * own shape, sized and centred the way the photo will be (an SVG's viewBox
@@ -53,7 +94,7 @@ function LoadingPlaceholder({ photo }: { photo: GalleryPhoto }) {
   return (
     <div role="status" className="absolute inset-0">
       <svg viewBox={`0 0 ${width} ${height}`} className="h-full w-full" aria-hidden="true">
-        <rect width={width} height={height} className="lightbox-loading fill-canvas/8" />
+        <rect width={width} height={height} className="lightbox-loading fill-canvas/16" />
       </svg>
       <span className="sr-only">Loading photo</span>
     </div>
@@ -84,11 +125,13 @@ export default function CategoryLightbox({
 
   const [currentIndex, setCurrentIndex] = useState(startIndex);
   const thumbRefs = useRef<Array<HTMLButtonElement | null>>([]);
-  // Photo URLs that have finished loading (shown, or preloaded as a
-  // neighbour), so the loading placeholder only shows while one is on its way.
-  const [loadedUrls, setLoadedUrls] = useState<ReadonlySet<string>>(() => new Set());
-  const markLoaded = useCallback((url: string) => {
-    setLoadedUrls((prev) => (prev.has(url) ? prev : new Set(prev).add(url)));
+  const screen = useScreenSize();
+  // Copies that have finished loading (shown, or preloaded as a neighbour),
+  // keyed by screen size and photo URL, so the loading placeholder only
+  // shows while one is on its way.
+  const [loaded, setLoaded] = useState<ReadonlySet<string>>(() => new Set());
+  const markLoaded = useCallback((key: string) => {
+    setLoaded((prev) => (prev.has(key) ? prev : new Set(prev).add(key)));
   }, []);
 
   // Reset to the requested photo whenever the lightbox transitions from
@@ -132,12 +175,11 @@ export default function CategoryLightbox({
     });
   }, [isOpen, currentIndex]);
 
-  // The main image is the stored original (see below), up to ~2MB, so only
-  // the photos either side of the current one are fetched ahead — never the
-  // whole album. Their preload images are kept alive until they stop being
-  // neighbours: the browser only hands a preloaded photo to the <img> while
-  // something still holds it (Payload's file route sends no Cache-Control,
-  // so the HTTP cache can't), otherwise the photo downloads twice.
+  // Only the photos either side of the current one are fetched ahead —
+  // never the whole album — as the same copy the main image would show (see
+  // IMAGE_OPTIONS). Their preload images are kept alive until they stop
+  // being neighbours, so the browser hands each straight to the <img> from
+  // memory rather than asking the server again.
   const preloads = useRef(new Map<string, HTMLImageElement>());
   useEffect(() => {
     const kept = preloads.current;
@@ -149,21 +191,23 @@ export default function CategoryLightbox({
       [currentIndex + 1, currentIndex - 1 + flat.length].map((i) => flat[i % flat.length].photo.url),
     );
     neighbours.delete(flat[currentIndex].photo.url);
-    for (const url of kept.keys()) if (!neighbours.has(url)) kept.delete(url);
+    const keys = new Set([...neighbours].map((url) => `${screen}:${url}`));
+    for (const key of kept.keys()) if (!keys.has(key)) kept.delete(key);
     for (const url of neighbours) {
-      if (kept.has(url)) continue;
-      const img = new window.Image();
-      img.onload = () => markLoaded(url);
-      img.src = url;
-      kept.set(url, img);
+      const key = `${screen}:${url}`;
+      if (kept.has(key)) continue;
+      const img = preloadImage(url, screen);
+      img.onload = () => markLoaded(key);
+      kept.set(key, img);
     }
-  }, [isOpen, currentIndex, flat, markLoaded]);
+  }, [isOpen, currentIndex, flat, screen, markLoaded]);
 
   const current = flat[currentIndex];
 
   if (!isOpen || !current) return null;
 
-  const isLoaded = loadedUrls.has(current.photo.url);
+  const loadedKey = `${screen}:${current.photo.url}`;
+  const isLoaded = loaded.has(loadedKey);
 
   function goPrev() {
     setCurrentIndex((i) => (i - 1 + flat.length) % flat.length);
@@ -216,10 +260,8 @@ export default function CategoryLightbox({
           onClick={(event) => event.stopPropagation()}
         >
           {!isLoaded && <LoadingPlaceholder photo={current.photo} />}
-          {/* The stored original, not a copy from Next's image optimizer: at
-              lightbox size the optimizer's copy was often larger than the
-              original and softer. Photos are capped at 3000px on upload
-              (lib/photo-resize.ts). Hidden until loaded, then faded in. */}
+          {/* The original or a screen-sized copy (IMAGE_OPTIONS). Hidden
+              until loaded, then faded in. */}
           <Image
             src={current.photo.url}
             alt={
@@ -232,12 +274,12 @@ export default function CategoryLightbox({
               })
             }
             fill
-            unoptimized
+            {...IMAGE_OPTIONS[screen]}
             loading="eager"
             className={`object-contain ${isLoaded ? "lightbox-image-enter" : "opacity-0"}`}
-            onLoad={() => markLoaded(current.photo.url)}
+            onLoad={() => markLoaded(loadedKey)}
             // A photo that fails still stops the placeholder, leaving its alt text.
-            onError={() => markLoaded(current.photo.url)}
+            onError={() => markLoaded(loadedKey)}
           />
         </div>
 

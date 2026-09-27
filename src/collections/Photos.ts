@@ -43,6 +43,16 @@ export const Photos: CollectionConfig = {
   },
   upload: {
     mimeTypes: RASTER_IMAGE_MIME_TYPES,
+    // Browsers may keep a photo file for an hour, then check back with its
+    // ETag (a quick 304 when unchanged). Not longer, and not `immutable`: a
+    // file's URL can come to serve different pixels — cropping in the studio
+    // re-saves under the same filename, and a permanently deleted photo's
+    // filename can be reused. Only the browser caches it (no s-maxage), so
+    // there's no CDN copy to clear. The R2 plugin's file handler applies this.
+    modifyResponseHeaders: ({ headers }) => {
+      headers.set("Cache-Control", "public, max-age=3600");
+      return headers;
+    },
     imageSizes: [
       {
         name: "thumbnail",
