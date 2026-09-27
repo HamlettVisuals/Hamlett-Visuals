@@ -3,7 +3,7 @@ import { getPayload } from "payload";
 import config from "@payload-config";
 import BackstageGallery from "@/components/Backstage/BackstageGallery";
 import { isVideoMimeType } from "@/lib/backstage-limits";
-import { uploadUrl, type BackstageItem } from "@/lib/backstage-items";
+import { uploadFocal, uploadUrl, type BackstageItem } from "@/lib/backstage-items";
 
 // Backstage feed — a single continuous grid of the photos and video clips
 // uploaded in the studio (collections/Backstage.ts), in her drag order
@@ -38,6 +38,7 @@ export default async function BackstagePage() {
         kind: isVideo ? "video" : "photo",
         mediaUrl: isVideo ? (doc.url ?? null) : null,
         imageUrl: isVideo ? uploadUrl(doc.poster) : (doc.url ?? null),
+        imageFocal: isVideo ? uploadFocal(doc.poster) : uploadFocal(doc),
         title: doc.title ?? "",
         caption: doc.caption,
       };

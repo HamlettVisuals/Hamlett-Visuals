@@ -14,7 +14,16 @@ export function resolveCategory(
 }
 
 /** One of a package's sample photos, as the spotlight shows it. */
-export type SamplePhoto = { id: number; url: string; alt: string };
+export type SamplePhoto = {
+  id: number;
+  url: string;
+  alt: string;
+  /** Focal point and stored size, for the crop (lib/focal-position.ts). */
+  focalX?: number | null;
+  focalY?: number | null;
+  width?: number | null;
+  height?: number | null;
+};
 
 /** Sample photos per package id, filled in by page.tsx. */
 export type SamplePhotosByPackage = Record<number, SamplePhoto[]>;

@@ -116,6 +116,7 @@ export default async function TestimonialsPage() {
                             }
                             sizes="(min-width: 640px) 160px, 96px"
                             className="aspect-[4/5] w-full"
+                            focal={photo}
                           />
                         )}
 

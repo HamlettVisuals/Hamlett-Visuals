@@ -73,6 +73,8 @@ export default async function CategoryPage({
       alt: photo.alt,
       width: photo.width,
       height: photo.height,
+      focalX: photo.focalX,
+      focalY: photo.focalY,
     };
     const existing = photosByEventId.get(photo.event);
     if (existing) existing.push(resolved);

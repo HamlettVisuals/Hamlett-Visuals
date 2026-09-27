@@ -1,6 +1,6 @@
 "use client";
 
-import { uploadUrl, type BackstageItem } from "@/lib/backstage-items";
+import { uploadFocal, uploadUrl, type BackstageItem } from "@/lib/backstage-items";
 import HoverZoomImage from "@/components/HoverZoomImage";
 import { serverURL } from "@/lib/server-url";
 import { useScopedCollectionLivePreview } from "@/lib/use-scoped-collection-live-preview";
@@ -42,6 +42,7 @@ function useLiveItem(item: BackstageItem): BackstageItem {
     title: data.title?.trim() || item.title,
     caption: data.caption,
     imageUrl: item.kind === "video" && posterChanged ? uploadUrl(data.poster) : item.imageUrl,
+    imageFocal: item.kind === "video" && posterChanged ? uploadFocal(data.poster) : item.imageFocal,
   };
 }
 
@@ -54,6 +55,7 @@ function Tile({ item }: { item: BackstageItem }) {
           alt={item.title}
           sizes="(min-width: 640px) 31vw, 46vw"
           className="aspect-[3/4] w-full"
+          focal={item.imageFocal ?? undefined}
         />
       ) : (
         // A video without a thumbnail: a plain tile rather than a broken image.

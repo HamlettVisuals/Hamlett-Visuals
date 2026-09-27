@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import Image, { getImageProps } from "next/image";
 import type { GalleryPhoto } from "./types";
+import { focalPosition } from "@/lib/focal-position";
 import { DEFAULT_LOCATION, generateAltText } from "@/lib/generate-alt-text";
 
 type CategoryLightboxProps = {
@@ -337,6 +338,8 @@ export default function CategoryLightbox({
                   ? "opacity-100 outline outline-1 outline-offset-1 outline-canvas/60"
                   : "opacity-40 hover:opacity-70"
               }`}
+              // A size container for the focal position's cqw/cqh.
+              style={{ containerType: "size" }}
             >
               <Image
                 src={item.photo.url}
@@ -344,6 +347,7 @@ export default function CategoryLightbox({
                 fill
                 sizes="52px"
                 className="object-cover"
+                style={{ objectPosition: focalPosition(item.photo) }}
               />
             </button>
           ))}

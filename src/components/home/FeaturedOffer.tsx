@@ -128,6 +128,7 @@ function FeaturedOfferCard({
                 }
                 sizes="(min-width: 1024px) 240px, 30vw"
                 className="aspect-[4/3] w-full lg:aspect-[3/4]"
+                focal={photo}
               />
             </li>
           ))}

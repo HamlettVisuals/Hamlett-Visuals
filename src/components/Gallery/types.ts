@@ -12,6 +12,9 @@ export type GalleryPhoto = {
   /** Stored pixel size — sizes the srcset request (lib/image-sizes.ts). */
   width?: number | null;
   height?: number | null;
+  /** Focal point, for cropped frames (lib/focal-position.ts). */
+  focalX?: number | null;
+  focalY?: number | null;
 };
 
 export type GalleryEvent = {

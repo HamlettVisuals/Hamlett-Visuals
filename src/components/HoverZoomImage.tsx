@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { focalPosition, type FocalPhoto } from "@/lib/focal-position";
 
 type HoverZoomImageProps = {
   src: string;
@@ -15,8 +16,13 @@ type HoverZoomImageProps = {
   className?: string;
   priority?: boolean;
   quality?: number;
-  /** object-position for the crop, e.g. "center", "top", "50% 30%". */
-  objectPosition?: string;
+  /**
+   * The photo's focal point and stored size (a Payload upload has all four
+   * fields). The crop is then centred on the focal point as far as the frame
+   * allows (lib/focal-position.ts); with no focal point set, that's the
+   * centre, same as leaving this off.
+   */
+  focal?: FocalPhoto;
 };
 
 /**
@@ -43,10 +49,11 @@ export default function HoverZoomImage({
   className = "",
   priority = false,
   quality = 90,
-  objectPosition,
+  focal,
 }: HoverZoomImageProps) {
   return (
-    <div className={`hover-zoom ${className}`}>
+    // A size container, so the focal position's cqw/cqh are this frame's.
+    <div className={`hover-zoom ${className}`} style={focal ? { containerType: "size" } : undefined}>
       <Image
         src={src}
         alt={alt}
@@ -55,7 +62,7 @@ export default function HoverZoomImage({
         priority={priority}
         quality={quality}
         className="object-cover"
-        style={objectPosition ? { objectPosition } : undefined}
+        style={focal ? { objectPosition: focalPosition(focal) } : undefined}
       />
     </div>
   );

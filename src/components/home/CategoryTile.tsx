@@ -56,6 +56,7 @@ export default function CategoryTile({ category }: { category: Category }) {
             zoom: HOVER_ZOOM,
           })}
           className="aspect-[9/16] w-full"
+          focal={coverPhoto}
         />
 
         <div className="mt-3 text-center">

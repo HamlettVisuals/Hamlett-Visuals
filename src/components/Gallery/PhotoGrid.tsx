@@ -61,6 +61,7 @@ export default function PhotoGrid({
               zoom: HOVER_ZOOM,
             })}
             className="aspect-[4/5] w-full"
+            focal={photo}
           />
         </button>
       ))}

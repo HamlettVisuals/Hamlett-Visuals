@@ -74,7 +74,15 @@ export default async function Home() {
     samplePhotos[row.id] = albumPhotos
       .filter((photo) => photo.event === albumId && photo.url)
       .slice(0, SAMPLE_PHOTOS)
-      .map((photo) => ({ id: photo.id, url: photo.url as string, alt: photo.alt }));
+      .map((photo) => ({
+        id: photo.id,
+        url: photo.url as string,
+        alt: photo.alt,
+        focalX: photo.focalX,
+        focalY: photo.focalY,
+        width: photo.width,
+        height: photo.height,
+      }));
   }
   // depth 2: the picked testimonials, then each one's category (for the
   // attribution line).

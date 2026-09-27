@@ -5,11 +5,9 @@ import { useFormFields, useUploadEdits } from "@payloadcms/ui";
 import { focalPosition } from "@/lib/focal-position";
 
 // "Crop preview" on a photo's edit page: the photo in small frames shaped
-// like every place the site crops it, each positioned exactly as the site
-// does. Frames that follow the focal point use lib/focal-position.ts — the
-// hero's own code — in a size container, the same as the live page, so a
-// frame here is the live crop scaled down. Frames the site doesn't position
-// yet are centred, which is what object-cover does with no object-position.
+// like every place the site crops it. Every one of those crops is centred on
+// the focal point by lib/focal-position.ts in a size container, and so is
+// each frame here, so a frame is the live crop scaled down.
 //
 // The focal point is Payload's Edit Image drawer's, which keeps it in its
 // own state until "Apply Changes". That lands in the upload-edits context
@@ -28,21 +26,20 @@ type Frame = {
   /** The frame's width and height in px (or just its aspect ratio). */
   width: number;
   height: number;
-  usesFocalPoint: boolean;
 };
 
 // Measured on the live page (Chrome, Windows, 15px scrollbar): the hero is
 // the full width by 88svh.
 const FRAMES: Frame[] = [
-  { label: "Hero — desktop", detail: "1920×945 screen", width: 1905, height: 832, usesFocalPoint: true },
-  { label: "Hero — laptop", detail: "1440×790 screen", width: 1425, height: 695, usesFocalPoint: true },
-  { label: "Hero — phone", detail: "390×844 screen, unless the slide has a mobile image", width: 390, height: 743, usesFocalPoint: true },
-  { label: "Studio thumbnail", detail: "400×400, cut when you Save", width: 400, height: 400, usesFocalPoint: true },
-  { label: "Category tile", detail: "Homepage, 9:16", width: 9, height: 16, usesFocalPoint: false },
-  { label: "Popular offer — desktop", detail: "From 1024px, 3:4", width: 3, height: 4, usesFocalPoint: false },
-  { label: "Popular offer — phone", detail: "Below 1024px, 4:3", width: 4, height: 3, usesFocalPoint: false },
-  { label: "Testimonial", detail: "Testimonials page, 4:5", width: 4, height: 5, usesFocalPoint: false },
-  { label: "Lightbox thumbnail", detail: "Strip under the big photo, 52×68", width: 52, height: 68, usesFocalPoint: false },
+  { label: "Hero — desktop", detail: "1920×945 screen", width: 1905, height: 832 },
+  { label: "Hero — laptop", detail: "1440×790 screen", width: 1425, height: 695 },
+  { label: "Hero — phone", detail: "390×844 screen, unless the slide has a mobile image", width: 390, height: 743 },
+  { label: "Studio thumbnail", detail: "400×400, cut when you Save", width: 400, height: 400 },
+  { label: "Category tile", detail: "Homepage, 9:16", width: 9, height: 16 },
+  { label: "Popular offer — desktop", detail: "From 1024px, 3:4", width: 3, height: 4 },
+  { label: "Popular offer — phone", detail: "Below 1024px, 4:3", width: 4, height: 3 },
+  { label: "Testimonial", detail: "Testimonials page (and the sparse photo grid), 4:5", width: 4, height: 5 },
+  { label: "Lightbox thumbnail", detail: "Strip under the big photo, 52×68", width: 52, height: 68 },
 ];
 
 // Every frame is drawn this tall; its width follows its shape.
@@ -82,10 +79,6 @@ export default function CropPreview() {
   const [fullWidth, fullHeight] = crop?.unit === "px" ? [width ?? 0, height ?? 0] : [100, 100];
   const pendingCrop = Boolean(crop) &&
     (crop!.x > 0.5 || crop!.y > 0.5 || crop!.width < fullWidth - 0.5 || crop!.height < fullHeight - 0.5);
-  const groups = [
-    { title: "Follows the focal point", frames: FRAMES.filter((frame) => frame.usesFocalPoint) },
-    { title: "Always centred (doesn't use the focal point)", frames: FRAMES.filter((frame) => !frame.usesFocalPoint) },
-  ];
 
   return (
     <div className="field-type crop-preview">
@@ -96,38 +89,36 @@ export default function CropPreview() {
         {pendingFocal && " Showing your new focal point — Save to put it on the site."}
         {pendingCrop && " Your crop isn't shown here until you Save."}
       </p>
-      {groups.map((group) => (
-        <div key={group.title} className="crop-preview__group">
-          <p className="crop-preview__group-title">{group.title}</p>
-          <ul className="crop-preview__frames">
-            {group.frames.map((frame) => (
-              <li key={frame.label} className="crop-preview__item">
-                <div
-                  className="crop-preview__frame"
+      <div className="crop-preview__group">
+        <p className="crop-preview__group-title">Follows the focal point</p>
+        <ul className="crop-preview__frames">
+          {FRAMES.map((frame) => (
+            <li key={frame.label} className="crop-preview__item">
+              <div
+                className="crop-preview__frame"
+                style={{
+                  width: Math.round((FRAME_HEIGHT * frame.width) / frame.height),
+                  height: FRAME_HEIGHT,
+                }}
+              >
+                <Image
+                  src={url}
+                  alt=""
+                  fill
+                  // Frames are at most ~280px wide; 2× for sharp screens.
+                  sizes="560px"
                   style={{
-                    width: Math.round((FRAME_HEIGHT * frame.width) / frame.height),
-                    height: FRAME_HEIGHT,
+                    objectFit: "cover",
+                    objectPosition: position,
                   }}
-                >
-                  <Image
-                    src={url}
-                    alt=""
-                    fill
-                    // Frames are at most ~280px wide; 2× for sharp screens.
-                    sizes="560px"
-                    style={{
-                      objectFit: "cover",
-                      objectPosition: frame.usesFocalPoint ? position : "50% 50%",
-                    }}
-                  />
-                </div>
-                <p className="crop-preview__label">{frame.label}</p>
-                <p className="crop-preview__detail">{frame.detail}</p>
-              </li>
-            ))}
-          </ul>
-        </div>
-      ))}
+                />
+              </div>
+              <p className="crop-preview__label">{frame.label}</p>
+              <p className="crop-preview__detail">{frame.detail}</p>
+            </li>
+          ))}
+        </ul>
+      </div>
     </div>
   );
 }

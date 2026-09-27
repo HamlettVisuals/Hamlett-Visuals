@@ -1178,10 +1178,6 @@ body:has(.new-document-marker:not([data-titled])) .doc-header__title {
   color: var(--theme-elevation-500);
 }
 
-.crop-preview__group + .crop-preview__group {
-  margin-top: 16px;
-}
-
 .crop-preview__group-title {
   margin: 0 0 8px;
   font-size: 12px;
