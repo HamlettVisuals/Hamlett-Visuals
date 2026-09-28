@@ -153,19 +153,23 @@ export default function Footer({
           </div>
         )}
 
-        {/* Her links: one per line, centred, on phones and tablets; one row
-            from `lg` (1024px) up, where FOOTER_LINKS_MAX links at the label
-            cap fit without wrapping (lib/footer-limits.ts). */}
+        {/* Her links: one centred row at every width, same 24px spacing as
+            desktop. Below `lg` (1024px) the row may wrap onto further centred
+            lines if links are added; from `lg` up FOOTER_LINKS_MAX links at
+            the label cap fit without wrapping (lib/footer-limits.ts). Below
+            `lg` each link gets 12.5px of vertical padding for a ~44px tap
+            target, and the nav's margins give that padding back so the text
+            sits exactly where it did before. */}
         {(data.footerNav ?? []).length > 0 && (
           <nav
             aria-label="Footer"
-            className="mt-16 flex flex-col items-center gap-2 lg:flex-row lg:justify-center lg:gap-x-6"
+            className="-mb-[12.5px] mt-[calc(4rem-12.5px)] flex flex-wrap items-center justify-center gap-x-6 lg:mb-0 lg:mt-16 lg:flex-nowrap"
           >
             {(data.footerNav ?? []).map((item) => (
               <Link
                 key={item.id ?? item.href}
                 href={item.href}
-                className="link whitespace-nowrap text-caption text-ink"
+                className="link whitespace-nowrap py-[12.5px] text-caption text-ink lg:py-0"
               >
                 {item.label}
               </Link>
