@@ -223,9 +223,12 @@ export default function Nav({
         }`}
       />
 
-      {/* Slide-in panel. Capped width so it reads as a panel, not a
-          full-screen takeover; a hairline left border (not a shadow) plus
-          the dimmed backdrop mark its edge, per the site's flat surfaces. */}
+      {/* Slide-in panel. Sized to its content — the widest link plus the
+          px-6 padding — clamped to 240–320px and never past 80% of the
+          screen (the min yields to 80vw on very narrow screens), so it
+          reads as a panel, not a full-screen takeover. A hairline left
+          border (not a shadow) plus the dimmed backdrop mark its edge, per
+          the site's flat surfaces. */}
       <div
         id="mobile-nav-panel"
         ref={panelRef}
@@ -233,7 +236,7 @@ export default function Nav({
         aria-modal="true"
         aria-label="Site menu"
         inert={!menuOpen}
-        className={`nav-panel fixed inset-y-0 right-0 z-50 flex w-[85%] max-w-[340px] flex-col border-l border-hairline bg-canvas header:hidden ${
+        className={`nav-panel fixed inset-y-0 right-0 z-50 flex w-max min-w-[min(240px,80vw)] max-w-[min(320px,80vw)] flex-col border-l border-hairline bg-canvas header:hidden ${
           menuOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >
