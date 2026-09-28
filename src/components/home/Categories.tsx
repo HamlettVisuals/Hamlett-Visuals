@@ -6,10 +6,14 @@ import { useScopedLivePreview } from "@/lib/use-scoped-live-preview";
 import type { CategoriesIntro, Category } from "@/payload-types";
 
 // Categories section (#categories). A uniform grid of tall tiles — one per
-// category — that reads as a gallery hang: three columns on desktop (3×2), two
-// on tablet (2×3), a single column on mobile, every tile the same 9:16 portrait
-// proportion at every breakpoint. Six categories divide evenly into both 2 and
-// 3, so every row stays full — a 4-wide layout would leave a ragged 4 + 2.
+// category — that reads as a gallery hang: three columns from 640px (3×2), two
+// on phones (2×3), every tile the same 9:16 portrait proportion at every
+// breakpoint. Six categories divide evenly into both 2 and 3, so every row
+// stays full — a 4-wide layout would leave a ragged 4 + 2.
+//
+// Below 1024px it's a centred flex-wrap with fixed column widths rather than
+// a grid, so a short last row (an odd count on phones) sits centred at full
+// tile size instead of hugging the left edge. From 1024px it's the grid.
 //
 // Each tile is a photo above a caption: the image keeps the 9:16 crop and the
 // site-wide hover-zoom (<HoverZoomImage>), then a small gap, the category name
@@ -46,7 +50,7 @@ export default function Categories({
           {data.heading}
         </h2>
 
-        <ul className="mt-8 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 lg:gap-4">
+        <ul className="mt-8 flex flex-wrap justify-center gap-x-3 gap-y-6 *:w-[calc((100%-0.75rem)/2)] sm:*:w-[calc((100%-1.5rem)/3)] lg:grid lg:grid-cols-3 lg:gap-4 lg:*:w-auto">
           {categories.map((category) => (
             <CategoryTile key={category.id} category={category} />
           ))}

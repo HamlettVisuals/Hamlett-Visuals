@@ -12,13 +12,12 @@ import type { Category } from "@/payload-types";
 // Each tile's frame: 9:16, one column of Categories.tsx's grid. From 1280px
 // the grid stops growing (max-w-7xl, 40px gutters, two 16px gaps), so a tile
 // is (1280 − 80 − 32) ÷ 3 ≈ 389.3px; below that, a column is a bit under
-// ⅓, ½ or all of the viewport.
+// ⅓ of the viewport (from 640px) or ½ of it (phones).
 const TILE_ASPECT = 9 / 16;
 const TILE_WIDTHS: FrameWidth[] = [
   { media: "(min-width: 1280px)", width: (1280 - 80 - 32) / 3, unit: "px" },
-  { media: "(min-width: 1024px)", width: 34, unit: "vw" },
-  { media: "(min-width: 640px)", width: 50, unit: "vw" },
-  { width: 100, unit: "vw" },
+  { media: "(min-width: 640px)", width: 34, unit: "vw" },
+  { width: 50, unit: "vw" },
 ];
 
 // One tile of the homepage category grid (components/home/Categories.tsx).
@@ -60,8 +59,12 @@ export default function CategoryTile({ category }: { category: Category }) {
         />
 
         <div className="mt-3 text-center">
-          <h3 className="font-display text-title font-medium text-ink">{data.name}</h3>
-          <p className="mt-1 text-body text-muted">{data.blurb}</p>
+          {/* Phones run two ~160px columns, so the caption steps down a size
+              there; text-balance splits a long name into even lines. */}
+          <h3 className="text-balance font-display text-lead font-medium text-ink sm:text-title">
+            {data.name}
+          </h3>
+          <p className="mt-1 text-balance text-caption text-muted sm:text-body">{data.blurb}</p>
         </div>
       </Link>
     </li>
