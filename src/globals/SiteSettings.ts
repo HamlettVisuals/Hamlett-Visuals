@@ -33,7 +33,7 @@ export const SiteSettings: GlobalConfig = {
     // + scroll-to-highlight), but this data isn't one homepage section —
     // it's cross-cutting (Footer, Booking CTA, and the homepage Instagram
     // section all render pieces of it). Footer is the fullest picture of it
-    // (both contact fields and the Instagram handle/QR code, vs. partial
+    // (both contact fields and the Instagram handle, vs. partial
     // use elsewhere), and both field-group descriptions above already name
     // it first, so it's the closest thing to a "home" for this global —
     // #footer was picked over skipping the highlight entirely so every
@@ -189,7 +189,7 @@ export const SiteSettings: GlobalConfig = {
       },
       fields: [
         {
-          // The profile link and the footer QR code are made from this (see
+          // The profile link is made from this (see
           // lib/contact-details.ts), so there's no separate address to keep
           // in step. Saved as "@username" whichever way she typed it.
           name: "handle",

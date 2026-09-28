@@ -169,15 +169,14 @@ export const FinalCtaFooter: GlobalConfig = {
       },
     },
     {
+      // Retired: the footer no longer has an Instagram QR code. Hidden
+      // rather than removed so the column isn't dropped yet (see
+      // docs/launch-checklist.md). Nothing reads it any more.
       name: "showQrCode",
       type: "checkbox",
       label: "Show Instagram QR code",
       defaultValue: true,
-      admin: {
-        description: "Never shown on phones, where it can't be scanned.",
-        components: { Field: "/components/admin/ContactSwitchField#default" },
-        custom: { contact: "qr" },
-      },
+      admin: { hidden: true },
     },
     {
       // Retired: the copyright line now uses the studio name from Site

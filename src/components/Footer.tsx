@@ -46,8 +46,7 @@ export default function Footer({
 
   // Which contact details show, in this order: switched on in the footer
   // editor AND filled in on Site Settings. Instagram is the @handle, linking
-  // to the profile in a new tab. (The editor's "Show Instagram QR code"
-  // switch, `showQrCode`, is no longer read — the footer has no QR code.)
+  // to the profile in a new tab.
   const showEmail = data.showEmail !== false && email;
   const showPhone = data.showPhone !== false && phone;
   const showInstagram = data.showInstagram !== false && instagram;

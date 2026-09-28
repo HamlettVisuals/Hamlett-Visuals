@@ -5,7 +5,7 @@ import type { CheckboxFieldClientComponent } from "payload";
 import { FieldDescription, useConfig, useField } from "@payloadcms/ui";
 import { contactDetails, type ContactDetails } from "@/lib/contact-details";
 
-// The "Show email / phone number / Instagram (/ QR code)" checkboxes of the
+// The "Show email / phone number / Instagram" checkboxes of the
 // Booking CTA (globals/BookingCta.ts) and the footer
 // (globals/FinalCtaFooter.ts) as on/off switches — same look as "Show on
 // website" (ShowOnWebsiteField.tsx, .show-on-website in admin-overrides.css)
@@ -14,13 +14,12 @@ import { contactDetails, type ContactDetails } from "@/lib/contact-details";
 // A plain useField on the checkbox's own path, so Save, Undo/Redo/Discard
 // (EditHistory.tsx) and History treat it like the checkbox it replaces.
 
-type Kind = "email" | "phone" | "instagram" | "qr";
+type Kind = "email" | "phone" | "instagram";
 
 const MISSING: Record<Kind, string> = {
   email: "No email in Site Settings yet, so it won't show.",
   phone: "No phone number in Site Settings yet, so it won't show.",
   instagram: "No Instagram username in Site Settings yet, so it won't show.",
-  qr: "No Instagram username in Site Settings yet, so there's no QR code to show.",
 };
 
 // One fetch for all three switches on the page.
@@ -67,11 +66,7 @@ const ContactSwitchField: CheckboxFieldClientComponent = ({ field, path, readOnl
         ? details.email
         : kind === "phone"
           ? (details.phone?.display ?? null)
-          : kind === "qr"
-            ? details.instagram
-              ? `Opens ${details.instagram.handle}`
-              : null
-            : (details.instagram?.handle ?? null);
+          : (details.instagram?.handle ?? null);
   }
 
   return (

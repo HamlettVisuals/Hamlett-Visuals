@@ -4,7 +4,7 @@
 // renders — "@handle" and the profile link, "(555) 123-4567" and its tel:
 // link — and the same rules validate the Site Settings fields, so anything
 // that saves also displays. Used by the Footer, the Booking CTA, the homepage
-// Instagram section, the footer QR code and the privacy policy. Live Preview
+// Instagram section and the privacy policy. Live Preview
 // hands the components unsaved form values, so they run these too rather
 // than trusting the stored text.
 //

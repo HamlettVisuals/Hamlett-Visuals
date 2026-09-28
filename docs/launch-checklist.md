@@ -59,3 +59,9 @@ as it's done.
       kept so the hero_slides migration stayed additive while the live site
       still read it. Any picks saved to it on the live admin after
       2026-09-27 18:06 UTC are not in `slides`; re-add them there.
+- [ ] **Drop the unused `showQrCode` column.** The footer's Instagram QR
+      code was removed on 2026-09-28; its "Show Instagram QR code" switch is
+      hidden in globals/FinalCtaFooter.ts and nothing reads it. Remove the
+      field and generate a migration (drops `show_qr_code` from
+      `final_cta_footer` and `version_show_qr_code` from
+      `_final_cta_footer_v`).
