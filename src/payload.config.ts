@@ -120,7 +120,8 @@ export default buildConfig({
     },
     components: {
       // Replaces the default alphabetical/admin.group sidebar with a tree
-      // that mirrors the real site's page structure — see SiteNav.tsx.
+      // that mirrors the real site's page structure — see SiteNav.tsx and
+      // site-tree.ts.
       Nav: "/components/admin/SiteNav#default",
       views: {
         // The Inquiries kanban board (Phase 4 of the CRM plan) — a
@@ -131,6 +132,12 @@ export default buildConfig({
         kanban: {
           Component: "/components/admin/KanbanBoard#default",
           path: "/kanban",
+        },
+        // What the sidebar's "Editor" label opens: links to every editable
+        // part of the website, grouped like the sidebar (site-tree.ts).
+        editor: {
+          Component: "/components/admin/EditorOverview#default",
+          path: "/editor",
         },
       },
     },

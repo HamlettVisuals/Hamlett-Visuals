@@ -31,15 +31,102 @@
   padding-right: 11px;
 }
 
-/* Nested-tree group expand/collapse rows (.nav-group__toggle,
-   @payloadcms/ui NavGroup) — already full width, was only ~20px tall
-   because padding was 0. Real vertical padding gets it to ~44px; centering
-   keeps the label/chevron balanced in the taller row instead of stuck to
-   the top (the default align-items: flex-start). */
-.nav-group__toggle {
-  padding-top: 12px;
-  padding-bottom: 12px;
+/* The sidebar tree (SiteNav.tsx). Every row is [chevron slot | label]:
+   one text colour for every item, expandable or not — the chevron is the
+   only sign a row has children, and leaves keep an empty slot the same
+   width so labels at one depth line up. Each level indents by 16px. Rows
+   are 36px tall with a mouse, 44px (and a 44px chevron) on touch screens. */
+.site-nav,
+.site-nav__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+}
+
+.site-nav__list[hidden] {
+  display: none;
+}
+
+.site-nav__row {
+  --site-nav-chevron: 28px;
+  display: flex;
   align-items: center;
+  gap: 2px;
+  min-height: 36px;
+  padding-inline-start: calc(var(--site-nav-depth, 0) * 16px);
+  padding-inline-end: 8px;
+  border-radius: var(--style-radius-s);
+  color: var(--theme-text);
+  font-size: 15px;
+  line-height: 20px;
+}
+
+.site-nav__chevron-slot {
+  flex: 0 0 var(--site-nav-chevron);
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.site-nav__chevron {
+  background: none;
+  border: 0;
+  margin: 0;
+  padding: 0;
+  color: inherit;
+  cursor: pointer;
+  border-radius: var(--style-radius-s);
+}
+
+.site-nav__chevron:hover {
+  background: var(--theme-elevation-150);
+}
+
+.site-nav__chevron:focus-visible,
+.site-nav__label:focus-visible {
+  outline: var(--accessibility-outline);
+}
+
+.site-nav__label {
+  flex: 1;
+  min-width: 0;
+  padding-block: 8px;
+  color: inherit;
+  text-decoration: none;
+}
+
+.site-nav a.site-nav__label:hover {
+  text-decoration: underline;
+}
+
+/* Current page: a light tint and semibold label. */
+.site-nav__row--active {
+  background: var(--theme-elevation-100);
+}
+
+.site-nav__row--active .site-nav__label {
+  font-weight: 600;
+}
+
+.site-nav__row--disabled {
+  color: var(--theme-elevation-400);
+  cursor: default;
+}
+
+.site-nav__note {
+  margin-inline-start: 8px;
+  font-size: 12px;
+  font-style: italic;
+  white-space: nowrap;
+}
+
+@media (pointer: coarse) {
+  .site-nav__row {
+    --site-nav-chevron: 44px;
+    min-height: 44px;
+  }
 }
 
 /* Live Preview show/hide toggle (.live-preview-toggler, @payloadcms/ui
@@ -1218,4 +1305,111 @@ body:has(.new-document-marker:not([data-titled])) .doc-header__title {
   font-size: 11px;
   line-height: 1.35;
   color: var(--theme-elevation-500);
+}
+
+/* Editor overview (EditorOverview.tsx, /hv-studio/editor) — a grid of
+   links to every editable section, grouped like the sidebar. Tiles copy
+   Payload's own dashboard .card look (elevation-50 fill, theme border,
+   darker border + soft shadow on hover). */
+.editor-overview {
+  padding-block: 24px 64px;
+}
+
+.editor-overview__title {
+  margin: 0 0 4px;
+}
+
+.editor-overview__intro {
+  margin: 0 0 32px;
+  color: var(--theme-elevation-500);
+}
+
+.editor-overview__section {
+  margin-bottom: 40px;
+  scroll-margin-top: calc(var(--app-header-height, 56px) + 16px);
+}
+
+.editor-overview__heading {
+  margin: 0 0 16px;
+  font-size: 20px;
+}
+
+.editor-overview__grid,
+.editor-overview__sublinks {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.editor-overview__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  align-items: start;
+  gap: 12px;
+}
+
+.editor-overview__grid > li {
+  display: flex;
+}
+
+.editor-overview__tile {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  min-height: 64px;
+  padding: 16px;
+  background: var(--theme-elevation-50);
+  border: 1px solid var(--theme-border-color);
+  border-radius: var(--style-radius-m);
+  color: var(--theme-text);
+  text-decoration: none;
+  scroll-margin-top: calc(var(--app-header-height, 56px) + 16px);
+  transition: border-color 0.1s, box-shadow 0.1s;
+}
+
+.editor-overview__tile-title {
+  font-weight: 600;
+}
+
+a.editor-overview__tile:hover {
+  border-color: var(--theme-elevation-250);
+  box-shadow: 0 4px 8px -2px #0000000d;
+}
+
+a.editor-overview__tile:focus-visible,
+.editor-overview__sublinks a:focus-visible {
+  outline: var(--accessibility-outline);
+}
+
+.editor-overview__sublinks {
+  display: flex;
+  flex-direction: column;
+}
+
+.editor-overview__sublinks a {
+  display: block;
+  padding-block: 6px;
+  color: var(--theme-text);
+  text-decoration: none;
+}
+
+.editor-overview__sublinks a:hover {
+  text-decoration: underline;
+}
+
+.editor-overview__tile--disabled {
+  color: var(--theme-elevation-400);
+  cursor: default;
+}
+
+.editor-overview__tile-note {
+  font-size: 12px;
+  font-style: italic;
+}
+
+@media (pointer: coarse) {
+  .editor-overview__sublinks a {
+    padding-block: 12px;
+  }
 }
