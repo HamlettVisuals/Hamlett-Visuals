@@ -1,11 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
 import Wordmark from "@/components/Wordmark";
 import { contactDetails } from "@/lib/contact-details";
 import { LEGAL_LINKS } from "@/lib/footer-limits";
-import { getInstagramQrSvg } from "@/lib/instagram-qr";
 import { serverURL } from "@/lib/server-url";
 import { useScopedLivePreview } from "@/lib/use-scoped-live-preview";
 import type { FinalCtaFooter, SiteSetting } from "@/payload-types";
@@ -14,8 +12,8 @@ import type { FinalCtaFooter, SiteSetting } from "@/payload-types";
 // site-wide footer rendered on every page via src/app/(site)/layout.tsx.
 //
 // One centred, stacked column: wordmark, her closing line, the solid Book
-// button (the footer's one point of emphasis), then the contact details and
-// Instagram follow block she's switched on, her links, and the fixed
+// button (the footer's one point of emphasis), then the contact details she's
+// switched on (email, phone, Instagram handle), her links, and the fixed
 // copyright + legal links row. On the design system:
 // warm ground, flat (no shadow, no card), Fraunces for the wordmark / sign-off
 // / labels, Inter for values.
@@ -23,14 +21,9 @@ import type { FinalCtaFooter, SiteSetting } from "@/payload-types";
 export default function Footer({
   finalCtaFooter,
   siteSettings,
-  qrSvg,
-  qrUrl,
 }: {
   finalCtaFooter: FinalCtaFooter;
   siteSettings: SiteSetting;
-  /** QR code for the saved Instagram link (`qrUrl`), drawn on the server. */
-  qrSvg: string;
-  qrUrl: string | null;
 }) {
   // Two separate globals render in this one component, so two separate
   // (scoped) Live Preview subscriptions — one per document. See
@@ -51,37 +44,13 @@ export default function Footer({
 
   const { email, phone, instagram } = contactDetails(settings);
 
-  // The QR code is drawn on the server for the saved Instagram link; while
-  // the username is edited in Live Preview, redraw it here so it keeps
-  // pointing where the link does.
-  const [liveQr, setLiveQr] = useState<{ url: string; svg: string } | null>(null);
-  const instagramUrl = instagram?.url ?? null;
-  useEffect(() => {
-    if (!instagramUrl || instagramUrl === qrUrl) return;
-    let cancelled = false;
-    getInstagramQrSvg(instagramUrl).then((svg) => {
-      if (!cancelled) setLiveQr({ url: instagramUrl, svg });
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [instagramUrl, qrUrl]);
-  const qr =
-    instagramUrl === qrUrl
-      ? qrSvg
-      : liveQr?.url === instagramUrl
-        ? liveQr.svg
-        : null;
-
-  // Which contact details show: switched on in the footer editor AND filled
-  // in on Site Settings. The QR code is never shown on phones (below `sm`),
-  // where it can't be scanned, so a block holding only the QR code is left
-  // out there entirely.
+  // Which contact details show, in this order: switched on in the footer
+  // editor AND filled in on Site Settings. Instagram is the @handle, linking
+  // to the profile in a new tab. (The editor's "Show Instagram QR code"
+  // switch, `showQrCode`, is no longer read — the footer has no QR code.)
   const showEmail = data.showEmail !== false && email;
   const showPhone = data.showPhone !== false && phone;
-  const showHandle = data.showInstagram !== false && instagram;
-  const showQr = data.showQrCode !== false && instagram;
-  const qrOnly = showQr && !showEmail && !showPhone && !showHandle;
+  const showInstagram = data.showInstagram !== false && instagram;
   const siteName = settings.siteName || "Hamlett Visuals";
 
   return (
@@ -104,51 +73,27 @@ export default function Footer({
           {data.ctaLabel || "Book a session"}
         </Link>
 
-        {(showEmail || showPhone || showHandle || showQr) && (
-          <div className={`mt-14 flex-col items-center ${qrOnly ? "hidden sm:flex" : "flex"}`}>
-            {(showEmail || showPhone) && (
-              <div className="flex flex-col items-center gap-1.5 text-caption text-muted">
-                {showEmail && (
-                  <a href={`mailto:${email}`} className="link">
-                    {email}
-                  </a>
-                )}
-                {showPhone && phone && (
-                  <a href={phone.href} className="link">
-                    {phone.display}
-                  </a>
-                )}
-              </div>
+        {(showEmail || showPhone || showInstagram) && (
+          <div className="mt-14 flex flex-col items-center gap-1.5 text-caption text-muted">
+            {showEmail && (
+              <a href={`mailto:${email}`} className="link">
+                {email}
+              </a>
             )}
-
-            {instagram && (showHandle || showQr) && (
-              <div
-                className={`flex-col items-center gap-3 ${showEmail || showPhone ? "mt-10" : ""} ${
-                  showHandle ? "flex" : "hidden sm:flex"
-                }`}
+            {showPhone && phone && (
+              <a href={phone.href} className="link">
+                {phone.display}
+              </a>
+            )}
+            {showInstagram && instagram && (
+              <a
+                href={instagram.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="link"
               >
-                <h2 className="text-body text-ink">Follow on Instagram</h2>
-                {showHandle && (
-                  <a
-                    href={instagram.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="link text-caption text-ink"
-                  >
-                    {instagram.handle}
-                  </a>
-                )}
-                {showQr && (
-                  <a
-                    href={instagram.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label={`Open ${instagram.handle} on Instagram`}
-                    className="mt-1 hidden min-h-[128px] min-w-[128px] border border-hairline sm:inline-block"
-                    dangerouslySetInnerHTML={{ __html: qr ?? "" }}
-                  />
-                )}
-              </div>
+                {instagram.handle}
+              </a>
             )}
           </div>
         )}

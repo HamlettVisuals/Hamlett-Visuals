@@ -7,8 +7,6 @@ import Footer from "@/components/Footer";
 import FloatingAskButton from "@/components/AskQuestion/FloatingAskButton";
 import LivePreviewRefresh from "@/components/LivePreviewRefresh";
 import LivePreviewHighlight from "@/components/LivePreviewHighlight";
-import { instagramLink } from "@/lib/contact-details";
-import { getInstagramQrSvg } from "@/lib/instagram-qr";
 import "../globals.css";
 
 // Display / headings. Variable font — the opsz axis is kept so
@@ -52,15 +50,11 @@ export const metadata: Metadata = {
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
   // Nav and Footer render on every page (not just the homepage), so both
-  // are fetched here rather than in (site)/page.tsx — same reasoning as the
-  // QR code, which used to be fetched inside Footer.tsx itself before it
-  // needed to become a client component for useLivePreview.
+  // are fetched here rather than in (site)/page.tsx.
   const payload = await getPayload({ config });
   const headerNav = await payload.findGlobal({ slug: "header-nav" });
   const finalCtaFooter = await payload.findGlobal({ slug: "final-cta-footer" });
   const siteSettings = await payload.findGlobal({ slug: "site-settings" });
-  const qrUrl = instagramLink(siteSettings.instagram?.handle)?.url ?? null;
-  const qrSvg = qrUrl ? await getInstagramQrSvg(qrUrl) : "";
 
   return (
     <html
@@ -73,8 +67,6 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
         <Footer
           finalCtaFooter={finalCtaFooter}
           siteSettings={siteSettings}
-          qrSvg={qrSvg}
-          qrUrl={qrUrl}
         />
         <FloatingAskButton />
         <LivePreviewRefresh />
