@@ -1,17 +1,35 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { getCategoryColor } from "@/lib/category-colors";
 import styles from "./KanbanBoard.module.css";
 import { compareByStageDate, stageDateLabel } from "./format";
 import { inquiryClient, STAGES, type BoardInquiry, type CategoryOption, type StageValue } from "./types";
 
-// The mobile (< 768px, see KanbanBoard.module.css) replacement for the
+// The mobile (768px and narrower, see KanbanBoard.module.css) replacement for the
 // desktop drag-and-drop columns — same `items` data and the same
 // DetailDrawer on click, but a vertical list: category filter chips up top,
 // then each stage as a collapsible group of compact rows. There's no
 // drag-and-drop here; moving stage happens via the drawer's <select>
 // (see DetailDrawer.tsx and Board.tsx's changeStage).
+
+// Which stages are open. Every stage starts collapsed; the set lives
+// outside React (like SiteNav.tsx's expand state) so it survives leaving
+// the board and coming back, and only a full page reload resets it.
+let openStages: ReadonlySet<StageValue> = new Set();
+const NONE_OPEN: ReadonlySet<StageValue> = new Set();
+const listeners = new Set<() => void>();
+
+function setOpenStages(update: (prev: ReadonlySet<StageValue>) => ReadonlySet<StageValue>) {
+  openStages = update(openStages);
+  listeners.forEach((listener) => listener());
+}
+
+function subscribe(listener: () => void) {
+  listeners.add(listener);
+  return () => listeners.delete(listener);
+}
+
 export default function MobileBoardList({
   items,
   onOpenCard,
@@ -20,7 +38,22 @@ export default function MobileBoardList({
   onOpenCard: (inquiry: BoardInquiry) => void;
 }) {
   const [selectedCategoryId, setSelectedCategoryId] = useState<number | "all">("all");
-  const [collapsedStages, setCollapsedStages] = useState<Set<StageValue>>(() => new Set());
+  const open = useSyncExternalStore(subscribe, () => openStages, () => NONE_OPEN);
+
+  // A card that's new, or that moved stage (drawer <select>, or a Questions
+  // "Move to Leads"), opens the stage it landed in so the change is
+  // visible. Stages are compared against the previous render's, so the
+  // cards already on the board at mount don't open anything.
+  const stageById = useRef<Map<number, StageValue> | null>(null);
+  useEffect(() => {
+    const previous = stageById.current;
+    stageById.current = new Map(items.map((item) => [item.id, item.stage]));
+    if (!previous) return;
+    const landed = items.filter((item) => previous.get(item.id) !== item.stage).map((item) => item.stage);
+    if (landed.some((stage) => !openStages.has(stage))) {
+      setOpenStages((prev) => new Set([...prev, ...landed]));
+    }
+  }, [items]);
 
   // Chips reflect the categories actually represented on the board right
   // now, not every category ever created — consistent with how the board
@@ -36,7 +69,7 @@ export default function MobileBoardList({
     selectedCategoryId === "all" ? items : items.filter((item) => item.category.id === selectedCategoryId);
 
   const toggleStage = (stage: StageValue) => {
-    setCollapsedStages((prev) => {
+    setOpenStages((prev) => {
       const next = new Set(prev);
       if (next.has(stage)) {
         next.delete(stage);
@@ -79,7 +112,7 @@ export default function MobileBoardList({
         const stageItems = filtered
           .filter((item) => item.stage === stageMeta.value)
           .sort(compareByStageDate);
-        const isCollapsed = collapsedStages.has(stageMeta.value);
+        const isCollapsed = !open.has(stageMeta.value);
 
         return (
           <div key={stageMeta.value} className={styles.mobileGroup}>
