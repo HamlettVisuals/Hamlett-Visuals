@@ -98,7 +98,9 @@ export default function BookingFlow({
             return (
               <li
                 key={step.title}
-                className={`border-t border-hairline pt-8 first:border-t-0 first:pt-0 sm:border-t-0 sm:pt-0 ${
+                // Stacked (below `sm`): a hairline between steps with 32px
+                // on each side of it — pt-8 below, pb-8 on the step above.
+                className={`border-t border-hairline pt-8 pb-8 first:border-t-0 first:pt-0 last:pb-0 sm:border-t-0 sm:pt-0 sm:pb-0 ${
                   index > 0 ? "sm:border-l sm:pl-8" : ""
                 } ${index < steps.length - 1 ? "sm:pr-8" : ""}`}
               >
