@@ -1,6 +1,6 @@
 /* Touch-target overrides for Payload's own default admin chrome.
-   Scoped to the four worst offenders found by the mobile/tablet audit —
-   not a general resize of every small control in the admin.
+   Scoped to the controls the mobile/tablet audits flagged — not a
+   general resize of every small control in the admin.
 
    These rules are deliberately NOT wrapped in `@layer` — Payload's own
    styles all live inside `@layer payload-default` (see
@@ -29,6 +29,119 @@
 .nav__mobile-close {
   padding-left: 11px;
   padding-right: 11px;
+}
+
+/* The rest of Payload's small list and header controls, on touch screens
+   only. Each gets an invisible 44px-minimum hit area (::after, centred on
+   the control) instead of a bigger box, so nothing looks different and
+   the layout doesn't move. The desktop sizes are untouched. */
+@media (pointer: coarse) {
+  .step-nav__home,
+  .app-header__account,
+  .nav__log-out,
+  .sort-column__button,
+  .list-create-new-doc__create-new-button,
+  .per-page .popup-button,
+  .list-controls__toggle-columns,
+  .list-controls__toggle-where,
+  .default-list-view-tabs__button {
+    position: relative;
+  }
+
+  .step-nav__home::after,
+  .app-header__account::after,
+  .nav__log-out::after,
+  .sort-column__button::after,
+  .list-create-new-doc__create-new-button::after,
+  .per-page .popup-button::after,
+  .list-controls__toggle-columns::after,
+  .list-controls__toggle-where::after,
+  .default-list-view-tabs__button::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: max(100%, 44px);
+    height: max(100%, 44px);
+    transform: translate(-50%, -50%);
+  }
+
+  /* Columns / Filters clip their own overflow, which would clip the hit
+     area too. Their labels are fixed and short, so there's nothing to
+     clip. */
+  .list-controls__toggle-columns,
+  .list-controls__toggle-where {
+    overflow: visible;
+  }
+
+  /* The home icon sits right against the menu button, so its area grows
+     rightwards (over the "/" separator), starting 2px in, where the menu
+     button's own area ends, instead of stealing its edge. Its wrapper scrolls sideways (see
+     .app-header__step-nav-wrapper below), which also clips vertically at
+     its 20px height, so the wrapper gets the header's full 44px, with no
+     change in where anything sits. */
+  .step-nav__home::after {
+    left: 2px;
+    transform: translateY(-50%);
+  }
+
+  .app-header__step-nav-wrapper {
+    padding-block: 12px;
+    margin-block: -12px;
+  }
+
+  /* All Inquiries / Trash sit just under the sticky header, which would
+     cover the top pixel of their area. */
+  .default-list-view-tabs__button::after {
+    top: calc(50% + 2px);
+  }
+
+  /* Log out sits 9px from the drawer's left edge on tablets, so a centred
+     area would run off-screen; this one starts just inside the edge. */
+  .nav__log-out::after {
+    left: -8px;
+    width: 52px;
+    transform: translateY(-50%);
+  }
+
+  /* Rows with plain text cells (Users) are ~42px, so the rows' own hit
+     areas would overlap. A table cell's height acts as a minimum. */
+  .table tbody td {
+    height: 44px;
+  }
+
+  /* Links in list cells (a user's email, a record's title) clip their
+     overflow for the ellipsis, so they grow with padding instead, which
+     stays inside that clip. */
+  .table td a {
+    padding-block: 12px;
+    margin-block: -12px;
+  }
+
+  /* Ascending/descending sit 18px apart, so centred 44px areas would
+     overlap and a tap on one could hit the other. Spacing them to 44px
+     centres keeps each area its own. */
+  .sort-column__buttons {
+    gap: 26px;
+  }
+
+  /* Payload's checkbox is an invisible <input> laid over the drawn box,
+     so the input itself is what grows. */
+  /* Every cell is its own z-index: 1 layer, so the next cell would paint
+     over the checkbox's grown input. */
+  .table .cell-_select,
+  .table #heading-_select {
+    z-index: 2;
+  }
+
+  .table .checkbox-input__input input[type="checkbox"] {
+    top: 50%;
+    left: 50%;
+    width: 44px;
+    height: 44px;
+    margin: 0;
+    transform: translate(-50%, -50%);
+  }
 }
 
 /* The sidebar tree (SiteNav.tsx). Every row is [chevron slot | label]:
