@@ -365,21 +365,6 @@
   color: var(--theme-elevation-450);
 }
 
-/* Same pill look as .pill/.pillSuccess/.pillMuted, just on a <label>
-   wrapping a real checkbox instead of a plain <span> — the drawer's
-   testimonialReceived/addedToSite toggles (Card.tsx's read-only pills stay
-   spans; only the drawer's copies are interactive). */
-.pillCheckbox {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  cursor: pointer;
-}
-
-.pillCheckbox input {
-  cursor: pointer;
-}
-
 .pillWarning {
   background: var(--theme-warning-150);
   color: var(--theme-warning-800);
@@ -925,24 +910,231 @@
   padding: 4px 0 32px;
 }
 
-.drawerHeader {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.drawerClientName {
-  margin: 0;
-  font-size: 20px;
-  font-weight: 600;
-  color: var(--theme-text);
-}
-
 .drawerBadgeRow {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
   gap: 8px;
+}
+
+/* Drawer vocabulary. Only Payload's own --theme-* tokens (the admin never
+   loads the site's --color-* ones), used the way the site uses its own:
+   ink for actions, muted tints for labels, colour only where it means
+   something (done / needs attention). Three kinds of element, each with
+   one look, so nothing reads as the wrong kind:
+   - labels (.drawerTag, .drawerStatus): flat, no border, not tappable;
+   - actions (.drawerSecondaryButton, .drawerToggle): bordered, ink text;
+   - links (.drawerTextLink, .drawerTextButton): underlined text.
+   Every action is at least 36px tall, 44px on touch screens. */
+
+.drawerTag {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--theme-elevation-100);
+  color: var(--theme-elevation-800);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.drawerTextLink,
+.drawerTextButton {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--theme-text);
+  font-size: 13px;
+  font-weight: 500;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.drawerStatus {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  color: var(--theme-elevation-700);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.drawerStatusLine {
+  margin-top: 10px;
+}
+
+.drawerStatusDotDone,
+.drawerStatusDotWarn,
+.drawerStatusDotIdle {
+  flex-shrink: 0;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.drawerStatusDotDone {
+  background: var(--theme-success-500);
+}
+
+.drawerStatusDotWarn {
+  background: var(--theme-warning-500);
+}
+
+.drawerStatusDotIdle {
+  background: var(--theme-elevation-300);
+}
+
+.drawerSecondaryButton {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  padding: 0 14px;
+  border: 1px solid var(--theme-elevation-800);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--theme-text);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.drawerSecondaryButton:hover {
+  background: var(--theme-elevation-100);
+}
+
+.drawerSecondaryButton:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.drawerToggleRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.drawerToggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 36px;
+  padding: 0 12px;
+  border: 1px solid var(--theme-elevation-300);
+  border-radius: 4px;
+  background: var(--theme-input-bg);
+  color: var(--theme-text);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.drawerToggle:hover {
+  border-color: var(--theme-elevation-500);
+}
+
+.drawerToggle[aria-pressed="true"] {
+  border-color: var(--theme-elevation-800);
+}
+
+/* The toggle's checkbox face: empty square, ink-filled with a tick when on. */
+.drawerToggleBox {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  border: 1.5px solid var(--theme-elevation-500);
+  border-radius: 3px;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.drawerToggle[aria-pressed="true"] .drawerToggleBox {
+  border-color: var(--theme-elevation-800);
+  background: var(--theme-elevation-800);
+  color: var(--theme-elevation-0);
+}
+
+/* An empty select/date reads as empty, the same as an input's placeholder,
+   instead of passing for a chosen value. Doubled with .stageSelect, which
+   sets its own colour further down this file. */
+.stageSelect.fieldEmpty {
+  color: var(--theme-elevation-500);
+}
+
+.fieldEmpty option {
+  color: var(--theme-text);
+}
+
+.stageSelect::placeholder {
+  color: var(--theme-elevation-500);
+  opacity: 1;
+}
+
+.readOnlyMessageClamped {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  overflow: hidden;
+}
+
+/* Checklist header: the whole row is the expand/collapse toggle. */
+.checklistHeading {
+  margin: 0 0 4px;
+}
+
+.checklistToggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 36px;
+  padding: 0;
+  border: none;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+}
+
+.checklistToggleTitle {
+  color: var(--theme-elevation-500);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.checklistSummary {
+  color: var(--theme-elevation-700);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.checklistBody[hidden] {
+  display: none;
+}
+
+.checklistBody > .inlineCategoryPicker {
+  margin-bottom: 10px;
+}
+
+@media (pointer: coarse) {
+  .drawerSecondaryButton,
+  .drawerToggle,
+  .checklistToggle,
+  .drawerTextLink,
+  .drawerTextButton {
+    min-height: 44px;
+  }
 }
 
 .stageField {
@@ -1037,12 +1229,6 @@
   gap: 6px;
 }
 
-.tentativeIndicator {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-}
-
 /* Same small warning-toned badge used on the kanban card face (Card.tsx)
    for a Prep-stage card's unconfirmed shoot date — one visual language for
    "tentative" everywhere it shows up. */
@@ -1078,17 +1264,6 @@
   font-weight: 700;
   line-height: 1;
   flex-shrink: 0;
-}
-
-.confirmLink {
-  padding: 0;
-  border: none;
-  background: none;
-  color: var(--theme-warning-800);
-  font-size: 11px;
-  font-weight: 600;
-  text-decoration: underline;
-  cursor: pointer;
 }
 
 .detailValue {
@@ -1249,21 +1424,6 @@
 .checklistAddButton:disabled {
   opacity: 0.6;
   cursor: default;
-}
-
-.repeatNotice {
-  padding: 12px 14px;
-  border-radius: 6px;
-  border: 1px solid var(--theme-success-300);
-  background: var(--theme-success-100);
-  font-size: 13px;
-  color: var(--theme-success-800);
-}
-
-.repeatNotice a {
-  color: inherit;
-  font-weight: 600;
-  text-decoration: underline;
 }
 
 .drawerFooter {

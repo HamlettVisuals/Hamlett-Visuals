@@ -1456,3 +1456,11 @@ a.editor-overview__tile:focus-visible,
     margin-bottom: 8px;
   }
 }
+
+/* The card drawer's panel stops at 760px wide: on a desktop its fields
+   otherwise stretched across ~1250px. Payload sets the panel's width
+   inline (100% minus a gutter), which max-width still caps; the dimmed
+   backdrop fills the rest. */
+.kanban-drawer--detail .drawer__content {
+  max-width: 760px;
+}

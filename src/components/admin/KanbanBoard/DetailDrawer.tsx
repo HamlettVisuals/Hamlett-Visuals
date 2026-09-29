@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type ChangeEvent, type KeyboardEvent, type ReactNode } from "react";
+import { useCallback, useState, type ChangeEvent, type KeyboardEvent, type ReactNode } from "react";
 import { Drawer, Link } from "@payloadcms/ui";
 import { formatAdminURL } from "payload/shared";
 import styles from "./KanbanBoard.module.css";
@@ -74,120 +74,62 @@ export default function DetailDrawer({
   onUpdateFields: (id: number, patch: Partial<BoardInquiry>) => Promise<boolean>;
 }) {
   const client = inquiry ? inquiryClient(inquiry) : null;
+  // The checklist that belongs to where this job is now: Prep until the
+  // shoot, Post-production after it, neither at Wrap-Up. That one opens by
+  // default; the other collapses to a one-line summary.
+  const openChecklist =
+    inquiry && ["lead", "planning", "prep"].includes(inquiry.stage)
+      ? "prep"
+      : inquiry && ["shoot", "post"].includes(inquiry.stage)
+        ? "postProduction"
+        : null;
 
   return (
     <Drawer
       slug={DETAIL_DRAWER_SLUG}
-      className="kanban-drawer"
+      className="kanban-drawer kanban-drawer--detail"
+      // The drawer's own (sticky) title row is the one place the client's
+      // name appears — the body starts straight at the tags.
       title={client?.name ?? inquiry?.name ?? "Inquiry"}
     >
       {inquiry && (
         <div className={styles.drawerBody} key={inquiry.id} ref={drawerScrollRef}>
-          <div className={styles.drawerHeader}>
-            <h2 className={styles.drawerClientName}>{client?.name ?? inquiry.name}</h2>
-            <div className={styles.drawerBadgeRow}>
-              <span className={styles.pill}>{inquiry.category.name}</span>
-              {isRepeat && <span className={styles.repeatBadge}>Repeat client</span>}
-            </div>
+          <div className={styles.drawerBadgeRow}>
+            <span className={styles.drawerTag}>{inquiry.category.name}</span>
+            {isRepeat && client && (
+              <>
+                <span className={styles.drawerTag}>Repeat client</span>
+                <Link
+                  className={styles.drawerTextLink}
+                  href={
+                    `${formatAdminURL({ adminRoute, path: "/collections/inquiries" })}?where[client][equals]=${client.id}&from=kanban` as `/${string}`
+                  }
+                  prefetch={false}
+                >
+                  See their other jobs →
+                </Link>
+              </>
+            )}
           </div>
-
-          <div className={styles.stageField}>
-            <label className={styles.detailLabel} htmlFor="drawer-stage-select">
-              Stage
-            </label>
-            <select
-              id="drawer-stage-select"
-              className={styles.stageSelect}
-              value={inquiry.stage}
-              onChange={(event) => onStageChange(inquiry, event.target.value as StageValue)}
-            >
-              {STAGES.map((stage) => (
-                <option key={stage.value} value={stage.value}>
-                  {stage.label}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {isRepeat && client && (
-            <div className={styles.repeatNotice}>
-              {client.name} has booked with you before —{" "}
-              <Link
-                href={
-                  `${formatAdminURL({ adminRoute, path: "/collections/inquiries" })}?where[client][equals]=${client.id}&from=kanban` as `/${string}`
-                }
-                prefetch={false}
-              >
-                see their other jobs
-              </Link>
-              .
-            </div>
-          )}
 
           <div className={styles.detailGrid}>
-            <EditableLocationField
-              label="Location"
-              initialValue={{
-                street: inquiry.location?.street ?? "",
-                city: inquiry.location?.city ?? "",
-                state: inquiry.location?.state ?? "",
-              }}
-              onCommit={(value) =>
-                onUpdateFields(inquiry.id, {
-                  location: {
-                    street: value.street || null,
-                    city: value.city || null,
-                    state: value.state || null,
-                  },
-                })
-              }
-            />
-
-            <EditableSelectField
-              label="Source"
-              initialValue={inquiry.source ?? ""}
-              options={[
-                { value: "", label: "Not set" },
-                { value: "website", label: SOURCE_LABELS.website },
-                { value: "manual_social", label: SOURCE_LABELS.manual_social },
-                { value: "manual_email", label: SOURCE_LABELS.manual_email },
-                { value: "manual_referral", label: SOURCE_LABELS.manual_referral },
-              ]}
-              onCommit={(value) =>
-                onUpdateFields(inquiry.id, { source: (value || null) as BoardInquiry["source"] })
-              }
-            />
-
-            <EditableTextField
-              label="Price"
-              type="number"
-              initialValue={inquiry.price != null ? String(inquiry.price) : ""}
-              placeholder="Not set"
-              onCommit={(value) => {
-                const trimmed = value.trim();
-                if (trimmed === "") return onUpdateFields(inquiry.id, { price: null });
-                const price = Number(trimmed);
-                if (Number.isNaN(price)) return Promise.resolve(false);
-                return onUpdateFields(inquiry.id, { price });
-              }}
-            />
-
-            <EditableSelectField
-              label="Payment status"
-              initialValue={inquiry.paymentStatus ?? ""}
-              options={[
-                { value: "", label: "Not set" },
-                { value: "unpaid", label: PAYMENT_STATUS_LABELS.unpaid },
-                { value: "deposit", label: PAYMENT_STATUS_LABELS.deposit },
-                { value: "paid", label: PAYMENT_STATUS_LABELS.paid },
-              ]}
-              onCommit={(value) =>
-                onUpdateFields(inquiry.id, {
-                  paymentStatus: (value || null) as BoardInquiry["paymentStatus"],
-                })
-              }
-            />
-
+            <div className={`${styles.stageField} ${styles.detailGridField}`}>
+              <label className={styles.detailLabel} htmlFor="drawer-stage-select">
+                Stage
+              </label>
+              <select
+                id="drawer-stage-select"
+                className={styles.stageSelect}
+                value={inquiry.stage}
+                onChange={(event) => onStageChange(inquiry, event.target.value as StageValue)}
+              >
+                {STAGES.map((stage) => (
+                  <option key={stage.value} value={stage.value}>
+                    {stage.label}
+                  </option>
+                ))}
+              </select>
+            </div>
             {inquiry.stage === "post" && (
               <EditableSelectField
                 label="Post-production status"
@@ -205,97 +147,175 @@ export default function DetailDrawer({
                 }
               />
             )}
+          </div>
 
-            <EditableDateField
-              label="Shoot date"
-              initialValue={toDateInputValue(inquiry.shootDate)}
-              labelExtra={
-                inquiry.shootDate ? (
-                  inquiry.shootDateConfirmed ? (
-                    <span
-                      className={styles.confirmedMark}
-                      title="Confirmed — this is the locked-in shoot date, not a placeholder"
-                    >
-                      ✓
-                    </span>
-                  ) : (
-                    <span className={styles.tentativeIndicator}>
+          {inquiry.message && <ClientMessage message={inquiry.message} />}
+
+          <section>
+            <h3 className={styles.drawerSectionTitle}>Dates</h3>
+            <div className={styles.detailGrid}>
+              <EditableDateField
+                label="Shoot date"
+                initialValue={toDateInputValue(inquiry.shootDate)}
+                labelExtra={
+                  inquiry.shootDate ? (
+                    <span className={styles.drawerStatus}>
                       <span
-                        className={styles.tentativeMark}
-                        title="Tentative — copied from the client's requested date, not yet confirmed"
-                      >
-                        !
-                      </span>
-                      <button
-                        type="button"
-                        className={styles.confirmLink}
-                        onClick={() => onUpdateFields(inquiry.id, { shootDateConfirmed: true })}
-                      >
-                        Confirm
-                      </button>
+                        className={inquiry.shootDateConfirmed ? styles.drawerStatusDotDone : styles.drawerStatusDotWarn}
+                        aria-hidden="true"
+                      />
+                      {inquiry.shootDateConfirmed ? "Confirmed" : "Tentative"}
                     </span>
-                  )
-                ) : null
-              }
-              // Actively changing the date is itself a confirming action —
-              // no separate click needed, so this bundles shootDateConfirmed
-              // into the same PATCH as the date value. Clicking "Confirm"
-              // above (when the date hasn't been touched) sends its own
-              // PATCH instead, deliberately not going through this onCommit,
-              // so it never touches shootDate itself.
-              onCommit={(value) =>
-                onUpdateFields(inquiry.id, { shootDate: value || null, shootDateConfirmed: true })
-              }
-            />
-            <EditableDateField
-              label="Delivery deadline"
-              initialValue={toDateInputValue(inquiry.deliveryDeadline)}
-              onCommit={(value) => onUpdateFields(inquiry.id, { deliveryDeadline: value || null })}
-            />
-          </div>
-
-          <div>
-            <h3 className={styles.drawerSectionTitle}>Testimonial &amp; gallery</h3>
-            <div className={styles.pillRow}>
-              {/* Real checkboxes, not read-only status — these are the only
-                  UI path to trigger the Wrap-Up auto-archive hook (both true
-                  archives the record; see Inquiries.ts's autoArchive). No
-                  local component state, same as the Stage <select> above:
-                  `checked` reads straight off the `inquiry` prop, and
-                  onUpdateFields' own optimistic update (with revert on
-                  failure) in Board.tsx is what actually drives the re-render. */}
-              <label
-                className={`${styles.pill} ${styles.pillCheckbox} ${inquiry.testimonialReceived ? styles.pillSuccess : styles.pillMuted}`}
-              >
-                <input
-                  type="checkbox"
-                  checked={inquiry.testimonialReceived ?? false}
-                  onChange={() =>
-                    onUpdateFields(inquiry.id, { testimonialReceived: !inquiry.testimonialReceived })
-                  }
-                />
-                Testimonial received
-              </label>
-              <label
-                className={`${styles.pill} ${styles.pillCheckbox} ${inquiry.addedToSite ? styles.pillSuccess : styles.pillMuted}`}
-              >
-                <input
-                  type="checkbox"
-                  checked={inquiry.addedToSite ?? false}
-                  onChange={() => onUpdateFields(inquiry.id, { addedToSite: !inquiry.addedToSite })}
-                />
-                Added to site
-              </label>
-              <span
-                className={`${styles.pill} ${inquiry.testimonialRequestSent ? styles.pillSuccess : styles.pillMuted}`}
-              >
-                {inquiry.testimonialRequestSent ? "Request sent" : "Request not sent"}
-              </span>
+                  ) : null
+                }
+                action={
+                  inquiry.shootDate && !inquiry.shootDateConfirmed ? (
+                    // Confirms the date as it stands: its own PATCH, never
+                    // touching shootDate (unlike onCommit below).
+                    <button
+                      type="button"
+                      className={styles.drawerSecondaryButton}
+                      onClick={() => onUpdateFields(inquiry.id, { shootDateConfirmed: true })}
+                    >
+                      Confirm date
+                    </button>
+                  ) : null
+                }
+                // Actively changing the date is itself a confirming action —
+                // no separate click needed, so this bundles shootDateConfirmed
+                // into the same PATCH as the date value.
+                onCommit={(value) =>
+                  onUpdateFields(inquiry.id, { shootDate: value || null, shootDateConfirmed: true })
+                }
+              />
+              <EditableDateField
+                label="Delivery deadline"
+                initialValue={toDateInputValue(inquiry.deliveryDeadline)}
+                onCommit={(value) => onUpdateFields(inquiry.id, { deliveryDeadline: value || null })}
+              />
             </div>
-          </div>
+          </section>
+
+          <section>
+            <h3 className={styles.drawerSectionTitle}>Money</h3>
+            <div className={styles.detailGrid}>
+              <EditableTextField
+                label="Price"
+                type="number"
+                initialValue={inquiry.price != null ? String(inquiry.price) : ""}
+                placeholder="Not set"
+                onCommit={(value) => {
+                  const trimmed = value.trim();
+                  if (trimmed === "") return onUpdateFields(inquiry.id, { price: null });
+                  const price = Number(trimmed);
+                  if (Number.isNaN(price)) return Promise.resolve(false);
+                  return onUpdateFields(inquiry.id, { price });
+                }}
+              />
+              <EditableSelectField
+                label="Payment status"
+                initialValue={inquiry.paymentStatus ?? ""}
+                options={[
+                  { value: "", label: "Not set" },
+                  { value: "unpaid", label: PAYMENT_STATUS_LABELS.unpaid },
+                  { value: "deposit", label: PAYMENT_STATUS_LABELS.deposit },
+                  { value: "paid", label: PAYMENT_STATUS_LABELS.paid },
+                ]}
+                onCommit={(value) =>
+                  onUpdateFields(inquiry.id, {
+                    paymentStatus: (value || null) as BoardInquiry["paymentStatus"],
+                  })
+                }
+              />
+            </div>
+          </section>
+
+          <section>
+            <h3 className={styles.drawerSectionTitle}>Details</h3>
+            <div className={styles.detailGrid}>
+              <EditableLocationField
+                label="Location"
+                initialValue={{
+                  street: inquiry.location?.street ?? "",
+                  city: inquiry.location?.city ?? "",
+                  state: inquiry.location?.state ?? "",
+                }}
+                onCommit={(value) =>
+                  onUpdateFields(inquiry.id, {
+                    location: {
+                      street: value.street || null,
+                      city: value.city || null,
+                      state: value.state || null,
+                    },
+                  })
+                }
+              />
+              <EditableSelectField
+                label="Source"
+                initialValue={inquiry.source ?? ""}
+                options={[
+                  { value: "", label: "Not set" },
+                  { value: "website", label: SOURCE_LABELS.website },
+                  { value: "manual_social", label: SOURCE_LABELS.manual_social },
+                  { value: "manual_email", label: SOURCE_LABELS.manual_email },
+                  { value: "manual_referral", label: SOURCE_LABELS.manual_referral },
+                ]}
+                onCommit={(value) =>
+                  onUpdateFields(inquiry.id, { source: (value || null) as BoardInquiry["source"] })
+                }
+              />
+            </div>
+          </section>
+
+          <section>
+            <h3 className={styles.drawerSectionTitle}>Testimonial &amp; gallery</h3>
+            {/* Two kinds of thing, styled apart so neither passes for the
+                other: what she does (toggle buttons) and what the system did
+                (a plain status line — the request itself is sent from the
+                full record, not here). The toggles are the only UI path to
+                the Wrap-Up auto-archive hook (both true archives the record;
+                see Inquiries.ts's autoArchive). No local state: aria-pressed
+                reads straight off the `inquiry` prop, and onUpdateFields'
+                optimistic update in Board.tsx drives the re-render. */}
+            <div className={styles.drawerToggleRow}>
+              <button
+                type="button"
+                className={styles.drawerToggle}
+                aria-pressed={inquiry.testimonialReceived ?? false}
+                onClick={() =>
+                  onUpdateFields(inquiry.id, { testimonialReceived: !inquiry.testimonialReceived })
+                }
+              >
+                <span className={styles.drawerToggleBox} aria-hidden="true">
+                  {inquiry.testimonialReceived ? "✓" : ""}
+                </span>
+                Testimonial received
+              </button>
+              <button
+                type="button"
+                className={styles.drawerToggle}
+                aria-pressed={inquiry.addedToSite ?? false}
+                onClick={() => onUpdateFields(inquiry.id, { addedToSite: !inquiry.addedToSite })}
+              >
+                <span className={styles.drawerToggleBox} aria-hidden="true">
+                  {inquiry.addedToSite ? "✓" : ""}
+                </span>
+                Added to site
+              </button>
+            </div>
+            <p className={`${styles.drawerStatus} ${styles.drawerStatusLine}`}>
+              <span
+                className={inquiry.testimonialRequestSent ? styles.drawerStatusDotDone : styles.drawerStatusDotIdle}
+                aria-hidden="true"
+              />
+              Testimonial request {inquiry.testimonialRequestSent ? "sent" : "not sent yet"}
+            </p>
+          </section>
 
           <ChecklistEditor
             title="Prep checklist"
+            summaryName="Prep"
+            defaultOpen={openChecklist === "prep"}
             placeholder="Add a prep task…"
             initialItems={inquiry.prepChecklist ?? []}
             templateOptions={templateOptionsFor(templates, "prep", inquiry.category.id)}
@@ -304,16 +324,13 @@ export default function DetailDrawer({
 
           <ChecklistEditor
             title="Post-production checklist"
+            summaryName="Post-production"
+            defaultOpen={openChecklist === "postProduction"}
             placeholder="Add a post-production task…"
             initialItems={inquiry.postProductionChecklist ?? []}
             templateOptions={templateOptionsFor(templates, "postProduction", inquiry.category.id)}
             onCommit={(items) => onUpdateFields(inquiry.id, { postProductionChecklist: items })}
           />
-
-          <div>
-            <h3 className={styles.drawerSectionTitle}>Client&apos;s message</h3>
-            <p className={styles.readOnlyMessage}>{inquiry.message}</p>
-          </div>
 
           <EditableTextField
             label="Notes"
@@ -336,6 +353,39 @@ export default function DetailDrawer({
         </div>
       )}
     </Drawer>
+  );
+}
+
+// The client's original inquiry message, near the top as context for
+// everything below it. Past ~3 lines it clamps, with a "Show more" toggle;
+// whether it overflows is measured, not guessed from its length.
+function ClientMessage({ message }: { message: string }) {
+  const [expanded, setExpanded] = useState(false);
+  const [overflows, setOverflows] = useState(false);
+  const measureRef = useCallback((el: HTMLParagraphElement | null) => {
+    if (el) setOverflows(el.scrollHeight > el.clientHeight + 1);
+  }, []);
+
+  return (
+    <section>
+      <h3 className={styles.drawerSectionTitle}>Client&apos;s message</h3>
+      <p
+        ref={measureRef}
+        className={`${styles.readOnlyMessage}${expanded ? "" : ` ${styles.readOnlyMessageClamped}`}`}
+      >
+        {message}
+      </p>
+      {(overflows || expanded) && (
+        <button
+          type="button"
+          className={styles.drawerTextButton}
+          aria-expanded={expanded}
+          onClick={() => setExpanded((open) => !open)}
+        >
+          {expanded ? "Show less" : "Show more"}
+        </button>
+      )}
+    </section>
   );
 }
 
@@ -510,7 +560,11 @@ function EditableSelectField({
   return (
     <div className={`${styles.stageField} ${styles.detailGridField}`}>
       <label className={styles.detailLabel}>{label}</label>
-      <select className={styles.stageSelect} value={value} onChange={handleChange}>
+      <select
+        className={`${styles.stageSelect}${value === "" ? ` ${styles.fieldEmpty}` : ""}`}
+        value={value}
+        onChange={handleChange}
+      >
         {options.map((option) => (
           <option key={option.value} value={option.value}>
             {option.label}
@@ -535,11 +589,14 @@ function EditableDateField({
   label,
   initialValue,
   labelExtra,
+  action,
   onCommit,
 }: {
   label: string;
   initialValue: string;
   labelExtra?: ReactNode;
+  // A button under the input (the shoot date's "Confirm date").
+  action?: ReactNode;
   onCommit: (value: string) => Promise<boolean>;
 }) {
   const [value, setValue] = useState(initialValue);
@@ -566,31 +623,40 @@ function EditableDateField({
       </div>
       <input
         type="date"
-        className={styles.stageSelect}
+        className={`${styles.stageSelect}${value === "" ? ` ${styles.fieldEmpty}` : ""}`}
         value={value}
         disabled={isSaving}
         onChange={(event: ChangeEvent<HTMLInputElement>) => setValue(event.target.value)}
         onBlur={handleBlur}
       />
+      {action}
       {error && <p className={styles.rowError}>{error}</p>}
     </div>
   );
 }
 
 // Shared by the Prep and Post-Production checklist sections above — both are
-// otherwise identical. Any add/edit/remove/apply replaces the whole array in
+// otherwise identical. Its header is a toggle: the checklist for the job's
+// current stage starts open, the other starts collapsed to a one-line
+// summary ("Prep ✓ 2/2") that still opens on tap. The template picker
+// only shows up front while the list is empty; after that it waits behind
+// a quiet "Add from a template" button. Any add/edit/remove/apply replaces the whole array in
 // one PATCH — Payload's array fields don't support patching a single row in
 // place. Existing rows keep their `id` (so their identity survives the
 // rewrite); a freshly added row has none yet and gets one assigned
 // server-side.
 function ChecklistEditor({
   title,
+  summaryName,
+  defaultOpen,
   placeholder,
   initialItems,
   templateOptions,
   onCommit,
 }: {
   title: string;
+  summaryName: string;
+  defaultOpen: boolean;
   placeholder: string;
   initialItems: { id?: string | null; item?: string | null; completed?: boolean | null }[];
   templateOptions: { label: string; items: { text?: string | null }[] }[];
@@ -599,6 +665,8 @@ function ChecklistEditor({
   const [items, setItems] = useState<ChecklistRow[]>(() =>
     initialItems.map((row) => ({ id: row.id, item: row.item ?? "", completed: row.completed ?? false })),
   );
+  const [isOpen, setIsOpen] = useState(defaultOpen);
+  const [showTemplates, setShowTemplates] = useState(false);
   const [newItem, setNewItem] = useState("");
   const [templateIndex, setTemplateIndex] = useState(0);
   const [isSaving, setIsSaving] = useState(false);
@@ -672,85 +740,114 @@ function ChecklistEditor({
     void save(next);
   };
 
+  const done = items.filter((row) => row.completed).length;
+  const summary =
+    items.length === 0 ? "No tasks yet" : done === items.length ? `✓ ${done}/${items.length}` : `${done}/${items.length} done`;
+  const listId = `checklist-${summaryName.toLowerCase().replace(/[^a-z]+/g, "-")}`;
+  const pickerVisible = templateOptions.length > 0 && (items.length === 0 || showTemplates);
+
   return (
-    <div>
-      <h3 className={styles.drawerSectionTitle}>{title}</h3>
-
-      {templateOptions.length > 0 && (
-        <div className={styles.inlineCategoryPicker}>
-          <select
-            className={styles.inlineCategorySelect}
-            value={templateIndex}
-            disabled={isSaving}
-            onChange={(event) => setTemplateIndex(Number(event.target.value))}
-          >
-            {templateOptions.map((option, index) => (
-              <option key={option.label} value={index}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-          <button type="button" className={styles.primaryButton} onClick={applyTemplate} disabled={isSaving}>
-            Apply
-          </button>
-        </div>
-      )}
-
-      {items.length > 0 && (
-        <div className={styles.checklistEditList}>
-          {items.map((row, index) => (
-            <div key={row.id ?? `new-${index}`} className={styles.checklistEditRow}>
-              <input
-                type="checkbox"
-                className={styles.checklistCheckbox}
-                checked={row.completed}
-                disabled={isSaving}
-                onChange={() => toggleCompleted(index)}
-                aria-label={row.item ? `Mark "${row.item}" ${row.completed ? "incomplete" : "complete"}` : "Toggle complete"}
-              />
-              <input
-                type="text"
-                className={`${styles.checklistInput} ${row.completed ? styles.checklistInputCompleted : ""}`}
-                value={row.item}
-                disabled={isSaving}
-                onChange={(event) => updateItemText(index, event.target.value)}
-                onBlur={() => save(items)}
-              />
-              <button
-                type="button"
-                className={styles.checklistRemoveButton}
-                onClick={() => removeItem(index)}
-                disabled={isSaving}
-                aria-label={row.item ? `Remove "${row.item}"` : "Remove item"}
-              >
-                ×
-              </button>
-            </div>
-          ))}
-        </div>
-      )}
-
-      <div className={styles.checklistAddRow}>
-        <input
-          type="text"
-          className={styles.checklistInput}
-          placeholder={placeholder}
-          value={newItem}
-          disabled={isSaving}
-          onChange={(event) => setNewItem(event.target.value)}
-          onKeyDown={handleNewItemKeyDown}
-        />
+    <section>
+      <h3 className={styles.checklistHeading}>
         <button
           type="button"
-          className={styles.checklistAddButton}
-          onClick={addItem}
-          disabled={isSaving || !newItem.trim()}
+          className={styles.checklistToggle}
+          aria-expanded={isOpen}
+          aria-controls={listId}
+          onClick={() => setIsOpen((open) => !open)}
         >
-          Add
+          <span className={`${styles.mobileGroupChevron}${isOpen ? ` ${styles.mobileGroupChevronOpen}` : ""}`} aria-hidden="true">
+            ›
+          </span>
+          <span className={styles.checklistToggleTitle}>{isOpen ? title : summaryName}</span>
+          <span className={styles.checklistSummary}>{summary}</span>
         </button>
-      </div>
+      </h3>
 
-      {error && <p className={styles.rowError}>{error}</p>}
-    </div>
+      <div id={listId} hidden={!isOpen} className={styles.checklistBody}>
+        {pickerVisible && (
+          <div className={styles.inlineCategoryPicker}>
+            <select
+              className={styles.inlineCategorySelect}
+              value={templateIndex}
+              disabled={isSaving}
+              aria-label={`${summaryName} checklist template`}
+              onChange={(event) => setTemplateIndex(Number(event.target.value))}
+            >
+              {templateOptions.map((option, index) => (
+                <option key={option.label} value={index}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+            <button type="button" className={styles.drawerSecondaryButton} onClick={applyTemplate} disabled={isSaving}>
+              Apply template
+            </button>
+          </div>
+        )}
+
+        {items.length > 0 && (
+          <div className={styles.checklistEditList}>
+            {items.map((row, index) => (
+              <div key={row.id ?? `new-${index}`} className={styles.checklistEditRow}>
+                <input
+                  type="checkbox"
+                  className={styles.checklistCheckbox}
+                  checked={row.completed}
+                  disabled={isSaving}
+                  onChange={() => toggleCompleted(index)}
+                  aria-label={row.item ? `Mark "${row.item}" ${row.completed ? "incomplete" : "complete"}` : "Toggle complete"}
+                />
+                <input
+                  type="text"
+                  className={`${styles.checklistInput} ${row.completed ? styles.checklistInputCompleted : ""}`}
+                  value={row.item}
+                  disabled={isSaving}
+                  onChange={(event) => updateItemText(index, event.target.value)}
+                  onBlur={() => save(items)}
+                />
+                <button
+                  type="button"
+                  className={styles.checklistRemoveButton}
+                  onClick={() => removeItem(index)}
+                  disabled={isSaving}
+                  aria-label={row.item ? `Remove "${row.item}"` : "Remove item"}
+                >
+                  ×
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <div className={styles.checklistAddRow}>
+          <input
+            type="text"
+            className={styles.checklistInput}
+            placeholder={placeholder}
+            value={newItem}
+            disabled={isSaving}
+            onChange={(event) => setNewItem(event.target.value)}
+            onKeyDown={handleNewItemKeyDown}
+          />
+          <button
+            type="button"
+            className={styles.checklistAddButton}
+            onClick={addItem}
+            disabled={isSaving || !newItem.trim()}
+          >
+            Add
+          </button>
+        </div>
+
+        {templateOptions.length > 0 && items.length > 0 && !showTemplates && (
+          <button type="button" className={styles.drawerTextButton} onClick={() => setShowTemplates(true)}>
+            Add from a template
+          </button>
+        )}
+
+        {error && <p className={styles.rowError}>{error}</p>}
+      </div>
+    </section>
   );
 }
