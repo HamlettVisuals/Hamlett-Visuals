@@ -1413,3 +1413,45 @@ a.editor-overview__tile:focus-visible,
     padding-block: 12px;
   }
 }
+
+/* Kanban card drawer (KanbanBoard/DetailDrawer.tsx) on phones — see
+   KanbanBoard/drawer-scroll.ts for the touch-scrolling half of this.
+   Payload sizes .drawer at 100vh, which on phones is the height with the
+   browser toolbars hidden, so the drawer's bottom sat under them. It's now
+   the visible viewport's height (set from visualViewport, so it also
+   shrinks above an on-screen keyboard), 100dvh until that's measured.
+   The title row with the close button sticks to the top while the
+   content scrolls under it. */
+.kanban-detail-drawer {
+  top: var(--kanban-drawer-top, 0px);
+  height: var(--kanban-drawer-height, 100dvh);
+}
+
+.kanban-detail-drawer .drawer__content-children {
+  overscroll-behavior: contain;
+}
+
+.kanban-detail-drawer .drawer__header {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  margin-top: 0;
+  padding-top: calc(var(--base) * 2.5);
+  padding-bottom: 12px;
+  background: var(--theme-bg);
+}
+
+@media (max-width: 1024px) {
+  .kanban-detail-drawer .drawer__header {
+    padding-top: calc(var(--base) * 1.5);
+  }
+}
+
+/* Landscape phones: every pixel of height counts. */
+@media (max-height: 500px) {
+  .kanban-detail-drawer .drawer__header {
+    padding-top: 12px;
+    padding-bottom: 8px;
+    margin-bottom: 8px;
+  }
+}

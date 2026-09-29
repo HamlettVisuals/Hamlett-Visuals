@@ -4,6 +4,7 @@ import { useState, type ChangeEvent, type KeyboardEvent, type ReactNode } from "
 import { Drawer, Link } from "@payloadcms/ui";
 import { formatAdminURL } from "payload/shared";
 import styles from "./KanbanBoard.module.css";
+import { drawerScrollRef } from "./drawer-scroll";
 import { PAYMENT_STATUS_LABELS, POST_PRODUCTION_LABELS, SOURCE_LABELS, toDateInputValue } from "./format";
 import { inquiryClient, STAGES, type BoardInquiry, type StageValue, type TemplateWithCategory } from "./types";
 
@@ -75,9 +76,13 @@ export default function DetailDrawer({
   const client = inquiry ? inquiryClient(inquiry) : null;
 
   return (
-    <Drawer slug={DETAIL_DRAWER_SLUG} title={client?.name ?? inquiry?.name ?? "Inquiry"}>
+    <Drawer
+      slug={DETAIL_DRAWER_SLUG}
+      className="kanban-detail-drawer"
+      title={client?.name ?? inquiry?.name ?? "Inquiry"}
+    >
       {inquiry && (
-        <div className={styles.drawerBody} key={inquiry.id}>
+        <div className={styles.drawerBody} key={inquiry.id} ref={drawerScrollRef}>
           <div className={styles.drawerHeader}>
             <h2 className={styles.drawerClientName}>{client?.name ?? inquiry.name}</h2>
             <div className={styles.drawerBadgeRow}>
