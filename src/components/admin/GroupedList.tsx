@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useSearchParams } from "next/navigation";
 import { Link } from "@payloadcms/ui";
 
 // A list split into collapsible sections, each with a heading, a count, an
@@ -29,10 +30,17 @@ export type GroupedListSection = {
 export default function GroupedList({ sections }: { sections: GroupedListSection[] }) {
   const [collapsed, setCollapsed] = useState<ReadonlySet<string>>(() => new Set());
   const [flashId, setFlashId] = useState<string | null>(null);
+  const searchParams = useSearchParams();
+  // The section a #hash asked for, for a moment after arriving: Payload's
+  // list view rewrites the URL with its default query on load, which drops
+  // the hash and scrolls back to the top, so the scroll is applied again
+  // once that has happened.
+  const pendingId = useRef<string | null>(null);
 
   // Open and scroll to the section named in the #hash, on load and when the
   // hash changes.
   useEffect(() => {
+    let timer: number | undefined;
     const reveal = () => {
       const id = decodeURIComponent(window.location.hash.slice(1));
       const section = sections.find((s) => s.id && s.id === id);
@@ -44,12 +52,23 @@ export default function GroupedList({ sections }: { sections: GroupedListSection
         return next;
       });
       setFlashId(id);
+      pendingId.current = id;
+      window.clearTimeout(timer);
+      timer = window.setTimeout(() => (pendingId.current = null), 2000);
       requestAnimationFrame(() => document.getElementById(id)?.scrollIntoView({ block: "start" }));
     };
     reveal();
     window.addEventListener("hashchange", reveal);
-    return () => window.removeEventListener("hashchange", reveal);
+    return () => {
+      window.removeEventListener("hashchange", reveal);
+      window.clearTimeout(timer);
+    };
   }, [sections]);
+
+  useEffect(() => {
+    const id = pendingId.current;
+    if (id) requestAnimationFrame(() => document.getElementById(id)?.scrollIntoView({ block: "start" }));
+  }, [searchParams]);
 
   const toggle = (key: string) =>
     setCollapsed((prev) => {

@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useTransition } from "react";
 import { usePathname } from "next/navigation";
-import { Button, DefaultCell, useConfig } from "@payloadcms/ui";
+import { Button, DefaultCell, Link, useConfig } from "@payloadcms/ui";
 import type { DefaultCellComponentProps } from "payload";
 import { formatAdminURL } from "payload/shared";
 import { OTHER_SESSION_TYPE } from "@/lib/booking-session-type";
@@ -67,18 +67,90 @@ export function CategoriesListDescription() {
   return <ListIntro collectionSlug="categories" addLabel="+ Add category" />;
 }
 
-// The linked name, with a note on the protected "Other" row.
+// The linked name, with a note on the protected "Other" row. On phones the
+// Albums column is hidden and its "3 albums →" sits under the name instead
+// (admin-overrides.css).
 export function CategoryNameCell(props: DefaultCellComponentProps) {
   return (
     <span className="category-name-cell">
       <DefaultCell {...props} />
-      {isOther(props.rowData) && (
+      {isOther(props.rowData) ? (
         <span className="category-name-cell__note" data-category-other>
           Used by your CRM, not shown on the site
+        </span>
+      ) : (
+        <span className="category-name-cell__albums">
+          <CategoryAlbumsLink categoryId={props.rowData?.id} slug={props.rowData?.slug} />
         </span>
       )}
     </span>
   );
+}
+
+// Albums per category, from one request for every album's category, shared
+// by all rows. Kept only briefly so a later visit (after adding an album)
+// fetches fresh counts.
+let albumCounts: { at: number; promise: Promise<Map<string, number>> } | null = null;
+function loadAlbumCounts(apiBase: string): Promise<Map<string, number>> {
+  if (!albumCounts || Date.now() - albumCounts.at > 5000) {
+    const params = new URLSearchParams({ depth: "0", pagination: "false", "select[category]": "true" });
+    const promise = fetch(`${apiBase}/events?${params}`, { credentials: "include" })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((body: { docs?: { category?: number | string | { id: number | string } | null }[] } | null) => {
+        const counts = new Map<string, number>();
+        for (const album of body?.docs ?? []) {
+          const category = album.category && typeof album.category === "object" ? album.category.id : album.category;
+          if (category != null) counts.set(String(category), (counts.get(String(category)) ?? 0) + 1);
+        }
+        return counts;
+      })
+      .catch(() => {
+        albumCounts = null;
+        return new Map<string, number>();
+      });
+    albumCounts = { at: Date.now(), promise };
+  }
+  return albumCounts.promise;
+}
+
+function useAlbumCount(categoryId: unknown): number | null {
+  const { config } = useConfig();
+  const [count, setCount] = useState<number | null>(null);
+  const apiBase = `${config.serverURL ?? ""}${config.routes.api}`;
+  useEffect(() => {
+    let cancelled = false;
+    void loadAlbumCounts(apiBase).then((counts) => {
+      if (!cancelled) setCount(counts.get(String(categoryId)) ?? 0);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [apiBase, categoryId]);
+  return count;
+}
+
+// "3 albums →" to that category's section of the Albums list, or "No
+// albums". Nothing for "Other" (CRM-only, albums can't go in it).
+function CategoryAlbumsLink({ categoryId, slug }: { categoryId: unknown; slug: unknown }) {
+  const { config } = useConfig();
+  const count = useAlbumCount(categoryId);
+  if (count === null || typeof slug !== "string") return null;
+  if (count === 0) return <span className="category-albums category-albums--none">No albums</span>;
+  return (
+    <Link
+      className="category-albums"
+      href={`${formatAdminURL({ adminRoute: config.routes.admin, path: "/collections/events" })}#category-${slug}`}
+      prefetch={false}
+    >
+      {count} {count === 1 ? "album" : "albums"} &rarr;
+    </Link>
+  );
+}
+
+// The Categories list's Albums column (a list-only `albums` ui field).
+export function CategoryAlbumsCell({ rowData }: DefaultCellComponentProps) {
+  if (isOther(rowData)) return null;
+  return <CategoryAlbumsLink categoryId={rowData?.id} slug={rowData?.slug} />;
 }
 
 type PhotoLike = {

@@ -4,12 +4,13 @@ import { default as default_4318ce57f942bf59d91183db3cbd0fbb } from '../../../co
 import { default as default_09fb0216af9ed654c0c7dfe04dbfd66c } from '../../../components/admin/HiddenDiff'
 import { default as default_05d63ad5a72bb5528538c90265118706 } from '../../../components/admin/CharacterCounter'
 import { CategoryThumbnailCell as CategoryThumbnailCell_34f53f145c1dd1973f992a6af63ac90d } from '../../../components/admin/CategoryCells'
+import { EmptyField as EmptyField_271eec196f6613c6ae3ecc547136025a } from '../../../components/admin/AlbumCells'
+import { CategoryAlbumsCell as CategoryAlbumsCell_34f53f145c1dd1973f992a6af63ac90d } from '../../../components/admin/CategoryCells'
 import { CategoriesListDescription as CategoriesListDescription_34f53f145c1dd1973f992a6af63ac90d } from '../../../components/admin/CategoryCells'
 import { default as default_49f4009bbc7bc7fd7fd116764fa09aa1 } from '../../../components/admin/EditHistory'
 import { default as default_a779bcd001681498b9df2066a3cdc326 } from '../../../components/admin/PreviewSizeButtons'
 import { default as default_f9fe0edb7b576d729d7593eacd2325b9 } from '../../../components/admin/NewDocumentTitle'
 import { default as default_6aeb1fbc8f89ed5df824f9ed2a8ef3f4 } from '../../../components/admin/CloseEditorButton'
-import { EmptyField as EmptyField_271eec196f6613c6ae3ecc547136025a } from '../../../components/admin/AlbumCells'
 import { default as default_f7ada3d495e51370acd8dcac7a5e5f13 } from '../../../components/admin/AlbumThumbnailCell'
 import { AlbumTitleCell as AlbumTitleCell_271eec196f6613c6ae3ecc547136025a } from '../../../components/admin/AlbumCells'
 import { AlbumsListDescription as AlbumsListDescription_271eec196f6613c6ae3ecc547136025a } from '../../../components/admin/AlbumCells'
@@ -80,12 +81,13 @@ export const importMap = {
   "/components/admin/HiddenDiff#default": default_09fb0216af9ed654c0c7dfe04dbfd66c,
   "/components/admin/CharacterCounter#default": default_05d63ad5a72bb5528538c90265118706,
   "/components/admin/CategoryCells#CategoryThumbnailCell": CategoryThumbnailCell_34f53f145c1dd1973f992a6af63ac90d,
+  "/components/admin/AlbumCells#EmptyField": EmptyField_271eec196f6613c6ae3ecc547136025a,
+  "/components/admin/CategoryCells#CategoryAlbumsCell": CategoryAlbumsCell_34f53f145c1dd1973f992a6af63ac90d,
   "/components/admin/CategoryCells#CategoriesListDescription": CategoriesListDescription_34f53f145c1dd1973f992a6af63ac90d,
   "/components/admin/EditHistory#default": default_49f4009bbc7bc7fd7fd116764fa09aa1,
   "/components/admin/PreviewSizeButtons#default": default_a779bcd001681498b9df2066a3cdc326,
   "/components/admin/NewDocumentTitle#default": default_f9fe0edb7b576d729d7593eacd2325b9,
   "/components/admin/CloseEditorButton#default": default_6aeb1fbc8f89ed5df824f9ed2a8ef3f4,
-  "/components/admin/AlbumCells#EmptyField": EmptyField_271eec196f6613c6ae3ecc547136025a,
   "/components/admin/AlbumThumbnailCell#default": default_f7ada3d495e51370acd8dcac7a5e5f13,
   "/components/admin/AlbumCells#AlbumTitleCell": AlbumTitleCell_271eec196f6613c6ae3ecc547136025a,
   "/components/admin/AlbumCells#AlbumsListDescription": AlbumsListDescription_271eec196f6613c6ae3ecc547136025a,

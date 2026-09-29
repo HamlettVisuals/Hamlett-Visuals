@@ -214,7 +214,7 @@ export const Categories: CollectionConfig = {
     },
     hideAPIURL: true,
     useAsTitle: "name",
-    defaultColumns: ["name", "coverPhoto", "published"],
+    defaultColumns: ["name", "coverPhoto", "albums", "published"],
     // Only a handful of categories, so show them all on one page and any row
     // can be dragged anywhere. The per-page control is hidden, and src/proxy.ts
     // forces limit=100 (and the drag sort) over any saved per-user setting.
@@ -313,6 +313,19 @@ export const Categories: CollectionConfig = {
         description: "The photo used for this category's tile on the homepage.",
         components: {
           Cell: "/components/admin/CategoryCells#CategoryThumbnailCell",
+        },
+      },
+    },
+    {
+      // List column only: "3 albums →", linking to this category's section
+      // of the Albums list (CategoryCells.tsx). Not stored.
+      name: "albums",
+      type: "ui",
+      label: "Albums",
+      admin: {
+        components: {
+          Field: "/components/admin/AlbumCells#EmptyField",
+          Cell: "/components/admin/CategoryCells#CategoryAlbumsCell",
         },
       },
     },

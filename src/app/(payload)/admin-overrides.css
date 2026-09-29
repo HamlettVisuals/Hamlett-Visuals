@@ -740,16 +740,84 @@
    content's width; the name takes the rest. */
 .collection-list--categories #heading-name,
 .collection-list--categories #heading-coverPhoto,
+.collection-list--categories #heading-albums,
 .collection-list--categories #heading-published,
 .collection-list--categories .cell-name,
 .collection-list--categories .cell-coverPhoto,
+.collection-list--categories .cell-albums,
 .collection-list--categories .cell-published {
   min-width: 0;
 }
 
 .collection-list--categories #heading-coverPhoto,
+.collection-list--categories #heading-albums,
 .collection-list--categories #heading-published {
   width: 1%;
+}
+
+.collection-list--categories .cell-albums {
+  white-space: nowrap;
+}
+
+/* "3 albums →" (CategoryCells.tsx): its own column, or under the name on
+   phones, where the column is hidden. */
+.category-albums {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  color: var(--theme-text);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.category-albums--none {
+  color: var(--theme-elevation-500);
+  font-weight: 400;
+  text-decoration: none;
+}
+
+.category-name-cell__albums {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .collection-list--categories #heading-albums,
+  .collection-list--categories .cell-albums {
+    display: none;
+  }
+
+  .category-name-cell__albums {
+    display: block;
+    font-size: 13px;
+  }
+
+  .category-name-cell__albums .category-albums {
+    min-height: 0;
+  }
+}
+
+/* On touch phones the name and "3 albums →" are two 44px targets (see the
+   cell-link rule under pointer: coarse above), stacked rather than
+   overlapping: each would otherwise take half of the other's area. */
+@media (pointer: coarse) and (max-width: 768px) {
+  /* Payload clips the cell's content box, which would cut the links'
+     padding (their tap area) off. */
+  .collection-list--categories .category-name-cell {
+    overflow: visible;
+  }
+
+  .collection-list--categories .category-name-cell a:not(.category-albums) {
+    margin-bottom: 0;
+  }
+
+  /* Its 44px box reaches into the cell's bottom padding, but not past the
+     row, where the next row would cover it. */
+  .category-name-cell__albums .category-albums {
+    min-height: 44px;
+    margin-top: 0;
+    margin-bottom: -6px;
+  }
 }
 
 /* "Other" is pinned last: no drag handle on its row. */
