@@ -3,6 +3,7 @@ import { headers as getHeaders } from "next/headers";
 import { getPayload } from "payload";
 import { Resend } from "resend";
 import config from "@payload-config";
+import { emailFrom } from "@/lib/email-from";
 
 // Admin-only action behind the "Request a testimonial" banner
 // (TestimonialRequestBanner.tsx) on an Inquiry's edit view. Unlike
@@ -58,23 +59,34 @@ export async function POST(
   const token = randomBytes(32).toString("hex");
   const siteURL = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
   const requestLink = `${siteURL}/testimonial-request/${token}`;
-  const fromAddress =
-    process.env.RESEND_FROM_ADDRESS || "Hamlett Visuals <onboarding@resend.dev>";
-
+  // The inquiry is only marked "request sent" (below) once Resend has
+  // accepted the email. The SDK doesn't throw when an email isn't sent
+  // (refused, or Resend unreachable) — it returns { error } — so that, or
+  // anything unexpected thrown, ends here with nothing saved, and the banner
+  // shows her the message to try again.
+  const sendFailed = () =>
+    Response.json({ error: "Email couldn't be sent. Try again later." }, { status: 502 });
   const resend = new Resend(apiKey);
   try {
-    await resend.emails.send({
-      from: fromAddress,
+    const { error } = await resend.emails.send({
+      from: emailFrom().formatted,
       to: inquiry.email,
       subject: "Would you share a quick testimonial?",
       text: `Hi ${inquiry.name},\n\nIt was such a pleasure working with you! If you have a minute, I'd love it if you could share a few words about your experience — it means a lot and helps other clients find me.\n\n${requestLink}\n\nThank you!\n\n— Hamlett Visuals`,
     });
+    if (error) {
+      payload.logger.error(
+        { resendError: error, inquiryId: id },
+        `[testimonial-request] couldn't send the testimonial request email for inquiry ${id} — Resend: ${error.name}: ${error.message}`,
+      );
+      return sendFailed();
+    }
   } catch (error) {
     payload.logger.error(
-      { err: error },
-      "[testimonial-request] failed to send the testimonial request email",
+      { err: error, inquiryId: id },
+      `[testimonial-request] couldn't send the testimonial request email for inquiry ${id} — unexpected error`,
     );
-    return Response.json({ error: "Failed to send the email." }, { status: 502 });
+    return sendFailed();
   }
 
   const sentAt = new Date().toISOString();

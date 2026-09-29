@@ -65,3 +65,36 @@ as it's done.
       field and generate a migration (drops `show_qr_code` from
       `final_cta_footer` and `version_show_qr_code` from
       `_final_cta_footer_v`).
+- [ ] **Set up email sending on a real domain, then test every email end to
+      end.** Until this is done every email goes out from Resend's test
+      sender (`onboarding@resend.dev`), which only delivers to the Resend
+      account's own inbox: client auto-replies and testimonial requests are
+      refused (logged as "couldn't send … — Resend: validation_error", and the
+      testimonial banner says "Email couldn't be sent. Try again later.").
+      1. Buy the domain.
+      2. Verify it in Resend (Domains → Add domain; add the DNS records it
+         lists, wait for "Verified").
+      3. On Vercel, set `RESEND_FROM_ADDRESS` for Production, e.g.
+         `Hamlett Visuals <hello@<domain>>`, and check `RESEND_API_KEY` is set
+         there too. Redeploy. (The same address is used by every sender —
+         `src/lib/email-from.ts`.)
+      4. On the live site, test each one:
+         - **Forgot password** (on /hv-studio/login) → the reset email arrives
+           and its link works.
+         - **Owner notification** → send a booking request and a question from
+           the site; each arrives in the Site Settings contact inbox, and
+           Reply goes to the sender.
+         - **Client auto-reply** → the address used in the forms above gets
+           "We got your booking request" / "We got your question".
+         - **Testimonial request** → from a Completed inquiry, Send request;
+           the email arrives, the link opens the form, and the inquiry shows
+           "Testimonial Request Sent".
+         Anything that doesn't arrive: Vercel logs → search "couldn't send".
+- [ ] **Know how to get back into /hv-studio if she's locked out** (forgot
+      password not working, or too many failed logins). From this project,
+      with `.env.local` holding the live `DATABASE_URI`:
+      `npm run payload -- run src/scripts/resetAdminPassword.ts <her-login-email>`
+      Type the new password twice at the hidden prompt (12+ characters; it
+      never goes on the command line or into shell history). It sets that one
+      account's password and clears the failed-login lock; with a wrong email,
+      mismatched or too-short password it changes nothing.

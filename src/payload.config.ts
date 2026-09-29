@@ -4,6 +4,7 @@ import { buildConfig } from "payload";
 import { postgresAdapter } from "@payloadcms/db-postgres";
 import { s3Storage } from "@payloadcms/storage-s3";
 import { lexicalEditor } from "@payloadcms/richtext-lexical";
+import { resendAdapter } from "@payloadcms/email-resend";
 import sharp from "sharp";
 
 // This file's own imports (and the shared "#src/access/isAdmin" import
@@ -59,6 +60,7 @@ import { hideInternalFieldsFromHistory } from "#src/lib/hide-internal-history.ts
 import { revalidateCollectionsOnChange, revalidateGlobalsOnChange } from "#src/lib/revalidate-site.ts";
 import { MB, VIDEO_MAX_MB } from "#src/lib/backstage-limits.ts";
 import { UPLOAD_FOLDERS } from "#src/lib/r2.ts";
+import { emailFrom } from "#src/lib/email-from.ts";
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -227,6 +229,18 @@ export default buildConfig({
     limits: { fileSize: VIDEO_MAX_MB * MB },
   },
   editor: lexicalEditor(),
+  // Payload's own emails (forgot-password) go out through Resend, with the
+  // same key and sender as the site's own emails (lib/email-from.ts). With no
+  // key (a fresh local checkout) Payload falls back to logging each email to
+  // the console instead of sending it. The inquiry and testimonial emails
+  // don't go through this — they call the Resend SDK directly.
+  email: process.env.RESEND_API_KEY
+    ? resendAdapter({
+        apiKey: process.env.RESEND_API_KEY,
+        defaultFromAddress: emailFrom().address,
+        defaultFromName: emailFrom().name,
+      })
+    : undefined,
   secret: process.env.PAYLOAD_SECRET ?? "",
   typescript: {
     outputFile: path.resolve(dirname, "payload-types.ts"),
