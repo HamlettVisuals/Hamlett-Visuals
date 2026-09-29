@@ -253,10 +253,10 @@ export default function CalendarView({
               >
                 <span className={styles.calendarDayNumber}>{day.date.getDate()}</span>
                 <span className={styles.calendarMarkers}>
-                  {dayEvents.slice(0, extra > 0 ? MAX_MARKERS - 1 : MAX_MARKERS).map((event, index) => (
+                  {dayEvents.slice(0, MAX_MARKERS).map((event, index) => (
                     <EventMarker key={`${event.inquiry.id}-${event.kind}-${index}`} event={event} />
                   ))}
-                  {extra > 0 && <span className={styles.calendarMarkerMore}>+{extra + 1}</span>}
+                  {extra > 0 && <span className={styles.calendarMarkerMore}>+{extra}</span>}
                 </span>
               </button>
             );
