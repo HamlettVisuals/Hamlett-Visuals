@@ -476,6 +476,7 @@
 }
 
 .calendarWeekdays {
+  flex-shrink: 0;
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
 }
@@ -490,7 +491,12 @@
   text-align: left;
 }
 
+/* flex-shrink: 0 — the grid's overflow: hidden (for its rounded corners)
+   would otherwise let the flex column squash it to whatever height is left
+   and clip its last weeks with nothing to scroll to (a 1280x600 window lost
+   weeks 4-6). Kept at full height, .calendar scrolls instead. */
 .calendarGrid {
+  flex-shrink: 0;
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
   grid-auto-rows: minmax(92px, 1fr);
@@ -597,6 +603,164 @@
 .calendarEventCategory {
   font-weight: 500;
   opacity: 0.75;
+}
+
+/* Compact calendar (Calendar.tsx's COMPACT_QUERY: phones, and screens too
+   short for a grid of labelled events): each day shows its events as
+   category-coloured markers, and the month's events are listed with full
+   details in the agenda below. */
+
+/* While it's showing, the page scrolls instead of the board's fixed-height
+   box — on a landscape phone that box left ~160px for the whole calendar. */
+.board:has(> .calendarCompact) {
+  height: auto;
+  min-height: calc(100vh - var(--app-header-height));
+}
+
+.board > .calendarCompact {
+  flex: none;
+  overflow-y: visible;
+}
+
+.calendarCompact .calendarGrid {
+  grid-auto-rows: minmax(46px, auto);
+}
+
+.calendarCompact .calendarDay {
+  gap: 4px;
+  padding: 5px 4px;
+}
+
+.calendarDayButton {
+  border: none;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.calendarDayButton:hover {
+  background: var(--theme-elevation-100);
+}
+
+.calendarDaySelected {
+  box-shadow: inset 0 0 0 2px var(--theme-elevation-800);
+}
+
+.calendarMarkers {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 3px;
+}
+
+.calendarMarkers > span:not(.calendarMarkerMore) {
+  width: 8px;
+  height: 8px;
+}
+
+.calendarMarkerMore {
+  color: var(--theme-elevation-700);
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.calendarAgenda {
+  flex-shrink: 0;
+  border: 1px solid var(--theme-elevation-150);
+  border-radius: 8px;
+  background: var(--theme-input-bg);
+  scroll-margin: 12px;
+}
+
+/* The agenda's own list scrolls (opening at today), so the page can stay at
+   the grid. */
+.calendarAgendaScroll {
+  position: relative;
+  max-height: min(60vh, 480px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.calendarAgendaDay {
+  padding: 10px 12px 6px;
+  border-left: 3px solid transparent;
+}
+
+.calendarAgendaDay + .calendarAgendaDay {
+  border-top: 1px solid var(--theme-elevation-100);
+}
+
+.calendarAgendaDaySelected {
+  border-left-color: var(--theme-elevation-800);
+  background: var(--theme-elevation-50);
+}
+
+/* Days that have passed stay listed, just quieter. */
+.calendarAgendaDayPast {
+  opacity: 0.55;
+}
+
+.calendarAgendaDate {
+  margin: 0 0 2px;
+  color: var(--theme-elevation-500);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.calendarAgendaList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.calendarAgendaRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 44px;
+  padding: 4px 0;
+  border: none;
+  background: none;
+  color: var(--theme-text);
+  text-align: left;
+  cursor: pointer;
+}
+
+.calendarAgendaRow > span:first-child {
+  width: 9px;
+  height: 9px;
+}
+
+.calendarAgendaText {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.calendarAgendaName {
+  font-size: 14px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.calendarAgendaMeta {
+  color: var(--theme-elevation-600);
+  font-size: 12px;
+}
+
+.calendarAgendaRow:hover .calendarAgendaName {
+  text-decoration: underline;
+}
+
+.calendarAgendaEmpty {
+  margin: 0;
+  padding: 16px 12px;
+  color: var(--theme-elevation-500);
+  font-size: 13px;
 }
 
 /* Mobile board list (< 768px) — replaces .columns; see the media query at
