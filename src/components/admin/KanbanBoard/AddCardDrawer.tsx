@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Drawer, useModal } from "@payloadcms/ui";
 import styles from "./KanbanBoard.module.css";
+import { drawerScrollRef } from "./drawer-scroll";
 import { SOURCE_LABELS, TYPE_LABELS } from "./format";
 import type { BoardInquiry, CategoryOption } from "./types";
 
@@ -86,8 +87,8 @@ export default function AddCardDrawer({
   };
 
   return (
-    <Drawer slug={ADD_CARD_DRAWER_SLUG} title="Add Card">
-      <form className={styles.addCardForm} onSubmit={handleSubmit}>
+    <Drawer slug={ADD_CARD_DRAWER_SLUG} className="kanban-drawer" title="Add Card">
+      <form className={styles.addCardForm} onSubmit={handleSubmit} ref={drawerScrollRef}>
         <div className={styles.stageField}>
           <label className={styles.detailLabel} htmlFor="add-card-name">
             Client name

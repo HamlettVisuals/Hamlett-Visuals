@@ -78,7 +78,7 @@ export default function DetailDrawer({
   return (
     <Drawer
       slug={DETAIL_DRAWER_SLUG}
-      className="kanban-detail-drawer"
+      className="kanban-drawer"
       title={client?.name ?? inquiry?.name ?? "Inquiry"}
     >
       {inquiry && (

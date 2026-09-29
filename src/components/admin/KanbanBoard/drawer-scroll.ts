@@ -1,6 +1,7 @@
 // Makes a Payload Drawer's content touch-scrollable on phones. Attached as
-// a callback ref on an element inside the drawer (DetailDrawer.tsx); styles
-// that go with it are under .kanban-detail-drawer in admin-overrides.css.
+// a callback ref on the top element inside each kanban drawer (Detail, Add
+// Card, Questions, Templates), whose <Drawer> also gets className
+// "kanban-drawer" for the styles that go with it in admin-overrides.css.
 //
 // Why it's needed: Payload's Drawer is a @faceless-ui/modal Modal, which
 // locks the page behind it with body-scroll-lock, handing it the drawer's

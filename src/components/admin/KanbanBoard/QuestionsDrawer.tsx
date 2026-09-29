@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Drawer } from "@payloadcms/ui";
 import type { Inquiry } from "@/payload-types";
 import styles from "./KanbanBoard.module.css";
+import { drawerScrollRef } from "./drawer-scroll";
 import { formatTimestamp } from "./format";
 import type { CategoryOption } from "./types";
 
@@ -38,8 +39,8 @@ export default function QuestionsDrawer({
   const handled = questions.filter((question) => question.questionHandled);
 
   return (
-    <Drawer slug={QUESTIONS_DRAWER_SLUG} title="Questions">
-      <div className={styles.questionsBody}>
+    <Drawer slug={QUESTIONS_DRAWER_SLUG} className="kanban-drawer" title="Questions">
+      <div className={styles.questionsBody} ref={drawerScrollRef}>
         <div>
           <h3 className={styles.drawerSectionTitle}>Unhandled ({unhandled.length})</h3>
           {unhandled.length === 0 ? (
