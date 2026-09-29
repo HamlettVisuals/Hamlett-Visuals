@@ -1,19 +1,16 @@
 "use client";
 
-import { useEffect, useId, useState } from "react";
-import { usePathname } from "next/navigation";
-import { Button, DefaultCell, ReactSelect, useConfig, useListQuery } from "@payloadcms/ui";
-import type { DefaultCellComponentProps, Where } from "payload";
-import { formatAdminURL } from "payload/shared";
-import { OTHER_SESSION_TYPE } from "@/lib/booking-session-type";
+import { useEffect, useState } from "react";
+import { DefaultCell, useConfig } from "@payloadcms/ui";
+import type { DefaultCellComponentProps } from "payload";
 import { ListIntro } from "@/components/admin/CategoryCells";
 
 // Custom pieces of the Albums list view (collections/Events.ts, slug
-// `events`). The thumbnail cell is a server component of its own
-// (AlbumThumbnailCell.tsx); the Live/Hidden pill is the Categories one
-// (CategoryCells.tsx). Layout rules (hidden bulk-select column, Columns and
-// Filters buttons, Payload's own "No results") live in
-// app/(payload)/admin-overrides.css under .collection-list--events.
+// `events`). The main list is grouped by category (AlbumsListView.tsx);
+// these cells are for the table the Trash tab still uses. The thumbnail
+// cell is a server component of its own (AlbumThumbnailCell.tsx); the
+// Live/Hidden pill is the Categories one (CategoryCells.tsx). Layout rules
+// live in app/(payload)/admin-overrides.css under .collection-list--events.
 
 export function AlbumsListDescription() {
   return <ListIntro collectionSlug="events" addLabel="+ Add album" />;
@@ -22,8 +19,8 @@ export function AlbumsListDescription() {
 type CategoryOption = { id: number | string; name: string; slug?: string; deletedAt?: string | null };
 
 // Every category (trashed ones too, so an album in one still gets a name),
-// in drag order, fetched once per page load and shared by the filter
-// dropdown and every row's title cell.
+// in drag order, fetched once per page load and shared by every row's
+// title cell (and AlbumMatchNote.tsx).
 let categoriesPromise: Promise<CategoryOption[]> | null = null;
 function loadCategories(apiBase: string): Promise<CategoryOption[]> {
   if (!categoriesPromise) {
@@ -93,134 +90,4 @@ export function AlbumTitleCell(props: DefaultCellComponentProps) {
 // nothing to show in the editor.
 export function EmptyField() {
   return null;
-}
-
-// Finds `category: { equals }` anywhere in the list's where (Payload may
-// wrap it in and/or).
-function selectedCategory(where: Where | undefined): string {
-  if (!where || typeof where !== "object") return "";
-  const own = (where.category as { equals?: unknown } | undefined)?.equals;
-  if (own !== undefined && own !== null) return String(own);
-  for (const key of ["and", "or"] as const) {
-    const list = where[key];
-    if (Array.isArray(list)) {
-      for (const part of list) {
-        const found = selectedCategory(part);
-        if (found) return found;
-      }
-    }
-  }
-  return "";
-}
-
-// Payload's search box labels itself "Search by Title" from the searchable
-// field's label, with no per-collection override. React only writes the
-// placeholder when that label changes, so setting it after each render
-// sticks.
-const SEARCH_PLACEHOLDER = "Search albums";
-
-// A simple "All categories" dropdown in place of Payload's Filters builder
-// (Payload's own ReactSelect, so it looks like every other dropdown in the
-// admin), and the empty states. Rendered just after the search row;
-// admin-overrides.css lays the dropdown out to the right of the search
-// bar, stacking below it on phones. The filter goes through Payload's own
-// list query (the URL's where[category][equals]), so it combines with
-// search, sort and paging.
-export function AlbumsListToolbar() {
-  const { config } = useConfig();
-  const pathname = usePathname() ?? "";
-  const { data, query, refineListData } = useListQuery();
-  // Only categories albums can go in: not "Other" (CRM-only), not trashed.
-  const categories = useCategories().filter((c) => c.slug !== OTHER_SESSION_TYPE && !c.deletedAt);
-  const selectId = useId();
-  const isTrash = pathname.replace(/\/$/, "").endsWith("/trash");
-  const category = selectedCategory(query?.where);
-  const search = typeof query?.search === "string" ? query.search.trim() : "";
-
-  useEffect(() => {
-    const input = document.getElementById("search-filter-input");
-    if (input && input.getAttribute("placeholder") !== SEARCH_PLACEHOLDER) {
-      input.setAttribute("placeholder", SEARCH_PLACEHOLDER);
-      input.setAttribute("aria-label", SEARCH_PLACEHOLDER);
-    }
-  });
-
-  const onCategoryChange = (value: string) => {
-    void refineListData({ where: value ? { category: { equals: value } } : {}, page: 1 });
-  };
-
-  const categoryOptions = [
-    { label: "All categories", value: "" },
-    ...categories.map((c) => ({ label: c.name, value: String(c.id) })),
-  ];
-
-  const isEmpty = data?.totalDocs === 0;
-  const filtered = Boolean(search || category);
-  const categoryName = categories.find((c) => String(c.id) === category)?.name;
-
-  return (
-    <>
-      <div className="albums-toolbar">
-        <label htmlFor={selectId} className="albums-toolbar__label">
-          Category
-        </label>
-        <ReactSelect
-          className="albums-toolbar__select"
-          inputId={selectId}
-          isClearable={false}
-          isSearchable={false}
-          options={categoryOptions}
-          value={categoryOptions.find((o) => o.value === category) ?? categoryOptions[0]}
-          onChange={(option) => {
-            const picked = Array.isArray(option) ? option[0] : option;
-            onCategoryChange(typeof picked?.value === "string" ? picked.value : "");
-          }}
-        />
-      </div>
-
-      {isEmpty && !isTrash && (
-        <div className="albums-empty" role="status">
-          {filtered ? (
-            <>
-              <h3 className="albums-empty__title">
-                {search ? "No albums match your search" : `No albums in ${categoryName ?? "this category"} yet`}
-              </h3>
-              <p className="albums-empty__text">
-                {search && category
-                  ? `Nothing called "${search}" in ${categoryName ?? "this category"}.`
-                  : search
-                    ? `Nothing called "${search}".`
-                    : "Choose another category, or add an album to this one."}
-              </p>
-              <button
-                type="button"
-                className="albums-empty__clear"
-                // "" rather than undefined: Payload's search box only resets
-                // its own text when the URL's search changes to a string.
-                onClick={() => void refineListData({ search: "", where: {}, page: 1 })}
-              >
-                Show all albums
-              </button>
-            </>
-          ) : (
-            <>
-              <h3 className="albums-empty__title">No albums yet</h3>
-              <p className="albums-empty__text">
-                Add your first album, then give it photos. It shows on its category&apos;s page.
-              </p>
-              <Button
-                el="link"
-                to={formatAdminURL({ adminRoute: config.routes.admin, path: "/collections/events/create" })}
-                buttonStyle="primary"
-                size="medium"
-                margin={false}
-              >
-                + Add album
-              </Button>
-            </>
-          )}
-        </div>
-      )}
-    </>
-  );
 }

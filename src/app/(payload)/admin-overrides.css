@@ -1007,11 +1007,11 @@ button.category-status:focus-visible {
   line-height: 1.4;
 }
 
-/* Albums list view (collections/Events.ts, components/admin/AlbumCells.tsx).
-   Same approach as Categories, but albums page and search: the search bar,
-   page controls and Trash tab stay; bulk-select checkboxes and their bar,
-   the Columns / Filters / Group-by buttons and Payload's "Create New" pill
-   go. The category dropdown in AlbumsListToolbar replaces Filters. */
+/* Albums list view (collections/Events.ts). The main list is grouped by
+   category (components/admin/AlbumsListView.tsx); the Trash tab keeps
+   Payload's table (cells in AlbumCells.tsx). On both: the search bar and
+   Trash tab stay; bulk-select checkboxes and their bar, the Columns /
+   Filters / Group-by buttons and Payload's "Create New" pill go. */
 .collection-list--events .list-create-new-doc__create-new-button,
 .collection-list--events .list-controls__toggle-columns,
 .collection-list--events .list-controls__toggle-where,
@@ -1026,58 +1026,13 @@ button.category-status:focus-visible {
   display: none;
 }
 
-/* AlbumsListToolbar shows its own empty state on the main list (not the
-   Trash tab, which keeps Payload's "No trashed Albums"). */
-.collection-list--events:has(.albums-empty) .no-results {
+/* While the grouped list is showing, Payload's own table, page controls
+   and "No results" (from its hidden, paged query) go. The Trash tab and
+   picker drawers don't render the grouped list, so they keep them. */
+.collection-list--events:has(.albums-grouped) .collection-list__tables,
+.collection-list--events:has(.albums-grouped) .page-controls,
+.collection-list--events:has(.albums-grouped) .no-results {
   display: none;
-}
-
-/* The category dropdown (AlbumsListToolbar) sits to the right of the
-   search bar: Payload renders it after the search row, so the list's wrap
-   becomes a wrapping flex row where everything else stays full width.
-   The two share a line while there's room (search ≥ 320px) and the
-   dropdown drops below the search bar on phones. */
-.collection-list--events .collection-list__wrap {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-start;
-  column-gap: 12px;
-}
-
-.collection-list--events .collection-list__wrap > * {
-  flex: 1 1 100%;
-  min-width: 0;
-}
-
-.collection-list--events .collection-list__wrap > .list-controls {
-  flex: 1 1 320px;
-}
-
-.collection-list--events .collection-list__wrap > .albums-toolbar {
-  flex: 0 1 240px;
-  margin-bottom: 20px;
-}
-
-/* Stacked under the search bar on phones: full width, like the search. */
-@media (max-width: 680px) {
-  .collection-list--events .collection-list__wrap > .albums-toolbar {
-    flex-basis: 100%;
-  }
-}
-
-/* The label is for screen readers; "All categories" says it on screen. */
-.albums-toolbar__label {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
-}
-
-/* Payload's ReactSelect, matched to the search bar's height. */
-.albums-toolbar__select .rs__control {
-  min-height: 46px;
 }
 
 .albums-empty {
@@ -1116,6 +1071,230 @@ button.category-status:focus-visible {
 .albums-empty__clear:focus-visible {
   outline: 2px solid var(--theme-elevation-800);
   outline-offset: 2px;
+}
+
+/* A list in collapsible sections (components/admin/GroupedList.tsx): the
+   Albums list, one section per category. */
+.grouped-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-bottom: 32px;
+}
+
+.grouped-list__section {
+  border: 1px solid var(--theme-elevation-150);
+  border-radius: var(--style-radius-m, 6px);
+  overflow: hidden;
+  scroll-margin-top: calc(var(--app-header-height, 56px) + 12px);
+}
+
+/* Arrived at from a Categories "N albums →" link. */
+.grouped-list__section--flash {
+  animation: grouped-list-flash 1.6s ease-out;
+}
+
+@keyframes grouped-list-flash {
+  from {
+    box-shadow: 0 0 0 3px var(--theme-elevation-800);
+  }
+  to {
+    box-shadow: 0 0 0 3px transparent;
+  }
+}
+
+.grouped-list__head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 52px;
+  padding: 0 8px 0 4px;
+  background: var(--theme-elevation-50);
+}
+
+.grouped-list__toggle {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  min-height: 44px;
+  padding: 0 10px;
+  border: none;
+  background: none;
+  color: var(--theme-text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.grouped-list__toggle:focus-visible,
+.grouped-list__add:focus-visible {
+  outline: 2px solid var(--theme-elevation-800);
+  outline-offset: -2px;
+}
+
+.grouped-list__chevron {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  margin-right: 2px;
+  border-right: 2px solid var(--theme-elevation-500);
+  border-bottom: 2px solid var(--theme-elevation-500);
+  transform: rotate(45deg) translate(-2px, -2px);
+  transition: transform 0.15s ease;
+}
+
+.grouped-list__toggle[aria-expanded="false"] .grouped-list__chevron {
+  transform: rotate(-45deg);
+}
+
+.grouped-list__title {
+  font-size: 16px;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.grouped-list__count {
+  flex: none;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--theme-elevation-150);
+  color: var(--theme-elevation-700);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.grouped-list__note {
+  flex: none;
+  color: var(--theme-elevation-500);
+  font-size: 12px;
+}
+
+.grouped-list__add {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 10px;
+  color: var(--theme-text);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  white-space: nowrap;
+}
+
+.grouped-list__empty {
+  margin: 0;
+  padding: 14px 16px;
+  border-top: 1px solid var(--theme-elevation-100);
+  color: var(--theme-elevation-500);
+  font-size: 14px;
+}
+
+/* Album rows: thumbnail, title, date, Live/Hidden. On phones the date
+   drops under the title and the pill stays on the right. */
+.albums-grouped__rows {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.albums-grouped__row {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) 130px 96px;
+  align-items: center;
+  gap: 14px;
+  min-height: 60px;
+  padding: 8px 14px;
+  border-top: 1px solid var(--theme-elevation-100);
+}
+
+.albums-grouped__title {
+  display: inline-flex;
+  align-items: center;
+  justify-self: start;
+  min-height: 44px;
+  color: var(--theme-text);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  overflow-wrap: anywhere;
+}
+
+.albums-grouped__date {
+  color: var(--theme-elevation-600);
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.albums-grouped__status {
+  justify-self: start;
+}
+
+@media (max-width: 768px) {
+  .albums-grouped__row {
+    grid-template-columns: 44px minmax(0, 1fr) auto;
+    grid-template-areas:
+      "thumb title status"
+      "thumb date status";
+    column-gap: 12px;
+    row-gap: 0;
+    padding: 8px 12px;
+  }
+
+  .albums-grouped__thumb {
+    grid-area: thumb;
+  }
+
+  .albums-grouped__title {
+    grid-area: title;
+    align-self: end;
+    min-height: 0;
+    padding-top: 4px;
+  }
+
+  .albums-grouped__date {
+    grid-area: date;
+    align-self: start;
+    font-size: 13px;
+  }
+
+  .albums-grouped__status {
+    grid-area: status;
+  }
+}
+
+@media (pointer: coarse) {
+  /* The Live/Hidden pill is 32px tall; its tap area is 44. */
+  .albums-grouped__status .category-status {
+    position: relative;
+  }
+
+  .albums-grouped__status .category-status::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: max(100%, 44px);
+    height: 44px;
+    transform: translate(-50%, -50%);
+  }
+}
+
+@media (pointer: coarse) and (max-width: 768px) {
+  /* Title and date share the row's height on phones; the title's tap area
+     still reaches 44px (the row is 60px tall). */
+  .albums-grouped__title {
+    position: relative;
+  }
+
+  .albums-grouped__title::after {
+    content: "";
+    position: absolute;
+    inset: -12px 0 -8px;
+  }
 }
 
 /* Same column sizing as Categories: the thumbnail, date and status columns

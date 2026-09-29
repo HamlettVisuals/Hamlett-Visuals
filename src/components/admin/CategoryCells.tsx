@@ -124,17 +124,40 @@ export function CategoryThumbnailCell({ cellData }: DefaultCellComponentProps) {
 }
 
 // "Live" / "Hidden" pill that toggles `published` in place, on the
-// Categories and Albums lists. "Other" gets a fixed label instead (the
-// server refuses to publish it anyway).
+// Categories list and the Albums list's table (Trash tab). "Other" gets a
+// fixed label instead (the server refuses to publish it anyway).
 export function CategoryStatusCell({ cellData, rowData, collectionSlug }: DefaultCellComponentProps) {
-  const { config } = useConfig();
-  const [published, setPublished] = useState(cellData === true);
-  const [isPending, startTransition] = useTransition();
-  const [error, setError] = useState<string | null>(null);
-
   if (isOther(rowData, collectionSlug)) {
     return <span className="category-status category-status--crm">CRM only</span>;
   }
+  const title = rowData?.name ?? rowData?.title;
+  return (
+    <StatusToggle
+      collectionSlug={collectionSlug}
+      id={rowData.id}
+      initialPublished={cellData === true}
+      name={typeof title === "string" && title ? title : "this item"}
+    />
+  );
+}
+
+// The pill itself, also used by the Albums list's grouped rows
+// (AlbumsGroupedList.tsx), which aren't a Payload table.
+export function StatusToggle({
+  collectionSlug,
+  id,
+  initialPublished,
+  name,
+}: {
+  collectionSlug: string;
+  id: number | string;
+  initialPublished: boolean;
+  name: string;
+}) {
+  const { config } = useConfig();
+  const [published, setPublished] = useState(initialPublished);
+  const [isPending, startTransition] = useTransition();
+  const [error, setError] = useState<string | null>(null);
 
   const toggle = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -145,7 +168,7 @@ export function CategoryStatusCell({ cellData, rowData, collectionSlug }: Defaul
     startTransition(async () => {
       try {
         const res = await fetch(
-          `${config.serverURL ?? ""}${config.routes.api}/${collectionSlug}/${rowData.id}`,
+          `${config.serverURL ?? ""}${config.routes.api}/${collectionSlug}/${id}`,
           {
             method: "PATCH",
             credentials: "include",
@@ -164,8 +187,6 @@ export function CategoryStatusCell({ cellData, rowData, collectionSlug }: Defaul
     });
   };
 
-  const title = rowData?.name ?? rowData?.title;
-  const name = typeof title === "string" && title ? title : "this item";
   return (
     <span className="category-status-cell">
       <button

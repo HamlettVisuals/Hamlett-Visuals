@@ -12,8 +12,8 @@ import { default as default_6aeb1fbc8f89ed5df824f9ed2a8ef3f4 } from '../../../co
 import { EmptyField as EmptyField_271eec196f6613c6ae3ecc547136025a } from '../../../components/admin/AlbumCells'
 import { default as default_f7ada3d495e51370acd8dcac7a5e5f13 } from '../../../components/admin/AlbumThumbnailCell'
 import { AlbumTitleCell as AlbumTitleCell_271eec196f6613c6ae3ecc547136025a } from '../../../components/admin/AlbumCells'
-import { AlbumsListToolbar as AlbumsListToolbar_271eec196f6613c6ae3ecc547136025a } from '../../../components/admin/AlbumCells'
 import { AlbumsListDescription as AlbumsListDescription_271eec196f6613c6ae3ecc547136025a } from '../../../components/admin/AlbumCells'
+import { default as default_c6e59401226c61c79a78f8d4c163ff2c } from '../../../components/admin/AlbumsListView'
 import { default as default_3217d5da994dedfd8949de6baed57944 } from '../../../components/admin/CropPreview'
 import { default as default_f21c27ddc71a218bc5a17d940513ff86 } from '../../../components/admin/PackageThumbnailCell'
 import { PackageTitleCell as PackageTitleCell_24f49b6f3fd3d212d674670488897cc5 } from '../../../components/admin/PackageCells'
@@ -88,8 +88,8 @@ export const importMap = {
   "/components/admin/AlbumCells#EmptyField": EmptyField_271eec196f6613c6ae3ecc547136025a,
   "/components/admin/AlbumThumbnailCell#default": default_f7ada3d495e51370acd8dcac7a5e5f13,
   "/components/admin/AlbumCells#AlbumTitleCell": AlbumTitleCell_271eec196f6613c6ae3ecc547136025a,
-  "/components/admin/AlbumCells#AlbumsListToolbar": AlbumsListToolbar_271eec196f6613c6ae3ecc547136025a,
   "/components/admin/AlbumCells#AlbumsListDescription": AlbumsListDescription_271eec196f6613c6ae3ecc547136025a,
+  "/components/admin/AlbumsListView#default": default_c6e59401226c61c79a78f8d4c163ff2c,
   "/components/admin/CropPreview#default": default_3217d5da994dedfd8949de6baed57944,
   "/components/admin/PackageThumbnailCell#default": default_f21c27ddc71a218bc5a17d940513ff86,
   "/components/admin/PackageCells#PackageTitleCell": PackageTitleCell_24f49b6f3fd3d212d674670488897cc5,

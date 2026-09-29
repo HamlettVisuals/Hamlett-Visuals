@@ -35,9 +35,6 @@ export const Events: CollectionConfig = {
       // The list description plus the "+ Add album" button (Payload's own
       // "Create New" pill is hidden in admin-overrides.css).
       Description: "/components/admin/AlbumCells#AlbumsListDescription",
-      // Category filter, and the friendly empty states in place of
-      // Payload's "No results".
-      beforeListTable: ["/components/admin/AlbumCells#AlbumsListToolbar"],
       edit: {
         // Undo / Redo / Discard next to Save — see components/admin/EditHistory.tsx.
         beforeDocumentControls: [
@@ -49,6 +46,11 @@ export const Events: CollectionConfig = {
       // ✕ back to this list, in the top bar of the Edit and History tabs.
       // See components/admin/CloseEditorButton.tsx.
       views: {
+        // Albums grouped by category in place of the table (the Trash tab
+        // keeps Payload's table) — see components/admin/AlbumsListView.tsx.
+        list: {
+          Component: "/components/admin/AlbumsListView#default",
+        },
         edit: {
           default: { actions: [CLOSE_EDITOR_BUTTON] },
           versions: { actions: [CLOSE_EDITOR_BUTTON] },
@@ -59,7 +61,8 @@ export const Events: CollectionConfig = {
     hideAPIURL: true,
     useAsTitle: "title",
     defaultColumns: ["cover", "title", "category", "date", "published"],
-    // Albums will run into the hundreds, so they page. Search is by title.
+    // The main list shows every album, grouped (AlbumsListView.tsx); only
+    // the Trash tab pages. Search is by title.
     pagination: { defaultLimit: 25, limits: [25, 50, 100] },
     listSearchableFields: ["title"],
     // Item-scoped Live Preview (docs/collection-live-preview.md): the
