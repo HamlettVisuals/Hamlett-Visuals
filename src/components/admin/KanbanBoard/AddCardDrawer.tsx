@@ -189,7 +189,7 @@ export default function AddCardDrawer({
 
         {error && <div className={styles.errorBanner}>{error}</div>}
 
-        <button type="submit" className={styles.primaryButton} disabled={isSubmitting}>
+        <button type="submit" className={styles.drawerSecondaryButton} disabled={isSubmitting}>
           {isSubmitting ? "Adding…" : "Add Card"}
         </button>
       </form>

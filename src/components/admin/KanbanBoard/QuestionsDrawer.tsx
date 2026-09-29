@@ -146,14 +146,14 @@ function QuestionRow({
       <p className={styles.questionMessage}>{question.message}</p>
 
       <div className={styles.questionActions}>
-        <button type="button" className={styles.rowButton} onClick={handleToggle} disabled={isToggling}>
+        <button type="button" className={styles.drawerSecondaryButton} onClick={handleToggle} disabled={isToggling}>
           {isToggling ? "Saving…" : question.questionHandled ? "Mark unhandled" : "Mark handled"}
         </button>
 
         {!isPickingCategory && (
           <button
             type="button"
-            className={styles.rowButton}
+            className={styles.drawerSecondaryButton}
             onClick={() => setIsPickingCategory(true)}
             disabled={categories.length === 0}
             title={categories.length === 0 ? "No categories exist yet" : undefined}
@@ -179,7 +179,7 @@ function QuestionRow({
           </select>
           <button
             type="button"
-            className={styles.primaryButton}
+            className={styles.drawerSecondaryButton}
             onClick={confirmMove}
             disabled={isMoving || !categoryId}
           >
@@ -187,7 +187,7 @@ function QuestionRow({
           </button>
           <button
             type="button"
-            className={styles.linkButton}
+            className={styles.drawerTextButton}
             onClick={() => setIsPickingCategory(false)}
             disabled={isMoving}
           >
