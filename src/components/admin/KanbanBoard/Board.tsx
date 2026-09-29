@@ -5,7 +5,8 @@ import {
   closestCorners,
   DndContext,
   DragOverlay,
-  PointerSensor,
+  MouseSensor,
+  TouchSensor,
   useSensor,
   useSensors,
   type DragEndEvent,
@@ -226,12 +227,20 @@ export default function KanbanBoard({
   const [templateList, setTemplateList] = useState<TemplateWithCategory[]>(templates);
 
   const sensors = useSensors(
-    useSensor(PointerSensor, {
-      // Without a distance threshold, dnd-kit treats the initial pointerdown
+    useSensor(MouseSensor, {
+      // Without a distance threshold, dnd-kit treats the initial mousedown
       // itself as the drag start, which swallows the click a plain card
       // click needs to open the detail drawer. This is the standard
       // dnd-kit recipe for telling a click and a drag apart.
       activationConstraint: { distance: 8 },
+    }),
+    useSensor(TouchSensor, {
+      // On touch, cards cover almost the whole board, so a distance
+      // threshold would turn every swipe into a drag and nothing would
+      // scroll. A press-and-hold instead: moving more than `tolerance`
+      // before `delay` is up cancels the drag and lets the browser scroll
+      // the board or column as normal.
+      activationConstraint: { delay: 250, tolerance: 5 },
     }),
   );
 
