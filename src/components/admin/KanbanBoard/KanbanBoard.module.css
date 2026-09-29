@@ -610,8 +610,8 @@
 
 /* Compact calendar (Calendar.tsx's COMPACT_QUERY: phones, and screens too
    short for a grid of labelled events): each day shows its events as
-   category-coloured markers, and the month's events are listed with full
-   details in the agenda below. */
+   category-coloured markers, and the selected day's events are listed with
+   full details below the grid. */
 
 /* While it's showing, the page scrolls instead of the board's fixed-height
    box — on a landscape phone that box left ~160px for the whole calendar. */
@@ -645,8 +645,22 @@
   background: var(--theme-elevation-100);
 }
 
-.calendarDaySelected {
+.calendarDaySelected,
+.calendarDaySelected:hover {
+  background: var(--theme-elevation-150);
   box-shadow: inset 0 0 0 2px var(--theme-elevation-800);
+}
+
+.calendarDaySelected .calendarDayNumber {
+  color: var(--theme-text);
+  font-weight: 800;
+}
+
+/* Today keeps its green ring inside the selection ring. */
+.calendarDayToday.calendarDaySelected {
+  box-shadow:
+    inset 0 0 0 2px var(--theme-elevation-800),
+    inset 0 0 0 4px var(--theme-success-500);
 }
 
 .calendarMarkers {
@@ -668,58 +682,31 @@
   line-height: 1;
 }
 
-.calendarAgenda {
+/* The selected day, below the grid: part of the page, no scroll box of its
+   own. */
+.calendarDayPanel {
   flex-shrink: 0;
+  padding: 12px 14px 6px;
   border: 1px solid var(--theme-elevation-150);
   border-radius: 8px;
   background: var(--theme-input-bg);
   scroll-margin: 12px;
 }
 
-/* The agenda's own list scrolls (opening at today), so the page can stay at
-   the grid. */
-.calendarAgendaScroll {
-  position: relative;
-  max-height: min(60vh, 480px);
-  overflow-y: auto;
-  overscroll-behavior: contain;
-}
-
-.calendarAgendaDay {
-  padding: 10px 12px 6px;
-  border-left: 3px solid transparent;
-}
-
-.calendarAgendaDay + .calendarAgendaDay {
-  border-top: 1px solid var(--theme-elevation-100);
-}
-
-.calendarAgendaDaySelected {
-  border-left-color: var(--theme-elevation-800);
-  background: var(--theme-elevation-50);
-}
-
-/* Days that have passed stay listed, just quieter. */
-.calendarAgendaDayPast {
-  opacity: 0.55;
-}
-
-.calendarAgendaDate {
-  margin: 0 0 2px;
-  color: var(--theme-elevation-500);
-  font-size: 11px;
+.calendarDayPanelHeading {
+  margin: 0 0 4px;
+  color: var(--theme-text);
+  font-size: 15px;
   font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
 }
 
-.calendarAgendaList {
+.calendarDayPanelList {
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.calendarAgendaRow {
+.calendarDayPanelRow {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -733,37 +720,54 @@
   cursor: pointer;
 }
 
-.calendarAgendaRow > span:first-child {
+.calendarDayPanelRow > span:first-child {
   width: 9px;
   height: 9px;
 }
 
-.calendarAgendaText {
+.calendarDayPanelText {
   display: flex;
   flex-direction: column;
   min-width: 0;
 }
 
-.calendarAgendaName {
+.calendarDayPanelName {
   font-size: 14px;
   font-weight: 600;
   overflow-wrap: anywhere;
 }
 
-.calendarAgendaMeta {
+.calendarDayPanelMeta {
   color: var(--theme-elevation-600);
   font-size: 12px;
 }
 
-.calendarAgendaRow:hover .calendarAgendaName {
+.calendarDayPanelRow:hover .calendarDayPanelName {
   text-decoration: underline;
 }
 
-.calendarAgendaEmpty {
+.calendarDayPanelEmpty {
   margin: 0;
-  padding: 16px 12px;
+  padding: 8px 0;
   color: var(--theme-elevation-500);
   font-size: 13px;
+}
+
+/* An empty day's link to the next date with anything on it. */
+.calendarDayPanelNext {
+  display: block;
+  width: 100%;
+  min-height: 44px;
+  margin-bottom: 4px;
+  padding: 4px 0;
+  border: none;
+  background: none;
+  color: var(--theme-text);
+  font-size: 13px;
+  text-align: left;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
 }
 
 /* Mobile board list (< 768px) — replaces .columns; see the media query at
