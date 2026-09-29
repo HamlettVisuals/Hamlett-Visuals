@@ -272,8 +272,11 @@ export default function DetailDrawer({
             {/* Two kinds of thing, styled apart so neither passes for the
                 other: what she does (toggle buttons) and what the system did
                 (a plain status line — the request itself is sent from the
-                full record, not here). The toggles are the only UI path to
-                the Wrap-Up auto-archive hook (both true archives the record;
+                full record, not here, and only once the card reaches
+                Wrap-Up, the same rule as the record's banner and
+                /api/inquiries/[id]/testimonial-request). The toggles are
+                the only UI path to the Wrap-Up auto-archive hook (both true
+                archives the record;
                 see Inquiries.ts's autoArchive). No local state: aria-pressed
                 reads straight off the `inquiry` prop, and onUpdateFields'
                 optimistic update in Board.tsx drives the re-render. */}
@@ -308,7 +311,11 @@ export default function DetailDrawer({
                 className={inquiry.testimonialRequestSent ? styles.drawerStatusDotDone : styles.drawerStatusDotIdle}
                 aria-hidden="true"
               />
-              Testimonial request {inquiry.testimonialRequestSent ? "sent" : "not sent yet"}
+              {inquiry.testimonialRequestSent
+                ? "Testimonial request sent"
+                : inquiry.stage === "wrapup"
+                  ? "Testimonial request not sent yet — send it from the full record"
+                  : "Testimonial request can be sent once this reaches Wrap-Up"}
             </p>
           </section>
 

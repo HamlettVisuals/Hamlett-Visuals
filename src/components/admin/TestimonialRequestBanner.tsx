@@ -3,9 +3,9 @@
 import { useState } from "react";
 import { useDocumentInfo } from "@payloadcms/ui";
 
-// The "Request a testimonial" banner on a Completed Inquiry's edit view
+// The "Request a testimonial" banner on a Wrap-Up Inquiry's edit view
 // (wired up via Inquiries.ts's testimonialRequestBanner ui field, visible
-// only when status === "completed"). Posts to
+// only when stage === "wrapup", archived or not). Posts to
 // /api/inquiries/[id]/testimonial-request (an admin-only Next route, not a
 // Payload REST endpoint — see that route's own header comment for why),
 // which generates the token, sends the email, and updates the Inquiry

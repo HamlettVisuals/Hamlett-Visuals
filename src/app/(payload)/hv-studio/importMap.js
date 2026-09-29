@@ -23,8 +23,9 @@ import { default as default_554936a9b2e04b5e82d7d858818681c6 } from '../../../co
 import { default as default_f559e1636d8d747f6f20d562b8cbb552 } from '../../../components/admin/AlbumMatchNote'
 import { PackagesEmptyState as PackagesEmptyState_24f49b6f3fd3d212d674670488897cc5 } from '../../../components/admin/PackageCells'
 import { PackagesListDescription as PackagesListDescription_24f49b6f3fd3d212d674670488897cc5 } from '../../../components/admin/PackageCells'
-import { default as default_f0b47ff3ed1c349a2095a4c32239e4c7 } from '../../../components/admin/InquiryStatusCell'
 import { default as default_e64e3227e8fc271149c5bbc76b35348c } from '../../../components/admin/TestimonialRequestBanner'
+import { default as default_5410e27d5ec28cf3f07472b5a15592ee } from '../../../components/admin/InquiryStageCell'
+import { default as default_15868a05333f111ffa91d3cf1801d1bf } from '../../../components/admin/InquiryReceivedCell'
 import { default as default_0858cef9b5d1128067511307e25157f9 } from '../../../components/admin/BackToBoardLink'
 import { default as default_4d37a70e641ec184dcdc17bda0739dd6 } from '../../../components/admin/BackstageThumbnailCell'
 import { BackstageEmptyState as BackstageEmptyState_a35edf2bebff5c9765c6a701ac6beb14 } from '../../../components/admin/BackstageCells'
@@ -98,8 +99,9 @@ export const importMap = {
   "/components/admin/AlbumMatchNote#default": default_f559e1636d8d747f6f20d562b8cbb552,
   "/components/admin/PackageCells#PackagesEmptyState": PackagesEmptyState_24f49b6f3fd3d212d674670488897cc5,
   "/components/admin/PackageCells#PackagesListDescription": PackagesListDescription_24f49b6f3fd3d212d674670488897cc5,
-  "/components/admin/InquiryStatusCell#default": default_f0b47ff3ed1c349a2095a4c32239e4c7,
   "/components/admin/TestimonialRequestBanner#default": default_e64e3227e8fc271149c5bbc76b35348c,
+  "/components/admin/InquiryStageCell#default": default_5410e27d5ec28cf3f07472b5a15592ee,
+  "/components/admin/InquiryReceivedCell#default": default_15868a05333f111ffa91d3cf1801d1bf,
   "/components/admin/BackToBoardLink#default": default_0858cef9b5d1128067511307e25157f9,
   "/components/admin/BackstageThumbnailCell#default": default_4d37a70e641ec184dcdc17bda0739dd6,
   "/components/admin/BackstageCells#BackstageEmptyState": BackstageEmptyState_a35edf2bebff5c9765c6a701ac6beb14,

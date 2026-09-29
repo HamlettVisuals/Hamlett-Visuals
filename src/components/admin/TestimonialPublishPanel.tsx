@@ -17,8 +17,7 @@ import type { TestimonialPhoto } from "@/payload-types";
 // resolve upload relationships to the depth this panel needs for thumbnails
 // (only the built-in Photos field UI does that resolution itself,
 // internally). So this fetches each photo's details from Payload's REST API
-// directly, the same one InquiryStatusCell.tsx's status PATCH already goes
-// through via useConfig().
+// directly, via useConfig()'s serverURL and API route.
 //
 // Only one attached photo can be promoted + attached (Testimonials.photo
 // isn't a hasMany field), hence a radio picker rather than checkboxes.

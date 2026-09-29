@@ -1527,6 +1527,76 @@ a.editor-overview__tile:focus-visible,
   }
 }
 
+/* The Inquiries list (Inquiries.ts defaultColumns). Stage is a read-only
+   label in the type of the board's column titles (KanbanBoard.module.css
+   .columnTitle); archived inquiries read "Archived", quieter. See
+   InquiryStageCell.tsx. */
+.inquiry-stage {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: var(--theme-elevation-100);
+  color: var(--theme-elevation-800);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  line-height: 1.4;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.inquiry-stage--archived {
+  background: none;
+  box-shadow: inset 0 0 0 1px var(--theme-elevation-150);
+  color: var(--theme-elevation-500);
+}
+
+/* InquiryReceivedCell renders a full and a short date; only one shows. */
+.inquiry-received__short {
+  display: none;
+}
+
+/* Phones: Name, Stage and the short date only, with Payload's 150px
+   minimum column width lifted so the three fit without sideways
+   scrolling. The sort arrows go too: with their 44px touch spacing they
+   add ~60px to every header, more than a 375px screen has to spare, and
+   the list is already newest first. Type and sorting come back above
+   768px. */
+@media (max-width: 768px) {
+  .collection-list--inquiries .table th,
+  .collection-list--inquiries .table td {
+    min-width: 0;
+    padding-inline: 8px;
+  }
+
+  .collection-list--inquiries .sort-column__buttons {
+    display: none;
+  }
+
+  .collection-list--inquiries .inquiry-stage {
+    font-size: 10px;
+    letter-spacing: 0.03em;
+  }
+
+  .collection-list--inquiries #heading-type,
+  .collection-list--inquiries .cell-type {
+    display: none;
+  }
+
+  .collection-list--inquiries .cell-createdAt,
+  .collection-list--inquiries .cell-stage {
+    white-space: nowrap;
+  }
+
+  .inquiry-received__full {
+    display: none;
+  }
+
+  .inquiry-received__short {
+    display: inline;
+  }
+}
+
 /* The kanban board's drawers (card detail, Add Card, Questions,
    Templates — each <Drawer className="kanban-drawer">) on phones — see
    KanbanBoard/drawer-scroll.ts for the touch-scrolling half of this.

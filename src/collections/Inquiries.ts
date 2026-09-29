@@ -41,7 +41,10 @@ export const Inquiries: CollectionConfig = {
   admin: {
     hideAPIURL: true,
     useAsTitle: "name",
-    defaultColumns: ["status", "type", "name", "createdAt"],
+    // Name first, so it's the column Payload links to the record. Type
+    // is hidden on phones (admin-overrides.css) so Name, Stage and the
+    // date fit without scrolling sideways.
+    defaultColumns: ["name", "stage", "createdAt", "type"],
     description:
       "Every question and booking request submitted through the site's contact forms — your inbox for new client inquiries.",
     components: {
@@ -107,6 +110,10 @@ export const Inquiries: CollectionConfig = {
       },
     },
     {
+      // Unused: the pre-board New/Contacted/Booked/... status, superseded
+      // by `stage` below. Hidden everywhere in the admin and read by
+      // nothing; kept only until a migration drops the column (see
+      // docs/launch-checklist.md).
       name: "status",
       type: "select",
       required: true,
@@ -119,24 +126,24 @@ export const Inquiries: CollectionConfig = {
         { label: "Completed", value: "completed" },
       ],
       admin: {
-        description:
-          "Where this inquiry stands. You can change this right from the list below, no need to open the entry.",
-        components: {
-          Cell: "/components/admin/InquiryStatusCell#default",
-        },
+        hidden: true,
+        disableListColumn: true,
+        disableListFilter: true,
+        disableBulkEdit: true,
       },
     },
     {
-      // Renders the "Request a testimonial from [name]?" banner (once
-      // status is Completed and no request has gone out yet) or a smaller
-      // "Resend" action (once one has) — see TestimonialRequestBanner.tsx.
+      // Renders the "Request a testimonial from [name]?" banner (once the
+      // inquiry reaches Wrap-Up, archived or not, and no request has gone
+      // out yet) or a smaller "Resend" action (once one has) — see
+      // TestimonialRequestBanner.tsx.
       // A `ui` field rather than a `beforeDocument` admin component so it
       // can use `admin.condition` for the Completed-only visibility, same
       // mechanism Backstage.ts's reelUrl field uses.
       name: "testimonialRequestBanner",
       type: "ui",
       admin: {
-        condition: (data) => data?.status === "completed",
+        condition: (data) => data?.stage === "wrapup",
         components: {
           Field: "/components/admin/TestimonialRequestBanner#default",
         },
@@ -208,6 +215,9 @@ export const Inquiries: CollectionConfig = {
       ],
       admin: {
         description: "Where this inquiry stands in the booking pipeline.",
+        components: {
+          Cell: "/components/admin/InquiryStageCell#default",
+        },
       },
     },
     {
@@ -434,6 +444,24 @@ export const Inquiries: CollectionConfig = {
         description:
           "Your own private notes about this inquiry — the client never sees these.",
         position: "sidebar",
+      },
+    },
+    {
+      // Payload's own createdAt, declared here only to label it "Received"
+      // and give it a list cell with a short date for phones (see
+      // InquiryReceivedCell.tsx). Everything that affects the database —
+      // type, index — matches the default Payload would otherwise add, so
+      // the schema is unchanged.
+      name: "createdAt",
+      type: "date",
+      index: true,
+      label: "Received",
+      admin: {
+        disableBulkEdit: true,
+        hidden: true,
+        components: {
+          Cell: "/components/admin/InquiryReceivedCell#default",
+        },
       },
     },
   ],

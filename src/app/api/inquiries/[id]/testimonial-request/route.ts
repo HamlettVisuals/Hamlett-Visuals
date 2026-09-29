@@ -36,9 +36,10 @@ export async function POST(
     return Response.json({ error: "Inquiry not found." }, { status: 404 });
   }
 
-  if (inquiry.status !== "completed") {
+  // Wrap-Up is the last stage; archived inquiries are still Wrap-Up.
+  if (inquiry.stage !== "wrapup") {
     return Response.json(
-      { error: "Only Completed inquiries can be sent a testimonial request." },
+      { error: "Only inquiries in Wrap-Up can be sent a testimonial request." },
       { status: 400 },
     );
   }

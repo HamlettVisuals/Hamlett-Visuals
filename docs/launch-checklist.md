@@ -65,6 +65,14 @@ as it's done.
       field and generate a migration (drops `show_qr_code` from
       `final_cta_footer` and `version_show_qr_code` from
       `_final_cta_footer_v`).
+- [ ] **Drop the unused inquiry Status field (migration, back up first).**
+      The old New/Contacted/Booked/Declined/Completed `status` on Inquiries
+      was replaced by the board's `stage` on 2026-09-29: it's hidden in
+      collections/Inquiries.ts, testimonial requests now depend on Wrap-Up,
+      and nothing reads it. Back up the database, remove the field, and
+      generate a migration (drops `status` and its enum from `inquiries`).
+      `api/inquiries/add-lead/route.ts` still sets `status: "new"`; remove
+      that line in the same change.
 - [ ] **Set up email sending on a real domain, then test every email end to
       end.** Until this is done every email goes out from Resend's test
       sender (`onboarding@resend.dev`), which only delivers to the Resend
@@ -86,7 +94,7 @@ as it's done.
            Reply goes to the sender.
          - **Client auto-reply** → the address used in the forms above gets
            "We got your booking request" / "We got your question".
-         - **Testimonial request** → from a Completed inquiry, Send request;
+         - **Testimonial request** → from a Wrap-Up inquiry, Send request;
            the email arrives, the link opens the form, and the inquiry shows
            "Testimonial Request Sent".
          Anything that doesn't arrive: Vercel logs → search "couldn't send".
