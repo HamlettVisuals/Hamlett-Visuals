@@ -1,10 +1,11 @@
 import type { DefaultServerCellComponentProps } from "payload";
+import { comparePhotos } from "@/lib/manual-order";
 
 // The Packages list's thumbnail (collections/PricingRows.ts, `thumbnail`
 // column): the first photo of the package's album — the same one that
-// leads its samples on the site (photos sorted by createdAt) — or the
+// leads its samples on the site (the first in her order) — or the
 // neutral placeholder the Categories and Albums lists use. A server
-// component, so it's one small indexed query per row on the server.
+// component, so it's one small query per row on the server.
 export default async function PackageThumbnailCell({ payload, rowData }: DefaultServerCellComponentProps) {
   const album = rowData?.album;
   const albumId = album && typeof album === "object" ? album.id : album;
@@ -12,13 +13,12 @@ export default async function PackageThumbnailCell({ payload, rowData }: Default
     ? await payload.find({
         collection: "photos",
         where: { event: { equals: albumId } },
-        sort: "createdAt",
-        limit: 1,
         depth: 0,
         pagination: false,
+        select: { url: true, filename: true, alt: true, sizes: { thumbnail: true }, albumOrder: true, createdAt: true },
       })
     : { docs: [] };
-  const photo = docs[0];
+  const photo = docs.toSorted(comparePhotos)[0];
   const src = photo?.sizes?.thumbnail?.url || photo?.url;
   const label = albumId ? "No photos in this album yet" : "No album chosen";
 

@@ -5,14 +5,16 @@ import config from "@payload-config";
 import CategoryGallery from "@/components/Gallery/CategoryGallery";
 import GalleryEmptyState from "@/components/Gallery/GalleryEmptyState";
 import type { GalleryEvent } from "@/components/Gallery/types";
+import { compareAlbums, comparePhotos } from "@/lib/manual-order";
 
 // Category landing page. Category -> Albums (the `events` collection) ->
 // Photos, all from Payload:
 // two queries (this category's Events, then Photos where event is one of
 // those Events' ids) grouped by event id in application code below, rather
-// than one query per event. Albums are newest first: by shoot date, or when
-// the album was added if it has no date (`sortDate`, see Events.ts). Each
-// album row follows the Albums editor in Live Preview (CategoryGallery.tsx).
+// than one query per event. Albums and each album's photos are in her
+// manual order (`albumOrder`, sorted in code by lib/manual-order.ts, which
+// also places anything not yet given an order). Each album row follows the
+// Albums editor in Live Preview (CategoryGallery.tsx).
 
 export async function generateStaticParams() {
   const payload = await getPayload({ config });
@@ -41,24 +43,24 @@ export default async function CategoryPage({
     notFound();
   }
 
-  const { docs: categoryEvents } = await payload.find({
+  const { docs: unsortedEvents } = await payload.find({
     collection: "events",
     where: { category: { equals: category.id }, published: { equals: true } },
-    sort: ["-sortDate", "-createdAt"],
     depth: 0,
     limit: 0,
   });
+  const categoryEvents = unsortedEvents.toSorted(compareAlbums);
 
   const eventIds = categoryEvents.map((event) => event.id);
-  const { docs: eventPhotos } = eventIds.length
+  const { docs: unsortedPhotos } = eventIds.length
     ? await payload.find({
         collection: "photos",
         where: { event: { in: eventIds } },
-        sort: "createdAt",
         depth: 0,
         limit: 0,
       })
     : { docs: [] };
+  const eventPhotos = unsortedPhotos.toSorted(comparePhotos);
 
   // Grouped here in application code (not a per-event query) since the
   // photos query above already fetched every event's photos in one shot.

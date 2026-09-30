@@ -249,6 +249,7 @@ export interface Photo {
    * Which shoot this photo belongs to, if any.
    */
   event?: (number | null) | Event;
+  albumOrder?: string | null;
   /**
    * Only set this if the photo isn't part of a specific shoot above — for example, a category's cover photo.
    */
@@ -282,7 +283,7 @@ export interface Photo {
   };
 }
 /**
- * Each album is one shoot (a wedding, a portrait session) and holds its photos. Albums show on their category's page, newest first.
+ * Each album is one shoot (a wedding, a portrait session) and holds its photos. Albums show on their category's page in your order; new ones go to the top.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "events".
@@ -307,9 +308,10 @@ export interface Event {
    */
   description?: string | null;
   /**
-   * Optional. The day of the shoot; its month and year show next to the album's title. Albums are listed newest first.
+   * Optional. The day of the shoot; its month and year show next to the album's title.
    */
   date?: string | null;
+  albumOrder?: string | null;
   sortDate?: string | null;
   updatedAt: string;
   createdAt: string;
@@ -420,9 +422,6 @@ export interface Inquiry {
   type: 'question' | 'booking';
   inquiryType: 'booking' | 'question';
   questionHandled?: boolean | null;
-  /**
-   * Where this inquiry stands. You can change this right from the list below, no need to open the entry.
-   */
   status: 'new' | 'contacted' | 'booked' | 'declined' | 'completed';
   /**
    * The client's name.
@@ -542,8 +541,8 @@ export interface Inquiry {
    * Your own private notes about this inquiry — the client never sees these.
    */
   notes?: string | null;
-  updatedAt: string;
   createdAt: string;
+  updatedAt: string;
   deletedAt?: string | null;
 }
 /**
@@ -975,6 +974,7 @@ export interface EventsSelect<T extends boolean = true> {
   category?: T;
   description?: T;
   date?: T;
+  albumOrder?: T;
   sortDate?: T;
   updatedAt?: T;
   createdAt?: T;
@@ -988,6 +988,7 @@ export interface PhotosSelect<T extends boolean = true> {
   alt?: T;
   caption?: T;
   event?: T;
+  albumOrder?: T;
   category?: T;
   featured?: T;
   prefix?: T;
@@ -1115,8 +1116,8 @@ export interface InquiriesSelect<T extends boolean = true> {
   testimonialRequestToken?: T;
   sourcePage?: T;
   notes?: T;
-  updatedAt?: T;
   createdAt?: T;
+  updatedAt?: T;
   deletedAt?: T;
 }
 /**
@@ -1630,9 +1631,6 @@ export interface FinalCtaFooter {
   showEmail?: boolean | null;
   showPhone?: boolean | null;
   showInstagram?: boolean | null;
-  /**
-   * Never shown on phones, where it can't be scanned.
-   */
   showQrCode?: boolean | null;
   copyrightName?: string | null;
   updatedAt?: string | null;

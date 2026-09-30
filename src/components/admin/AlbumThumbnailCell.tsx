@@ -1,11 +1,12 @@
 import type { DefaultServerCellComponentProps } from "payload";
+import { comparePhotos } from "@/lib/manual-order";
 
 // The Albums list's thumbnail (collections/Events.ts, `cover` column).
 // Albums have no cover photo of their own yet (planned for the Photo
 // Library build), so this is the album's first photo, the same one that
-// leads its row on the category page (photos sorted by createdAt), or the
+// leads its row on the category page (the first in her order), or the
 // neutral placeholder the Categories list uses. A server component, so
-// it's one small indexed query per row on the server (limit 1, depth 0)
+// it's one small query per row on the server
 // rather than a fetch from the browser per row.
 export default async function AlbumThumbnailCell({ payload, rowData }: DefaultServerCellComponentProps) {
   const id = rowData?.id;
@@ -13,13 +14,12 @@ export default async function AlbumThumbnailCell({ payload, rowData }: DefaultSe
     ? await payload.find({
         collection: "photos",
         where: { event: { equals: id } },
-        sort: "createdAt",
-        limit: 1,
         depth: 0,
         pagination: false,
+        select: { url: true, filename: true, alt: true, sizes: { thumbnail: true }, albumOrder: true, createdAt: true },
       })
     : { docs: [] };
-  const photo = docs[0];
+  const photo = docs.toSorted(comparePhotos)[0];
   const src = photo?.sizes?.thumbnail?.url || photo?.url;
 
   return src ? (

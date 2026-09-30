@@ -2,6 +2,7 @@ import { DefaultListView } from "@payloadcms/ui";
 import type { ListViewClientProps, ListViewServerProps, Where } from "payload";
 import { OTHER_SESSION_TYPE } from "@/lib/booking-session-type";
 import AlbumsGroupedList, { type AlbumGroup, type AlbumRow } from "@/components/admin/AlbumsGroupedList";
+import { compareAlbums, comparePhotos } from "@/lib/manual-order";
 
 // The Albums list (collections/Events.ts admin.components.views.list):
 // Payload's own list view (title, description, All/Trash tabs, search) with
@@ -11,7 +12,7 @@ import AlbumsGroupedList, { type AlbumGroup, type AlbumRow } from "@/components/
 //
 // Sections follow the Categories list's drag order (`_order`); a category
 // with no albums still gets one ("No albums yet"), except the CRM-only
-// "Other". Albums are newest first, the same sort as the category pages.
+// "Other". Albums are in her order, the same as the category pages.
 // Albums whose category was trashed collect in a last section.
 //
 // Payload still runs its own paged query for the hidden table; it's small
@@ -42,6 +43,8 @@ const toClientProps = (props: ListViewServerProps) =>
 
 type ThumbPhoto = {
   event?: number | string | { id: number | string } | null;
+  albumOrder?: string | null;
+  createdAt?: string | null;
   url?: string | null;
   alt?: string | null;
   sizes?: { thumbnail?: { url?: string | null } | null } | null;
@@ -72,40 +75,38 @@ export default async function AlbumsListView(props: ListViewServerProps) {
     payload.find({
       collection: "events",
       where,
-      sort: ["-sortDate", "-createdAt"],
       pagination: false,
       depth: 0,
-      select: { title: true, date: true, published: true, category: true },
+      select: { title: true, date: true, published: true, category: true, albumOrder: true, createdAt: true },
       overrideAccess: false,
       user,
     }),
   ]);
 
-  // Every listed album's first photo (the one that leads its row on the
-  // site), in one query: photos come back oldest first, so the first one
-  // seen for an album is its thumbnail.
-  const albumIds = albums.docs.map((album) => album.id);
+  // Every listed album's first photo in her order (its cover, which leads
+  // its row on the site), in one query.
+  const albumDocs = albums.docs.toSorted(compareAlbums);
+  const albumIds = albumDocs.map((album) => album.id);
   const photos = albumIds.length
     ? await payload.find({
         collection: "photos",
         where: { event: { in: albumIds } },
-        sort: "createdAt",
         pagination: false,
         depth: 0,
-        select: { event: true, url: true, filename: true, alt: true, sizes: { thumbnail: true } },
+        select: { event: true, url: true, filename: true, alt: true, sizes: { thumbnail: true }, albumOrder: true, createdAt: true },
         overrideAccess: false,
         user,
       })
     : { docs: [] as ThumbPhoto[] };
   const thumbnails = new Map<string, AlbumRow["thumbnail"]>();
-  for (const photo of photos.docs as ThumbPhoto[]) {
+  for (const photo of (photos.docs as ThumbPhoto[]).toSorted(comparePhotos)) {
     const albumId = String(idOf(photo.event));
     const src = photo.sizes?.thumbnail?.url || photo.url;
     if (!thumbnails.has(albumId) && src) thumbnails.set(albumId, { src, alt: photo.alt ?? "" });
   }
 
   const byCategory = new Map<string, AlbumRow[]>();
-  for (const album of albums.docs) {
+  for (const album of albumDocs) {
     const key = String(idOf(album.category));
     const rows = byCategory.get(key) ?? [];
     rows.push({

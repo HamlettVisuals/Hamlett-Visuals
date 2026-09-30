@@ -1,10 +1,50 @@
-import type { CollectionConfig } from "payload";
+import type { CollectionBeforeChangeHook, CollectionConfig } from "payload";
 import { isAdmin } from "#src/access/isAdmin.ts";
 import { RASTER_IMAGE_MIME_TYPES } from "#src/lib/raster-image-types.ts";
 import { CLOSE_EDITOR_BUTTON } from "#src/lib/admin-components.ts";
 import { removeRefusedUpload } from "#src/lib/upload-limits.ts";
 import { resizeLargePhotos } from "#src/lib/photo-resize.ts";
 import { PHOTO_MAX_MB } from "#src/lib/upload-sizes.ts";
+import { keyAtEnd } from "#src/lib/manual-order.ts";
+
+const idOf = (value: unknown) =>
+  value && typeof value === "object" ? (value as { id: number | string }).id : (value as number | string | null | undefined);
+
+// Her order within the album (`albumOrder`, lib/manual-order.ts). A photo
+// added to an album (uploaded into it, or moved from another), or one saved
+// by older code without a key, goes to the end of the album; a photo in no
+// album has no order. Otherwise the key only changes through a drag
+// (context.allowOrderChange, set by the reorder endpoint), so a History
+// restore or Undo never reshuffles the album.
+const setPhotoOrder: CollectionBeforeChangeHook = async ({ context, data, operation, originalDoc, req }) => {
+  const album = idOf("event" in data ? data.event : originalDoc?.event);
+  if (!album) {
+    data.albumOrder = null;
+    return data;
+  }
+  const moved = operation === "update" && String(album) !== String(idOf(originalDoc?.event) ?? "");
+  if (context.allowOrderChange === true && !moved && data.albumOrder) return data;
+
+  const current = originalDoc?.albumOrder as string | null | undefined;
+  if (operation === "update" && !moved && current) {
+    data.albumOrder = current;
+    return data;
+  }
+  const { docs } = await req.payload.find({
+    collection: "photos",
+    where: {
+      event: { equals: album },
+      ...(originalDoc?.id ? { id: { not_equals: originalDoc.id } } : {}),
+    },
+    select: { albumOrder: true },
+    pagination: false,
+    depth: 0,
+    trash: true,
+    req,
+  });
+  data.albumOrder = keyAtEnd(docs.map((doc) => doc.albumOrder));
+  return data;
+};
 
 export const Photos: CollectionConfig = {
   slug: "photos",
@@ -72,6 +112,7 @@ export const Photos: CollectionConfig = {
     // Size cap, then shrinks a photo over 3000px and removes GPS data.
     beforeOperation: [resizeLargePhotos({ maxMB: PHOTO_MAX_MB, noun: "photo", plural: "Photos" })],
     afterError: [removeRefusedUpload],
+    beforeChange: [setPhotoOrder],
   },
   // Powers the History tab (restore an earlier save). No drafts — Save
   // writes straight through, same as before.
@@ -111,6 +152,21 @@ export const Photos: CollectionConfig = {
       relationTo: "events",
       admin: {
         description: "Which shoot this photo belongs to, if any.",
+      },
+    },
+    {
+      // Her order within the album (dragged on the album's page), which the
+      // category page follows: a fractional-index key (lib/manual-order.ts).
+      // Photos added to an album go to its end (setPhotoOrder above); only a
+      // drag changes it after that. Empty for photos in no album.
+      name: "albumOrder",
+      type: "text",
+      index: true,
+      admin: {
+        hidden: true,
+        disableListColumn: true,
+        disableListFilter: true,
+        disableBulkEdit: true,
       },
     },
     {

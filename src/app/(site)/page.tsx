@@ -8,6 +8,7 @@ import Offers from "@/components/home/Offers";
 import BookingCta from "@/components/home/BookingCta";
 import Instagram from "@/components/home/Instagram";
 import Testimonials from "@/components/home/Testimonials";
+import { comparePhotos } from "@/lib/manual-order";
 import { SAMPLE_PHOTOS } from "@/lib/package-limits";
 import { resolveCategory, sampleAlbumId, type SamplePhotosByPackage } from "@/lib/pricing-rows";
 
@@ -58,15 +59,15 @@ export default async function Home() {
   // album; photos without a url are skipped. A package with no usable album
   // or photos gets none, and the spotlight leaves the space out entirely.
   const albumIds = [...new Set(pricingRows.map(sampleAlbumId).filter((id) => id !== null))];
-  const { docs: albumPhotos } = albumIds.length
+  const { docs: unsortedAlbumPhotos } = albumIds.length
     ? await payload.find({
         collection: "photos",
         where: { event: { in: albumIds } },
-        sort: "createdAt",
         depth: 0,
         limit: 0,
       })
     : { docs: [] };
+  const albumPhotos = unsortedAlbumPhotos.toSorted(comparePhotos);
   const samplePhotos: SamplePhotosByPackage = {};
   for (const row of pricingRows) {
     const albumId = sampleAlbumId(row);

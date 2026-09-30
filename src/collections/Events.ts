@@ -5,6 +5,7 @@ import { DESCRIPTION_MAX } from "#src/lib/album-limits.ts";
 import { OTHER_SESSION_TYPE } from "#src/lib/booking-session-type.ts";
 import { serverURL } from "#src/lib/server-url.ts";
 import { CLOSE_EDITOR_BUTTON } from "#src/lib/admin-components.ts";
+import { keyAtStart } from "#src/lib/manual-order.ts";
 
 // Newest first means by the shoot date, or when the album was added if it
 // has no date. Postgres can't sort by "date, else createdAt" through
@@ -14,6 +15,44 @@ import { CLOSE_EDITOR_BUTTON } from "#src/lib/admin-components.ts";
 const setSortDate: CollectionBeforeChangeHook = ({ data, originalDoc }) => {
   const date = "date" in data ? data.date : originalDoc?.date;
   data.sortDate = date || originalDoc?.createdAt || data.createdAt || new Date().toISOString();
+  return data;
+};
+
+const idOf = (value: unknown) =>
+  value && typeof value === "object" ? (value as { id: number | string }).id : (value as number | string | null | undefined);
+
+// Her order within the category (`albumOrder`, lib/manual-order.ts). A new
+// album, one moved to another category, or one saved by older code without
+// a key goes to the top of its category. Otherwise the key only changes
+// through a drag (context.allowOrderChange, set by the reorder endpoint), so
+// a History restore or Undo never reshuffles the category.
+const setAlbumOrder: CollectionBeforeChangeHook = async ({ context, data, operation, originalDoc, req }) => {
+  const category = idOf("category" in data ? data.category : originalDoc?.category);
+  const moved = operation === "update" && String(category ?? "") !== String(idOf(originalDoc?.category) ?? "");
+  if (context.allowOrderChange === true && !moved && data.albumOrder) return data;
+
+  const current = originalDoc?.albumOrder as string | null | undefined;
+  if (operation === "update" && !moved && current) {
+    data.albumOrder = current;
+    return data;
+  }
+  if (!category) {
+    data.albumOrder = null;
+    return data;
+  }
+  const { docs } = await req.payload.find({
+    collection: "events",
+    where: {
+      category: { equals: category },
+      ...(originalDoc?.id ? { id: { not_equals: originalDoc.id } } : {}),
+    },
+    select: { albumOrder: true },
+    pagination: false,
+    depth: 0,
+    trash: true,
+    req,
+  });
+  data.albumOrder = keyAtStart(docs.map((doc) => doc.albumOrder));
   return data;
 };
 
@@ -94,7 +133,7 @@ export const Events: CollectionConfig = {
       },
     },
     description:
-      "Each album is one shoot (a wedding, a portrait session) and holds its photos. Albums show on their category's page, newest first.",
+      "Each album is one shoot (a wedding, a portrait session) and holds its photos. Albums show on their category's page in your order; new ones go to the top.",
   },
   access: {
     read: () => true,
@@ -103,7 +142,7 @@ export const Events: CollectionConfig = {
     delete: isAdmin,
   },
   hooks: {
-    beforeChange: [setSortDate],
+    beforeChange: [setSortDate, setAlbumOrder],
   },
   // Powers the History tab (restore an earlier save). No drafts — Save
   // writes straight through, same as before.
@@ -211,8 +250,24 @@ export const Events: CollectionConfig = {
       name: "date",
       type: "date",
       admin: {
-        description: "Optional. The day of the shoot; its month and year show next to the album's title. Albums are listed newest first.",
+        description: "Optional. The day of the shoot; its month and year show next to the album's title.",
         date: { pickerAppearance: "dayOnly", displayFormat: "d MMM yyyy" },
+      },
+    },
+    {
+      // Her order within the category (the Categories & Albums page's drag
+      // order), which the category page follows: a fractional-index key
+      // (lib/manual-order.ts). New albums, and albums moved to another
+      // category, get a key at the top of their category (setAlbumOrder
+      // above); only a drag changes it after that. Never edited in the form.
+      name: "albumOrder",
+      type: "text",
+      index: true,
+      admin: {
+        hidden: true,
+        disableListColumn: true,
+        disableListFilter: true,
+        disableBulkEdit: true,
       },
     },
     {
