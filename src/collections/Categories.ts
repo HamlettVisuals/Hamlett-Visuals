@@ -13,6 +13,7 @@ import { OTHER_SESSION_TYPE } from "#src/lib/booking-session-type.ts";
 import { BLURB_MAX } from "#src/lib/category-limits.ts";
 import { serverURL } from "#src/lib/server-url.ts";
 import { CLOSE_EDITOR_BUTTON } from "#src/lib/admin-components.ts";
+import { reorderWithin } from "#src/lib/reorder-within.ts";
 
 // An error the admin shows as-is (the `true` exposes the message).
 const refuse = (message: string) => new APIError(message, 400, null, true);
@@ -243,6 +244,31 @@ export const Categories: CollectionConfig = {
     update: isAdmin,
     delete: isAdmin,
   },
+  endpoints: [
+    {
+      // A drag on the Categories & Albums page: POST
+      // /api/categories/reorder-categories { order: [ids], moved: id }.
+      // Writes only the order keys, so no History version (see
+      // lib/reorder-within.ts); "Other" has to stay last.
+      path: "/reorder-categories",
+      method: "post",
+      handler: async (req) => {
+        const body = (await req.json?.().catch(() => null)) as { order?: unknown; moved?: unknown } | null;
+        const isId = (value: unknown): value is number => Number.isInteger(value);
+        if (!body || !isId(body.moved) || !Array.isArray(body.order) || !body.order.every(isId)) {
+          return Response.json({ error: "Invalid reorder." }, { status: 400 });
+        }
+        const other = await findOtherCategory(req);
+        return reorderWithin({
+          req,
+          target: { collection: "categories", field: "_order", scope: null },
+          order: body.order,
+          moved: body.moved,
+          mustBeLast: other?.id,
+        });
+      },
+    },
+  ],
   hooks: {
     beforeChange: [guardOrderAndOther],
     afterChange: [createBlankChecklistTemplates],

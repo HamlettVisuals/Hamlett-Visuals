@@ -155,9 +155,7 @@ export const Events: CollectionConfig = {
         }
         return reorderWithin({
           req,
-          collection: "events",
-          scopeField: "category",
-          scopeId: body.category,
+          target: { collection: "events", field: "albumOrder", scope: { field: "category", id: body.category } },
           order: body.order,
           moved: body.moved,
         });

@@ -1,52 +1,66 @@
 import type { PayloadRequest } from "payload";
 import { generateKeyBetween, generateNKeysBetween } from "payload/shared";
+import { revalidateSite } from "#src/lib/revalidate-site.ts";
 
-// Saves a drag within one group: albums within a category (Events'
-// /reorder-albums endpoint), and photos within an album later. The client
-// sends the group's ids in their new order plus the one that moved.
+// Saves a drag on the Categories & Albums page: categories (Categories'
+// /reorder-categories endpoint), albums within a category (Events'
+// /reorder-albums), and photos within an album later. The client sends the
+// group's ids in their new order plus the one that moved.
 //
-// Normally only the moved item gets a new key, between its new neighbours.
-// If any item in the group has no key yet (saved by older code) or the keys
-// aren't in order, the whole group is renumbered in the order she just set.
-// Each change is a normal Payload save with context.allowOrderChange, the
-// only way the collections' order hooks let a key change, so the site
-// refreshes as for any save (the same way Payload's own /reorder works).
+// A reorder isn't an edit, so it writes only the order key, straight to the
+// database (payload.db.updateOne): no History version, no hooks, no
+// updatedAt change. Normal saves still go through Payload and still create
+// History. The site is refreshed afterwards, as a save would.
+//
+// Keys:
+//   - albums and photos: normally only the moved item gets a new key,
+//     between its new neighbours. If any item in the group has no key yet
+//     (saved by older code) or the keys aren't in order, the whole group
+//     is renumbered in the order she just set. They're always sorted in
+//     code (lib/manual-order.ts).
+//   - categories: always renumbered (a0, a1, a2, …). The site sorts them in
+//     the database, whose text collation (en_US) doesn't order mixed-case
+//     keys the way the key generator does (e.g. "Zz", the key before "a0",
+//     sorts last there); a0–a9 then aA… sort the same both ways for the
+//     handful of categories there are.
 //
 // Part of payload.config.ts's module graph (collections import it), so no
 // "@/…" imports.
 
-type OrderedCollection = "events" | "photos";
+type Target =
+  | { collection: "categories"; field: "_order"; scope: null }
+  | { collection: "events"; field: "albumOrder"; scope: { field: "category"; id: number } }
+  | { collection: "photos"; field: "albumOrder"; scope: { field: "event"; id: number } };
 
 const compare = (a: string, b: string) => (a < b ? -1 : a > b ? 1 : 0);
 
 export async function reorderWithin({
   req,
-  collection,
-  scopeField,
-  scopeId,
+  target,
   order,
   moved,
+  mustBeLast,
 }: {
   req: PayloadRequest;
-  collection: OrderedCollection;
-  scopeField: "category" | "event";
-  scopeId: number;
+  target: Target;
   order: number[];
   moved: number;
+  /** An id that has to stay last (the CRM-only "Other" category). */
+  mustBeLast?: number;
 }): Promise<Response> {
   if (!req.user) return Response.json({ error: "Unauthorized." }, { status: 401 });
 
   const { docs } = await req.payload.find({
-    collection,
-    where: { [scopeField]: { equals: scopeId } },
-    select: { albumOrder: true },
+    collection: target.collection,
+    where: target.scope ? { [target.scope.field]: { equals: target.scope.id } } : {},
+    select: { [target.field]: true },
     pagination: false,
     depth: 0,
     overrideAccess: false,
     user: req.user,
     req,
   });
-  const keyById = new Map(docs.map((doc) => [doc.id, (doc as { albumOrder?: string | null }).albumOrder ?? null]));
+  const keyById = new Map(docs.map((doc) => [doc.id as number, ((doc as unknown as Record<string, unknown>)[target.field] as string | null) ?? null]));
 
   // The page's list has to match what's saved, or the new order would be
   // applied to a list she isn't looking at.
@@ -54,13 +68,16 @@ export async function reorderWithin({
   if (!sameItems || !keyById.has(moved)) {
     return Response.json({ error: "This list changed somewhere else. Reload the page and try again." }, { status: 409 });
   }
+  if (mustBeLast !== undefined && keyById.has(mustBeLast) && order.at(-1) !== mustBeLast) {
+    return Response.json({ error: "\"Other\" always stays last." }, { status: 400 });
+  }
 
   const others = order.filter((id) => id !== moved).map((id) => keyById.get(id));
   const allKeyed = others.every((key): key is string => Boolean(key));
   const inOrder = allKeyed && others.every((key, i) => i === 0 || compare(others[i - 1] as string, key as string) < 0);
 
   const updates = new Map<number, string>();
-  if (inOrder) {
+  if (target.collection !== "categories" && inOrder) {
     const index = order.indexOf(moved);
     const before = index > 0 ? keyById.get(order[index - 1]) ?? null : null;
     const after = index < order.length - 1 ? keyById.get(order[index + 1]) ?? null : null;
@@ -72,18 +89,15 @@ export async function reorderWithin({
     });
   }
 
-  for (const [id, albumOrder] of updates) {
-    await req.payload.update({
-      collection,
+  for (const [id, key] of updates) {
+    await req.payload.db.updateOne({
+      collection: target.collection,
       id,
-      data: { albumOrder },
-      context: { allowOrderChange: true },
-      depth: 0,
-      overrideAccess: false,
-      user: req.user,
+      data: { [target.field]: key },
       req,
     });
   }
+  if (updates.size > 0) await revalidateSite(req);
 
   return Response.json({ updated: updates.size });
 }

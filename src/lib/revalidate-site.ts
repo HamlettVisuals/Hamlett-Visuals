@@ -34,7 +34,8 @@ const NOT_ON_SITE = new Set([
   "testimonial-submissions",
 ]);
 
-async function revalidateSite(req: PayloadRequest) {
+// Also called directly by lib/reorder-within.ts, whose writes skip hooks.
+export async function revalidateSite(req: PayloadRequest) {
   try {
     const { revalidatePath } = await import("next/cache");
     revalidatePath("/", "layout");

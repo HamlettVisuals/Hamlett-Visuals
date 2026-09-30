@@ -43,10 +43,10 @@ import type { PortfolioAlbum, PortfolioCategory, Thumbnail } from "./types";
 // same as the kanban board's cards). Grabbing a category collapses every
 // section so the whole list is in view; dropping puts back whatever was
 // open. Albums reorder the same way inside an open section, and only within
-// it. Each drop saves straight away (categories through Payload's own
-// /api/reorder, albums through /api/events/reorder-albums, see
-// lib/reorder-within.ts); if the save fails the order goes back and the
-// reason shows above the list. Reordering is off while searching, since
+// it. Each drop saves straight away (/api/categories/reorder-categories or
+// /api/events/reorder-albums, see lib/reorder-within.ts; a reorder adds no
+// History version); if the save fails the order goes back and the reason
+// shows above the list. Reordering is off while searching, since
 // only part of the list is showing.
 
 type SectionKey = number | "deleted-categories";
@@ -178,19 +178,9 @@ export default function PortfolioList({
     const next = arrayMove(sections, from, to);
     setSections(next);
 
-    // Payload's reorder takes a neighbour: just before the next category
-    // ("Other" at the latest, which is always last), else just after the
-    // previous one.
-    const index = next.findIndex((s) => s.id === active.id);
-    const after = next[index + 1];
-    const before = next[index - 1];
-    const target = after ?? before;
-    void postJSON(`${apiBase}/reorder`, {
-      collectionSlug: "categories",
-      orderableFieldName: "_order",
-      newKeyWillBe: after ? "less" : "greater",
-      target: { id: target.id, key: target.order },
-      docsToMove: [active.id],
+    void postJSON(`${apiBase}/categories/reorder-categories`, {
+      order: next.map((s) => s.id),
+      moved: active.id,
     })
       .then(() => router.refresh())
       .catch((err: Error) => {
