@@ -2187,3 +2187,170 @@ a.editor-overview__tile:focus-visible,
 .kanban-drawer--detail .drawer__content {
   max-width: 760px;
 }
+
+/* The album page's Photos panel (components/admin/AlbumPhotos): a grid of
+   the album's photos in her order, the first marked Cover, each with a
+   drag handle (top left) and a menu (top right). Both controls sit on the
+   photo and stay visible, so they work on touch too. */
+.album-photos {
+  margin-bottom: var(--spacing-field, 24px);
+}
+
+.album-photos__head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.album-photos__title {
+  font-weight: 600;
+}
+
+.album-photos__count {
+  min-width: 24px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--theme-elevation-100);
+  font-size: 13px;
+  text-align: center;
+}
+
+.album-photos__note {
+  margin: 0 0 12px;
+  color: var(--theme-elevation-600);
+  font-size: 13px;
+}
+
+.album-photos__empty {
+  margin: 0;
+  padding: 18px 14px;
+  border: 1px dashed var(--theme-elevation-250);
+  border-radius: var(--style-radius-m, 6px);
+  color: var(--theme-elevation-600);
+}
+
+.album-photos__error {
+  margin: 0 0 12px;
+  padding: 10px 14px;
+  border-radius: var(--style-radius-m, 4px);
+  background: var(--theme-error-50, #fdecec);
+  color: var(--theme-error-700, #8a1f1f);
+  font-size: 14px;
+}
+
+.album-photos__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.album-photos__tile {
+  position: relative;
+  aspect-ratio: 1;
+  overflow: hidden;
+  border-radius: var(--style-radius-m, 6px);
+  background: var(--theme-elevation-100);
+}
+
+.album-photos__tile--dragging {
+  z-index: 2;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.22), 0 0 0 2px var(--theme-elevation-800);
+}
+
+.album-photos__img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  user-select: none;
+}
+
+.album-photos__img--missing {
+  display: grid;
+  place-items: center;
+  color: var(--theme-elevation-600);
+  font-size: 13px;
+}
+
+.album-photos__cover {
+  position: absolute;
+  bottom: 6px;
+  left: 6px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.72);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  pointer-events: none;
+}
+
+/* Handle and menu button: 36px targets on a dark chip, readable on any
+   photo in either theme. */
+.album-photos__handle,
+.album-photos .album-photos__menu-button {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: none;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+}
+
+.album-photos__handle {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  cursor: grab;
+  touch-action: none;
+  -webkit-touch-callout: none;
+  user-select: none;
+}
+
+.album-photos__handle::before {
+  content: "\22EE\22EE";
+  letter-spacing: -3px;
+}
+
+.album-photos__menu {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+}
+
+.album-photos .album-photos__menu-button svg {
+  width: 20px;
+  height: 20px;
+}
+
+.album-photos__handle:hover:not(:disabled),
+.album-photos .album-photos__menu-button:hover {
+  background: rgba(0, 0, 0, 0.8);
+}
+
+.album-photos__handle:focus-visible,
+.album-photos .album-photos__menu-button:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: -4px;
+}
+
+.album-photos__handle:disabled {
+  cursor: progress;
+  opacity: 0.5;
+}
+
+.album-photos__danger {
+  color: var(--theme-error-700, #8a1f1f);
+}
+
+.album-photos__uses {
+  margin: 0 0 12px;
+  padding-left: 20px;
+}

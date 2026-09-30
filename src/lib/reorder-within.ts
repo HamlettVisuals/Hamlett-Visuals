@@ -4,7 +4,8 @@ import { revalidateSite } from "#src/lib/revalidate-site.ts";
 
 // Saves a drag on the Categories & Albums page: categories (Categories'
 // /reorder-categories endpoint), albums within a category (Events'
-// /reorder-albums), and photos within an album later. The client sends the
+// /reorder-albums), and photos within an album (Photos' /reorder-photos,
+// from the album page's photo grid). The client sends the
 // group's ids in their new order plus the one that moved.
 //
 // A reorder isn't an edit, so it writes only the order key, straight to the

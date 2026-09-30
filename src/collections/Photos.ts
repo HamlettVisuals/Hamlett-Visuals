@@ -6,6 +6,8 @@ import { removeRefusedUpload } from "#src/lib/upload-limits.ts";
 import { resizeLargePhotos } from "#src/lib/photo-resize.ts";
 import { PHOTO_MAX_MB } from "#src/lib/upload-sizes.ts";
 import { keyAtEnd } from "#src/lib/manual-order.ts";
+import { findPhotoUsage } from "#src/lib/photo-usage.ts";
+import { reorderWithin } from "#src/lib/reorder-within.ts";
 
 const idOf = (value: unknown) =>
   value && typeof value === "object" ? (value as { id: number | string }).id : (value as number | string | null | undefined);
@@ -114,6 +116,40 @@ export const Photos: CollectionConfig = {
     afterError: [removeRefusedUpload],
     beforeChange: [setPhotoOrder],
   },
+  endpoints: [
+    {
+      // A drag (or "Set as album cover") in the album page's photo grid:
+      // POST /api/photos/reorder-photos { album, order: [ids], moved: id }.
+      // See lib/reorder-within.ts.
+      path: "/reorder-photos",
+      method: "post",
+      handler: async (req) => {
+        const body = (await req.json?.().catch(() => null)) as { album?: unknown; order?: unknown; moved?: unknown } | null;
+        const isId = (value: unknown): value is number => Number.isInteger(value);
+        if (!body || !isId(body.album) || !isId(body.moved) || !Array.isArray(body.order) || !body.order.every(isId)) {
+          return Response.json({ error: "Invalid reorder." }, { status: 400 });
+        }
+        return reorderWithin({
+          req,
+          target: { collection: "photos", field: "albumOrder", scope: { field: "event", id: body.album } },
+          order: body.order,
+          moved: body.moved,
+        });
+      },
+    },
+    {
+      // Where else the site shows this photo, for the album page's "Delete
+      // photo…" warning: GET /api/photos/<id>/usage -> { uses: [text] }.
+      path: "/:id/usage",
+      method: "get",
+      handler: async (req) => {
+        if (!req.user) return Response.json({ error: "Unauthorized." }, { status: 401 });
+        const id = Number(req.routeParams?.id);
+        if (!Number.isInteger(id)) return Response.json({ error: "Invalid photo." }, { status: 400 });
+        return Response.json({ uses: await findPhotoUsage(req, id) });
+      },
+    },
+  ],
   // Powers the History tab (restore an earlier save). No drafts — Save
   // writes straight through, same as before.
   versions: true,

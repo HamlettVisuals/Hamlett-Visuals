@@ -13,6 +13,7 @@ import { EmptyField as EmptyField_271eec196f6613c6ae3ecc547136025a } from '../..
 import { default as default_f7ada3d495e51370acd8dcac7a5e5f13 } from '../../../components/admin/AlbumThumbnailCell'
 import { AlbumTitleCell as AlbumTitleCell_271eec196f6613c6ae3ecc547136025a } from '../../../components/admin/AlbumCells'
 import { default as default_3a3eaabf72269361ebb781883a437931 } from '../../../components/admin/CategoryPrefill'
+import { default as default_7c8c5c0d9554eea49a6c66eb4a6ad058 } from '../../../components/admin/AlbumPhotos'
 import { AlbumsListDescription as AlbumsListDescription_271eec196f6613c6ae3ecc547136025a } from '../../../components/admin/AlbumCells'
 import { default as default_3217d5da994dedfd8949de6baed57944 } from '../../../components/admin/CropPreview'
 import { default as default_f21c27ddc71a218bc5a17d940513ff86 } from '../../../components/admin/PackageThumbnailCell'
@@ -91,6 +92,7 @@ export const importMap = {
   "/components/admin/AlbumThumbnailCell#default": default_f7ada3d495e51370acd8dcac7a5e5f13,
   "/components/admin/AlbumCells#AlbumTitleCell": AlbumTitleCell_271eec196f6613c6ae3ecc547136025a,
   "/components/admin/CategoryPrefill#default": default_3a3eaabf72269361ebb781883a437931,
+  "/components/admin/AlbumPhotos#default": default_7c8c5c0d9554eea49a6c66eb4a6ad058,
   "/components/admin/AlbumCells#AlbumsListDescription": AlbumsListDescription_271eec196f6613c6ae3ecc547136025a,
   "/components/admin/CropPreview#default": default_3217d5da994dedfd8949de6baed57944,
   "/components/admin/PackageThumbnailCell#default": default_f21c27ddc71a218bc5a17d940513ff86,

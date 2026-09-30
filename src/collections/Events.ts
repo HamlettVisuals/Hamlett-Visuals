@@ -1,4 +1,4 @@
-import type { CollectionBeforeChangeHook, CollectionConfig } from "payload";
+import type { CollectionBeforeChangeHook, CollectionBeforeDeleteHook, CollectionConfig } from "payload";
 import { isAdmin } from "#src/access/isAdmin.ts";
 import { formatSlug } from "#src/hooks/formatSlug.ts";
 import { DESCRIPTION_MAX } from "#src/lib/album-limits.ts";
@@ -55,6 +55,22 @@ const setAlbumOrder: CollectionBeforeChangeHook = async ({ context, data, operat
   });
   data.albumOrder = keyAtStart(docs.map((doc) => doc.albumOrder));
   return data;
+};
+
+// When an album is deleted permanently, the database takes its photos out
+// of it (photos.event is set to null) but would leave their order keys, so
+// they'd look like album photos without an album. Clears both first,
+// straight in the database like a drag (no History version for each
+// photo), inside the delete's transaction. Photos in the Trash too. Moving
+// an album to the Trash is an update, not a delete, so its photos stay.
+const releasePhotos: CollectionBeforeDeleteHook = async ({ id, req }) => {
+  await req.payload.db.updateMany({
+    collection: "photos",
+    where: { event: { equals: id } },
+    data: { event: null, albumOrder: null },
+    returning: false,
+    req,
+  });
 };
 
 // An album is a single shoot within a category (e.g. the "Priya & Daniel"
@@ -139,6 +155,7 @@ export const Events: CollectionConfig = {
   },
   hooks: {
     beforeChange: [setSortDate, setAlbumOrder],
+    beforeDelete: [releasePhotos],
   },
   endpoints: [
     {
@@ -270,6 +287,20 @@ export const Events: CollectionConfig = {
       admin: {
         description: "Optional. The day of the shoot; its month and year show next to the album's title.",
         date: { pickerAppearance: "dayOnly", displayFormat: "d MMM yyyy" },
+      },
+    },
+    {
+      // The album's photos, in her order: a grid to reorder (drag, or "Set
+      // as album cover"), edit, take out of the album or delete them. Each
+      // change saves straight away, apart from the album's own Save. Not
+      // stored. See components/admin/AlbumPhotos.
+      name: "photos",
+      type: "ui",
+      admin: {
+        disableListColumn: true,
+        components: {
+          Field: "/components/admin/AlbumPhotos#default",
+        },
       },
     },
     {
