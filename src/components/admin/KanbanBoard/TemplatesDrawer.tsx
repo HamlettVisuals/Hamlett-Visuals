@@ -3,7 +3,6 @@
 import { useState, type KeyboardEvent } from "react";
 import { Drawer } from "@payloadcms/ui";
 import styles from "./KanbanBoard.module.css";
-import { drawerScrollRef } from "./drawer-scroll";
 import type { TemplateWithCategory } from "./types";
 
 export const TEMPLATES_DRAWER_SLUG = "kanban-templates";
@@ -43,7 +42,7 @@ export default function TemplatesDrawer({
 
   return (
     <Drawer slug={TEMPLATES_DRAWER_SLUG} className="kanban-drawer" title="Checklist Templates">
-      <div className={styles.questionsBody} ref={drawerScrollRef}>
+      <div className={styles.questionsBody}>
         <div className={styles.viewToggle} role="group" aria-label="Template type">
           {TEMPLATE_TABS.map((tab) => (
             <button

@@ -14,7 +14,7 @@
 // does reaches the database or R2 unless the test itself answers it.
 const fs = require("fs");
 const path = require("path");
-const { chromium } = require("playwright");
+const playwright = require("playwright");
 const { createGuard } = require("./guard.cjs");
 
 const E2E = path.resolve(__dirname, "..");
@@ -35,9 +35,12 @@ function authState() {
   return AUTH;
 }
 
-/** A browser: headless unless HEADED=1. */
-function launchBrowser(options = {}) {
-  return chromium.launch({ headless: !process.env.HEADED, ...options });
+/**
+ * A browser: headless unless HEADED=1. Chromium unless `engine: "webkit"`
+ * (Safari's engine; `npx playwright install webkit` once).
+ */
+function launchBrowser({ engine = "chromium", ...options } = {}) {
+  return playwright[engine].launch({ headless: !process.env.HEADED, ...options });
 }
 
 /** A signed-in context behind the write guard. Options go to browser.newContext. */

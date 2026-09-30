@@ -2137,24 +2137,21 @@ a.editor-overview__tile:focus-visible,
   }
 }
 
+/* Every drawer (Payload's and ours): Payload sizes .drawer at 100vh,
+   which on phones is the height with the browser toolbars hidden, so a
+   drawer's bottom sat under them. It's the visible viewport's height
+   instead (set from visualViewport by components/admin/ModalTouchScroll.tsx,
+   so it also shrinks above an on-screen keyboard), 100dvh until that's
+   measured. That component also makes drawers and modals touch-scrollable
+   on iPhones. */
+.drawer {
+  top: var(--visual-viewport-top, 0px);
+  height: var(--visual-viewport-height, 100dvh);
+}
+
 /* The kanban board's drawers (card detail, Add Card, Questions,
-   Templates — each <Drawer className="kanban-drawer">) on phones — see
-   KanbanBoard/drawer-scroll.ts for the touch-scrolling half of this.
-   Payload sizes .drawer at 100vh, which on phones is the height with the
-   browser toolbars hidden, so the drawer's bottom sat under them. It's now
-   the visible viewport's height (set from visualViewport, so it also
-   shrinks above an on-screen keyboard), 100dvh until that's measured.
-   The title row with the close button sticks to the top while the
-   content scrolls under it. */
-.kanban-drawer {
-  top: var(--kanban-drawer-top, 0px);
-  height: var(--kanban-drawer-height, 100dvh);
-}
-
-.kanban-drawer .drawer__content-children {
-  overscroll-behavior: contain;
-}
-
+   Templates — each <Drawer className="kanban-drawer">): the title row with
+   the close button sticks to the top while the content scrolls under it. */
 .kanban-drawer .drawer__header {
   position: sticky;
   top: 0;

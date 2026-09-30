@@ -70,6 +70,7 @@ import { default as default_9717a31d15966f2422bf6c61264ebc6d } from '../../../co
 import { default as default_77367a543f762dbbf1879e23275ea1dd } from '../../../components/admin/FooterLinksField'
 import { default as default_f374578049e4e5ccb6fe72e599427a6f } from '../../../components/admin/LogoSizeField'
 import { default as default_beebdd1cde60416cd3f6a700617bab88 } from '../../../components/admin/SiteNav'
+import { default as default_c0cbf3957e7eaa73f00c2e486a7de526 } from '../../../components/admin/ModalTouchScroll'
 import { S3ClientUploadHandler as S3ClientUploadHandler_f97aa6c64367fa259c5bc0567239ef24 } from '@payloadcms/storage-s3/client'
 import { default as default_417d8d667e84e4656bf87771dc7c88df } from '../../../components/admin/KanbanBoard'
 import { default as default_d497c752e6aa0ef2ce3452cd1f73ca34 } from '../../../components/admin/EditorOverview'
@@ -151,6 +152,7 @@ export const importMap = {
   "/components/admin/FooterLinksField#default": default_77367a543f762dbbf1879e23275ea1dd,
   "/components/admin/LogoSizeField#default": default_f374578049e4e5ccb6fe72e599427a6f,
   "/components/admin/SiteNav#default": default_beebdd1cde60416cd3f6a700617bab88,
+  "/components/admin/ModalTouchScroll#default": default_c0cbf3957e7eaa73f00c2e486a7de526,
   "@payloadcms/storage-s3/client#S3ClientUploadHandler": S3ClientUploadHandler_f97aa6c64367fa259c5bc0567239ef24,
   "/components/admin/KanbanBoard#default": default_417d8d667e84e4656bf87771dc7c88df,
   "/components/admin/EditorOverview#default": default_d497c752e6aa0ef2ce3452cd1f73ca34,

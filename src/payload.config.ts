@@ -121,6 +121,9 @@ export default buildConfig({
       collections: ["pricing-rows", "categories", "events", "photos", "testimonials", "backstage"],
     },
     components: {
+      // Touch scrolling inside every drawer and modal on iPhones, and
+      // drawers sized to the visible viewport — see ModalTouchScroll.tsx.
+      providers: ["/components/admin/ModalTouchScroll#default"],
       // Replaces the default alphabetical/admin.group sidebar with a tree
       // that mirrors the real site's page structure — see SiteNav.tsx and
       // site-tree.ts.
