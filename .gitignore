@@ -48,3 +48,8 @@ next-env.d.ts
 
 # Local copies of photos from Google Drive, for testing; uploaded through the admin.
 /Test Photos/
+
+# End-to-end tests (tests/e2e): the saved studio sign-in (a live session
+# cookie, never commit it) and screenshots / generated test images.
+/tests/e2e/.auth/
+/tests/e2e/.output/
