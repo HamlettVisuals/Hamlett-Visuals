@@ -170,6 +170,18 @@ export const Events: CollectionConfig = {
       },
     },
     {
+      // Pre-fills Category on a new album opened from a section's
+      // "+ Add album" link (/create?category=<id>). Shows nothing.
+      name: "categoryPrefill",
+      type: "ui",
+      admin: {
+        disableListColumn: true,
+        components: {
+          Field: "/components/admin/CategoryPrefill#default",
+        },
+      },
+    },
+    {
       name: "category",
       type: "relationship",
       relationTo: "categories",
