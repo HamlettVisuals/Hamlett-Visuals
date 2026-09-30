@@ -6,6 +6,7 @@ import { SetStepNav } from "@payloadcms/ui";
 import { adminLoginURL } from "@/lib/admin-redirect";
 import { OTHER_SESSION_TYPE } from "@/lib/booking-session-type";
 import { compareAlbums, comparePhotos } from "@/lib/manual-order";
+import { findUnusedPhotos } from "@/lib/photo-usage";
 import PortfolioList from "./PortfolioList";
 import type { PortfolioCategory, Thumbnail } from "./types";
 
@@ -18,7 +19,9 @@ import type { PortfolioCategory, Thumbnail } from "./types";
 //
 // Loads everything up front (a handful of categories, albums into the
 // hundreds): categories, albums, the categories' cover photos and every
-// album's photos, one query each.
+// album's photos, one query each. Plus how many photos are unused (in no
+// album, used nowhere; lib/photo-usage.ts) for the Unused photos section's
+// header; the section loads the photos themselves when it's opened.
 
 type PhotoLike = {
   id: number;
@@ -69,6 +72,8 @@ export default async function PortfolioView(props: AdminViewServerProps) {
       user,
     }),
   ]);
+
+  const unusedCount = (await findUnusedPhotos(req)).length;
 
   const coverIds = categories.docs.map((category) => idOf(category.coverPhoto)).filter((id): id is number => id != null);
   const albumIds = albums.docs.map((album) => album.id);
@@ -137,7 +142,7 @@ export default async function PortfolioView(props: AdminViewServerProps) {
       }}
     >
       <SetStepNav nav={[{ label: "Categories & Albums" }]} />
-      <PortfolioList sections={sections} orphans={orphans} />
+      <PortfolioList sections={sections} orphans={orphans} unusedCount={unusedCount} />
     </DefaultTemplate>
   );
 }

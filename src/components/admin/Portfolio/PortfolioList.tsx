@@ -27,6 +27,7 @@ import { Button, Link, useConfig } from "@payloadcms/ui";
 import { formatAdminURL } from "payload/shared";
 import { StatusToggle } from "@/components/admin/CategoryCells";
 import PortfolioTabs from "./Tabs";
+import UnusedPhotos from "./UnusedPhotos";
 import type { PortfolioAlbum, PortfolioCategory, Thumbnail } from "./types";
 
 // The Categories & Albums page (see index.tsx for the data): one section
@@ -48,6 +49,9 @@ import type { PortfolioAlbum, PortfolioCategory, Thumbnail } from "./types";
 // History version); if the save fails the order goes back and the reason
 // shows above the list. Reordering is off while searching, since
 // only part of the list is showing.
+//
+// Below the categories: Unused photos (UnusedPhotos.tsx), photos in no
+// album and used nowhere, with their own search.
 
 type SectionKey = number | "deleted-categories";
 
@@ -104,9 +108,12 @@ async function postJSON(url: string, body: unknown): Promise<void> {
 export default function PortfolioList({
   sections: initialSections,
   orphans,
+  unusedCount,
 }: {
   sections: PortfolioCategory[];
   orphans: PortfolioAlbum[];
+  /** Photos in no album and used nowhere, for the Unused photos header. */
+  unusedCount: number;
 }) {
   const { config } = useConfig();
   const router = useRouter();
@@ -331,6 +338,10 @@ export default function PortfolioList({
           <DragOverlay>{dragged ? <CategoryHeader category={dragged} lifted /> : null}</DragOverlay>
         </DndContext>
       )}
+
+      <div className="portfolio__sections unused-photos__wrap">
+        <UnusedPhotos count={unusedCount} />
+      </div>
     </div>
   );
 }

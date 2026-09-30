@@ -6,7 +6,7 @@ import { removeRefusedUpload } from "#src/lib/upload-limits.ts";
 import { resizeLargePhotos } from "#src/lib/photo-resize.ts";
 import { PHOTO_MAX_MB } from "#src/lib/upload-sizes.ts";
 import { keyAtEnd } from "#src/lib/manual-order.ts";
-import { findPhotoUsage } from "#src/lib/photo-usage.ts";
+import { findPhotoUsage, findUnusedPhotos } from "#src/lib/photo-usage.ts";
 import { reorderWithin } from "#src/lib/reorder-within.ts";
 
 const idOf = (value: unknown) =>
@@ -135,6 +135,54 @@ export const Photos: CollectionConfig = {
           order: body.order,
           moved: body.moved,
         });
+      },
+    },
+    {
+      // The Unused photos section on Categories & Albums (in no album, not
+      // in the Trash, used nowhere; lib/photo-usage.ts):
+      // GET /api/photos/unused -> { photos: [...] }.
+      path: "/unused",
+      method: "get",
+      handler: async (req) => {
+        if (!req.user) return Response.json({ error: "Unauthorized." }, { status: 401 });
+        return Response.json({ photos: await findUnusedPhotos(req) });
+      },
+    },
+    {
+      // "Move to Trash" in the Unused photos section:
+      // POST /api/photos/trash-unused { ids } -> { trashed, skipped }.
+      // Each photo is checked again first: one that has since been added to
+      // an album or used somewhere is left alone and reported, so a page
+      // left open can't trash a photo that's now in use. The rest go to the
+      // Trash the same way Payload's Delete does (setting deletedAt), with
+      // this user's permissions and the collection's hooks.
+      path: "/trash-unused",
+      method: "post",
+      handler: async (req) => {
+        if (!req.user) return Response.json({ error: "Unauthorized." }, { status: 401 });
+        const body = (await req.json?.().catch(() => null)) as { ids?: unknown } | null;
+        const raw = Array.isArray(body?.ids) ? (body.ids as unknown[]) : [];
+        const ids = raw.filter((id): id is number => Number.isInteger(id));
+        if (!ids.length || ids.length !== raw.length) return Response.json({ error: "Invalid photos." }, { status: 400 });
+        const stillUnused = new Set((await findUnusedPhotos(req, ids)).map((photo) => photo.id));
+        const trashed: number[] = [];
+        const skipped: number[] = [];
+        for (const id of ids) {
+          if (!stillUnused.has(id)) {
+            skipped.push(id);
+            continue;
+          }
+          await req.payload.update({
+            collection: "photos",
+            id,
+            data: { deletedAt: new Date().toISOString() },
+            overrideAccess: false,
+            user: req.user,
+            req,
+          });
+          trashed.push(id);
+        }
+        return Response.json({ trashed, skipped });
       },
     },
     {

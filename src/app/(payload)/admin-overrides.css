@@ -2628,3 +2628,205 @@ a.editor-overview__tile:focus-visible,
   gap: 8px;
   margin-left: auto;
 }
+
+/* Unused photos, the last section of Categories & Albums
+   (components/admin/Portfolio/UnusedPhotos.tsx): muted and closed to start;
+   open, its own search and sort, pickable photo tiles with their upload
+   date, "Show more", and a bar that stays in view once photos are picked. */
+.unused-photos__wrap {
+  margin-top: 28px;
+}
+
+.unused-photos {
+  scroll-margin-top: calc(var(--app-header-height, 56px) + 12px);
+}
+
+.unused-photos__toggle {
+  cursor: pointer;
+}
+
+.unused-photos__body {
+  padding: 14px;
+}
+
+.unused-photos__tools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.unused-photos__search {
+  flex: 1 1 260px;
+  min-width: 0;
+  height: 44px;
+  padding: 0 12px;
+  border: none;
+  border-radius: var(--style-radius-m, 4px);
+  background: var(--theme-elevation-50);
+  color: var(--theme-text);
+  font: inherit;
+}
+
+.unused-photos__search:focus-visible,
+.unused-photos__sort select:focus-visible,
+.unused-photos__photo:focus-visible {
+  outline: 2px solid var(--theme-elevation-800);
+  outline-offset: 2px;
+}
+
+.unused-photos__sort {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--theme-elevation-700);
+  font-size: 14px;
+}
+
+.unused-photos__sort select {
+  height: 44px;
+  padding: 0 10px;
+  border: 1px solid var(--theme-elevation-250);
+  border-radius: var(--style-radius-m, 4px);
+  background: var(--theme-bg);
+  color: var(--theme-text);
+  font: inherit;
+}
+
+.unused-photos__select-all {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  margin-bottom: 4px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.unused-photos__select-all input {
+  width: 18px;
+  height: 18px;
+}
+
+.unused-photos__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.unused-photos__photo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 100%;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--theme-text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.unused-photos__frame {
+  position: relative;
+  display: block;
+  aspect-ratio: 1;
+  overflow: hidden;
+  border: 2px solid transparent;
+  border-radius: var(--style-radius-m, 6px);
+  background: var(--theme-elevation-100);
+}
+
+.unused-photos__frame img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.unused-photos__no-preview {
+  display: grid;
+  place-items: center;
+  height: 100%;
+  color: var(--theme-elevation-600);
+  font-size: 12px;
+}
+
+/* An empty ring until picked, then filled with a tick. */
+.unused-photos__check {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  width: 24px;
+  height: 24px;
+  border: 2px solid #fff;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.35);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.unused-photos__photo--picked .unused-photos__frame {
+  border-color: var(--theme-success-500, #2f8a4c);
+}
+
+.unused-photos__photo--picked .unused-photos__check {
+  background: var(--theme-success-500, #2f8a4c);
+}
+
+.unused-photos__photo--picked .unused-photos__check::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 7px;
+  width: 6px;
+  height: 11px;
+  border: solid #fff;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+.unused-photos__name {
+  overflow: hidden;
+  font-size: 13px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.unused-photos__date {
+  color: var(--theme-elevation-600);
+  font-size: 12px;
+}
+
+.unused-photos__more {
+  display: flex;
+  justify-content: center;
+  margin-top: 16px;
+}
+
+.unused-photos__bar {
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
+  margin: 16px -14px -14px;
+  padding: 12px 14px max(12px, env(safe-area-inset-bottom));
+  border-top: 1px solid var(--theme-elevation-150);
+  border-radius: 0 0 var(--style-radius-m, 6px) var(--style-radius-m, 6px);
+  background: var(--theme-bg);
+  font-weight: 600;
+}
+
+.unused-photos__bar-buttons {
+  display: flex;
+  gap: 8px;
+}
