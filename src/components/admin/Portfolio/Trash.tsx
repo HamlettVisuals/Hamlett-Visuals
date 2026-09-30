@@ -8,10 +8,11 @@ import { comparePhotos } from "@/lib/manual-order";
 import TrashList, { type TrashItem } from "./TrashList";
 
 // The Categories & Albums page's Trash tab (admin.components.views
-// .portfolioTrash, path /portfolio/trash): deleted categories and deleted
-// albums in two sections, newest deletion first, each with Payload's own
-// Restore and Delete permanently (TrashList.tsx). The Categories and Albums
-// Trash URLs redirect here (src/proxy.ts).
+// .portfolioTrash, path /portfolio/trash): deleted categories, albums and
+// photos in three sections, newest deletion first, each with Payload's own
+// Restore and Delete permanently (TrashList.tsx). A deleted photo says
+// which album it was in (restoring it puts it back there). The Categories,
+// Albums and Photos Trash URLs redirect here (src/proxy.ts).
 
 type PhotoLike = {
   id: number;
@@ -43,7 +44,7 @@ export default async function PortfolioTrashView(props: AdminViewServerProps) {
 
   const inTrash = { deletedAt: { exists: true } } as const;
   const photoSelect = { event: true, url: true, filename: true, alt: true, sizes: { thumbnail: true }, albumOrder: true, createdAt: true } as const;
-  const [categories, albums, allCategories] = await Promise.all([
+  const [categories, albums, allCategories, photos] = await Promise.all([
     payload.find({
       collection: "categories",
       where: inTrash,
@@ -76,7 +77,33 @@ export default async function PortfolioTrashView(props: AdminViewServerProps) {
       overrideAccess: false,
       user,
     }),
+    payload.find({
+      collection: "photos",
+      where: inTrash,
+      trash: true,
+      sort: "-deletedAt",
+      pagination: false,
+      depth: 0,
+      select: { ...photoSelect, deletedAt: true },
+      overrideAccess: false,
+      user,
+    }),
   ]);
+  // Names for the deleted photos' albums, including deleted ones.
+  const photoAlbumIds = [...new Set(photos.docs.map((p) => idOf(p.event)).filter((id): id is number => id != null))];
+  const photoAlbums = photoAlbumIds.length
+    ? await payload.find({
+        collection: "events",
+        where: { id: { in: photoAlbumIds } },
+        trash: true,
+        pagination: false,
+        depth: 0,
+        select: { title: true, deletedAt: true },
+        overrideAccess: false,
+        user,
+      })
+    : { docs: [] };
+  const albumById = new Map(photoAlbums.docs.map((a) => [a.id, a]));
 
   const coverIds = categories.docs.map((c) => idOf(c.coverPhoto)).filter((id): id is number => id != null);
   const albumIds = albums.docs.map((a) => a.id);
@@ -114,6 +141,17 @@ export default async function PortfolioTrashView(props: AdminViewServerProps) {
     };
   });
 
+  const deletedPhotos: TrashItem[] = photos.docs.map((p) => {
+    const album = albumById.get(idOf(p.event) ?? -1);
+    return {
+      id: p.id,
+      title: p.alt?.trim() || p.filename || `Photo ${p.id}`,
+      deletedAt: p.deletedAt ?? null,
+      thumbnail: thumb(p as PhotoLike),
+      note: album ? `In ${album.title}${album.deletedAt ? " (also deleted)" : ""}` : "Not in an album",
+    };
+  });
+
   return (
     <DefaultTemplate
       i18n={i18n}
@@ -136,7 +174,7 @@ export default async function PortfolioTrashView(props: AdminViewServerProps) {
           { label: "Trash" },
         ]}
       />
-      <TrashList categories={deletedCategories} albums={deletedAlbums} />
+      <TrashList categories={deletedCategories} albums={deletedAlbums} photos={deletedPhotos} />
     </DefaultTemplate>
   );
 }

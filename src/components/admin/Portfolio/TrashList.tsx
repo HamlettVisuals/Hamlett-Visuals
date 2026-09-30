@@ -7,12 +7,19 @@ import PortfolioTabs from "./Tabs";
 import type { Thumbnail } from "./types";
 
 // The Trash tab of Categories & Albums (data from Trash.tsx): deleted
-// categories and deleted albums in two sections. Restore and Delete
+// categories, albums and photos in three sections. Restore and Delete
 // permanently send the same requests as Payload's own Trash buttons (a
 // PATCH setting deletedAt to null, or a DELETE, each limited to that one
 // id and only while it's still in the Trash), so the collections' own rules
 // still apply: a category can't be permanently deleted while albums use it,
 // and that message is shown as it comes back.
+//
+// A photo's Delete permanently first asks where it's still used
+// (GET /api/photos/<id>/usage, lib/photo-usage.ts): a photo can be in the
+// Trash while still set as a cover or on a slide, and deleting it for good
+// leaves those places empty, so the confirmation lists them. Deleting it
+// also removes its file and thumbnail from storage (the R2 plugin does that
+// on every permanent delete).
 
 export type TrashItem = {
   id: number;
@@ -23,8 +30,8 @@ export type TrashItem = {
   note: string | null;
 };
 
-type Collection = "categories" | "events";
-type Pending = { collection: Collection; item: TrashItem } | null;
+type Collection = "categories" | "events" | "photos";
+type Pending = { collection: Collection; item: TrashItem; uses?: string[] } | null;
 
 const MODAL_SLUG = "portfolio-trash-delete";
 
@@ -53,7 +60,15 @@ async function send(url: string, method: "PATCH" | "DELETE", body?: object): Pro
   if (message) throw new Error(message);
 }
 
-export default function TrashList({ categories, albums }: { categories: TrashItem[]; albums: TrashItem[] }) {
+export default function TrashList({
+  categories,
+  albums,
+  photos,
+}: {
+  categories: TrashItem[];
+  albums: TrashItem[];
+  photos: TrashItem[];
+}) {
   const { config } = useConfig();
   const router = useRouter();
   const { openModal } = useModal();
@@ -61,7 +76,28 @@ export default function TrashList({ categories, albums }: { categories: TrashIte
   const [busy, setBusy] = useState<string | null>(null);
   const [pending, setPending] = useState<Pending>(null);
 
-  const noun = (collection: Collection) => (collection === "categories" ? "Category" : "Album");
+  const noun = (collection: Collection) =>
+    collection === "categories" ? "Category" : collection === "events" ? "Album" : "Photo";
+
+  const askToDeleteForever = async (collection: Collection, item: TrashItem) => {
+    if (collection !== "photos") {
+      setPending({ collection, item });
+      openModal(MODAL_SLUG);
+      return;
+    }
+    setBusy(`${collection}-${item.id}`);
+    try {
+      const res = await fetch(`${apiBase}/photos/${item.id}/usage`, { credentials: "include" });
+      const json = await res.json().catch(() => null);
+      if (!res.ok) throw new Error(json?.error ?? "Couldn't check where this photo is used.");
+      setPending({ collection, item, uses: json.uses as string[] });
+      openModal(MODAL_SLUG);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Couldn't check where this photo is used.");
+    } finally {
+      setBusy(null);
+    }
+  };
 
   const restore = async (collection: Collection, item: TrashItem) => {
     setBusy(`${collection}-${item.id}`);
@@ -131,10 +167,7 @@ export default function TrashList({ categories, albums }: { categories: TrashIte
                     type="button"
                     className="portfolio-trash__button portfolio-trash__button--danger"
                     disabled={busy === key}
-                    onClick={() => {
-                      setPending({ collection, item });
-                      openModal(MODAL_SLUG);
-                    }}
+                    onClick={() => void askToDeleteForever(collection, item)}
                   >
                     Delete permanently
                   </button>
@@ -154,20 +187,39 @@ export default function TrashList({ categories, albums }: { categories: TrashIte
         <PortfolioTabs current="trash" />
       </div>
       <p className="portfolio-trash__intro">
-        Deleted categories and albums wait here until you restore them or delete them permanently. A category can
-        only be deleted permanently once no album uses it.
+        Deleted categories, albums and photos wait here until you restore them or delete them permanently. A
+        category can only be deleted permanently once no album uses it. A restored photo goes back to its album, if
+        that album still exists.
       </p>
       <div className="portfolio__sections">
         {section("categories", "Deleted categories", categories, "No deleted categories.")}
         {section("events", "Deleted albums", albums, "No deleted albums.")}
+        {section("photos", "Deleted photos", photos, "No deleted photos.")}
       </div>
       <ConfirmationModal
         modalSlug={MODAL_SLUG}
         heading={pending ? `Permanently delete "${pending.item.title}"?` : "Permanently delete?"}
         body={
-          pending?.collection === "events"
-            ? "This can't be undone. Its photos stay in your library, no longer in any album."
-            : "This can't be undone."
+          pending?.collection === "events" ? (
+            "This can't be undone. Its photos stay, no longer in any album; any not used elsewhere show under Unused photos."
+          ) : pending?.collection === "photos" ? (
+            <>
+              <p>This can&apos;t be undone. The photo file is removed from storage too.</p>
+              {pending.uses?.length ? (
+                <>
+                  <p>It&apos;s still used as:</p>
+                  <ul className="album-photos__uses">
+                    {pending.uses.map((use) => (
+                      <li key={use}>{use}</li>
+                    ))}
+                  </ul>
+                  <p>Those places will be left without a photo.</p>
+                </>
+              ) : null}
+            </>
+          ) : (
+            "This can't be undone."
+          )
         }
         confirmLabel="Delete permanently"
         onConfirm={deleteForever}
