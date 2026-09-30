@@ -18,11 +18,11 @@ import { revalidateSite } from "#src/lib/revalidate-site.ts";
 //     (saved by older code) or the keys aren't in order, the whole group
 //     is renumbered in the order she just set. They're always sorted in
 //     code (lib/manual-order.ts).
-//   - categories: always renumbered (a0, a1, a2, …). The site sorts them in
-//     the database, whose text collation (en_US) doesn't order mixed-case
-//     keys the way the key generator does (e.g. "Zz", the key before "a0",
-//     sorts last there); a0–a9 then aA… sort the same both ways for the
-//     handful of categories there are.
+//   - categories: always renumbered (a0, a1, a2, …), which keeps their keys
+//     short. The site sorts them in the database; that's safe because
+//     Payload's generator (3.89+) only uses 0-9 and a-z, which the
+//     database's en_US collation orders the same as character codes. Only
+//     an uppercase key would sort differently there, and none is made.
 //
 // Part of payload.config.ts's module graph (collections import it), so no
 // "@/…" imports.

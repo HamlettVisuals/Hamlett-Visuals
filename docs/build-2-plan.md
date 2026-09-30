@@ -28,10 +28,13 @@ and `Photos.ts` (order hooks, `/reorder-albums` endpoint),
   `generateKeyBetween` / `generateNKeysBetween` from `payload/shared`).
   Albums: order within their category. Photos: order within their album.
 - Always sort albums and photos **in code** with `compareAlbums` /
-  `comparePhotos` (lib/manual-order.ts), never with a database `sort`. The
-  database collation is `en_US.UTF-8`, which doesn't order mixed-case keys
-  the way the generator does (the key before `a0` is `Zz`, which the
-  database sorts last).
+  `comparePhotos` (lib/manual-order.ts), never with a database `sort`: items
+  with no key need the placement below, which a database sort can't give.
+  (Collation is not a problem: Payload 3.89's generator only makes keys
+  from 0-9 and a-z, e.g. the key before `a0` is `9z`, and the database's
+  `en_US.UTF-8` collation orders those exactly like character codes.
+  Checked against the live database with ~5,800 generated keys. Only an
+  uppercase key, from an older Payload, would sort wrong; there are none.)
 - An album with no key (created by older code) counts as newest: top of its
   category. A photo with no key goes to the end of its album. Either gets a
   real key the next time it's saved.
@@ -149,14 +152,13 @@ right.
 
 ## Known issues and follow-ups
 
-- **Payload's own drag on Packages and Backstage** (`orderable: true`, sorted
-  by `_order` in the database) has the same collation weakness: a key with an
-  uppercase letter (e.g. "Zz" at the top) can sort in the wrong place on the
-  site. Not fixed yet; the fix would mirror Categories (renumber on drag
-  through our own endpoint).
-- A new category is slotted just above "Other" by `guardOrderAndOther`
-  (Categories.ts) with `generateKeyBetween`, which can produce a mixed-case
-  key; the next category drag renumbers them all.
+- Resolved, no change needed: Payload's own drag on Packages and Backstage
+  (`orderable: true`, sorted by `_order` in the database) and new categories
+  slotted above "Other" were thought to risk uppercase keys that the
+  database sorts wrong. Payload 3.89's generator never makes them (see "How
+  ordering works"), and every live key (categories, packages, backstage,
+  including the Trash) is lowercase and sorts the same in the database as
+  in code. Worth rechecking only if Payload's generator changes.
 - Albums created on the live site by the pre-Build-1 code had no order key;
   they sort at the top of their category and get a key when next saved or
   dragged.

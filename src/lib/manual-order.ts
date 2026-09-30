@@ -4,10 +4,9 @@ import { generateKeyBetween } from "payload/shared";
 // album): the `albumOrder` fields on Events and Photos, fractional-index
 // keys (Payload's own generator, the same one behind the Categories order).
 //
-// Always sorted here in code, never by the database: the keys compare by
-// character code (0-9 < A-Z < a-z), which a database collation may not
-// follow, and an item saved by older code has no key yet and needs a
-// sensible place:
+// Always sorted here in code, never by the database: an item saved by older
+// code has no key yet and needs a sensible place, which a database sort
+// can't give it:
 //   - an album with no key counts as the newest, so it goes to the top of
 //     its category (new albums go to the top), newest first among them;
 //   - a photo with no key goes to the end of its album (new photos go to
