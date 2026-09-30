@@ -29,6 +29,7 @@ import {
 } from "@payloadcms/ui";
 import { comparePhotos } from "@/lib/manual-order";
 import { RASTER_IMAGE_MIME_TYPES } from "@/lib/raster-image-types";
+import AddExistingPhotos from "./AddExistingPhotos";
 import { useUploads, type UploadItem } from "./useUploads";
 
 // The album's photos, inside the album's edit form (a `ui` field,
@@ -59,7 +60,10 @@ import { useUploads, type UploadItem } from "./useUploads";
 // the saved album's page, the files picked are uploaded there
 // (pendingForNewAlbum below). New albums also start Hidden, as the form's
 // starting value, so the form isn't marked changed by it and the database
-// default is untouched. Styles: .album-photos in admin-overrides.css.
+// default is untouched. "Add existing photos" picks photos already in the
+// library (AddExistingPhotos.tsx); it waits while uploads run, since both
+// add photos at the album's end. Styles: .album-photos in
+// admin-overrides.css.
 
 type Photo = {
   id: number;
@@ -114,6 +118,8 @@ export default function AlbumPhotos() {
   const [editing, setEditing] = useState<number | null>(null);
   const [deleting, setDeleting] = useState<{ photo: Photo; uses: string[] } | null>(null);
   const [saving, setSaving] = useState(false);
+  const [picking, setPicking] = useState(false);
+  const closePicker = useCallback(() => setPicking(false), []);
   const [dropping, setDropping] = useState(false);
   const dragDepth = useRef(0);
   const fileInput = useRef<HTMLInputElement>(null);
@@ -133,8 +139,12 @@ export default function AlbumPhotos() {
       depth: "0",
       "select[alt]": "true",
       "select[filename]": "true",
+      // The storage plugin builds `url` and the thumbnail's url from the
+      // file name, its folder (prefix) and the size's own file name, so
+      // those have to be selected too, or the grid gets full-size files.
       "select[url]": "true",
-      "select[sizes][thumbnail][url]": "true",
+      "select[prefix]": "true",
+      "select[sizes][thumbnail]": "true",
       "select[albumOrder]": "true",
       "select[createdAt]": "true",
     });
@@ -329,6 +339,18 @@ export default function AlbumPhotos() {
         <Button buttonStyle="secondary" size="medium" margin={false} disabled={saving} onClick={() => fileInput.current?.click()}>
           {saving ? "Saving the album…" : isNew ? "Save & upload photos" : "Upload photos"}
         </Button>
+        {!isNew && (
+          <Button
+            buttonStyle="secondary"
+            size="medium"
+            margin={false}
+            disabled={uploads.active || busy}
+            tooltip={uploads.active ? "Wait for the uploads to finish" : undefined}
+            onClick={() => setPicking(true)}
+          >
+            Add existing photos
+          </Button>
+        )}
         <input
           ref={fileInput}
           className="album-photos__file-input"
@@ -378,6 +400,10 @@ export default function AlbumPhotos() {
             </ul>
           </SortableContext>
         </DndContext>
+      )}
+
+      {picking && albumId != null && (
+        <AddExistingPhotos apiBase={apiBase} albumId={albumId} onAdded={load} onClosed={closePicker} />
       )}
 
       {editing !== null && (
