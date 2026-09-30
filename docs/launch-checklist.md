@@ -128,3 +128,4 @@ as it's done.
       field and the `setSortDate` hook, then a migration that drops
       `events.sort_date` and `_events_v.version_sort_date` (and their
       indexes). Backup first, check the SQL, run it before deploying.
+- [ ] Publish a test testimonial with a photo and confirm the photo shows on the testimonial only, not in any album gallery; then delete it.
