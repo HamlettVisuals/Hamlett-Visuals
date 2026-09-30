@@ -87,6 +87,16 @@ Results are:
 | `calendar.test.cjs` | The kanban Calendar at seven sizes: markers per day, agenda, taps, a crowded day |
 | `photo-usage.test.mts` | `lib/photo-usage.ts` on a stand-in config (no browser, no sign-in) |
 
+## Unit tests
+
+`npm run test:unit` runs `tests/unit/*.test.mts` with Node's own test
+runner: no dev server, browser or sign-in needed, and nothing leaves the
+machine. `email.test.mts` covers the site's emails (the sender address,
+the inquiry emails when Resend accepts, refuses, can't be reached or isn't
+set up, Payload's Resend adapter, and the config choosing it) against a
+fake Resend; a "[Resend API Error]" line in its output is the simulated
+"can't be reached" case.
+
 ## Test data
 
 The tests read the live test data as it is today, and some name it: the
