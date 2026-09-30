@@ -2757,37 +2757,147 @@ a.editor-overview__tile:focus-visible,
   font-size: 12px;
 }
 
-/* An empty ring until picked, then filled with a tick. */
+/* Each tile: the photo (opens its edit form), a ring on it that picks it
+   (empty until picked, then filled with a tick), and a ⋯ menu. The ring
+   and menu sit over the photo's top corners with 36px targets. */
+.unused-photos__tile {
+  position: relative;
+}
+
 .unused-photos__check {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+}
+
+.unused-photos__check::before {
+  content: "";
   position: absolute;
   top: 6px;
   left: 6px;
   width: 24px;
   height: 24px;
+  box-sizing: border-box;
   border: 2px solid #fff;
   border-radius: 999px;
   background: rgba(0, 0, 0, 0.35);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
-.unused-photos__photo--picked .unused-photos__frame {
+.unused-photos__check:focus-visible {
+  outline: 2px solid var(--theme-elevation-800);
+  outline-offset: -2px;
+  border-radius: 999px;
+}
+
+.unused-photos__tile--picked .unused-photos__frame {
   border-color: var(--theme-success-500, #2f8a4c);
 }
 
-.unused-photos__photo--picked .unused-photos__check {
+.unused-photos__tile--picked .unused-photos__check::before {
+  border-color: var(--theme-success-500, #2f8a4c);
   background: var(--theme-success-500, #2f8a4c);
 }
 
-.unused-photos__photo--picked .unused-photos__check::after {
+.unused-photos__tile--picked .unused-photos__check::after {
   content: "";
   position: absolute;
-  top: 3px;
-  left: 7px;
+  top: 11px;
+  left: 15px;
   width: 6px;
   height: 11px;
   border: solid #fff;
   border-width: 0 2px 2px 0;
   transform: rotate(45deg);
+}
+
+.unused-photos__menu {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+}
+
+.unused-photos .unused-photos__menu-button {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: none;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+}
+
+.unused-photos .unused-photos__menu-button:hover {
+  background: rgba(0, 0, 0, 0.8);
+}
+
+.unused-photos .unused-photos__menu-button svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* "Add to album…": albums by category, each a button. */
+.album-picker__intro {
+  margin: 0 0 12px;
+  color: var(--theme-elevation-700);
+}
+
+.album-picker__search {
+  width: 100%;
+  margin-bottom: 16px;
+}
+
+.album-picker__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.album-picker__album {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 48px;
+  padding: 0 16px;
+  border: none;
+  border-top: 1px solid var(--theme-elevation-100);
+  background: var(--theme-bg);
+  color: var(--theme-text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.album-picker__album:hover {
+  background: var(--theme-elevation-50);
+}
+
+.album-picker__album:focus-visible {
+  outline: 2px solid var(--theme-elevation-800);
+  outline-offset: -2px;
+}
+
+.album-picker__title {
+  flex: 1;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.album-picker__hidden {
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--theme-elevation-100);
+  color: var(--theme-elevation-700);
+  font-size: 12px;
 }
 
 .unused-photos__name {
@@ -2828,5 +2938,6 @@ a.editor-overview__tile:focus-visible,
 
 .unused-photos__bar-buttons {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
 }

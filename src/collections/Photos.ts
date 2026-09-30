@@ -78,7 +78,7 @@ export const Photos: CollectionConfig = {
     },
     hideAPIURL: true,
     useAsTitle: "alt",
-    defaultColumns: ["filename", "alt", "event", "category"],
+    defaultColumns: ["filename", "alt", "event"],
     description:
       "A photo on your site: in an album, or used as a cover, hero slide, portrait or elsewhere.",
   },
@@ -259,12 +259,16 @@ export const Photos: CollectionConfig = {
       },
     },
     {
+      // Retired: a photo's category is its album's. Nothing reads or writes
+      // it; hidden until the column is dropped (docs/launch-checklist.md).
       name: "category",
       type: "relationship",
       relationTo: "categories",
       admin: {
-        description:
-          "Only set this if the photo isn't part of a specific shoot above — for example, a category's cover photo.",
+        hidden: true,
+        disableListColumn: true,
+        disableListFilter: true,
+        disableBulkEdit: true,
       },
     },
     {

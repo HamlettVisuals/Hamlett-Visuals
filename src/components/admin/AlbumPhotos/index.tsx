@@ -21,7 +21,6 @@ import {
   PopupList,
   toast,
   useConfig,
-  useDocumentDrawer,
   useDocumentEvents,
   useDocumentInfo,
   useForm,
@@ -30,6 +29,7 @@ import {
 } from "@payloadcms/ui";
 import { comparePhotos } from "@/lib/manual-order";
 import { RASTER_IMAGE_MIME_TYPES } from "@/lib/raster-image-types";
+import EditPhotoDrawer from "@/components/admin/EditPhotoDrawer";
 import AddExistingPhotos from "./AddExistingPhotos";
 import { useUploads, type UploadItem } from "./useUploads";
 
@@ -649,23 +649,4 @@ function UploadTile({ item, onDismiss }: { item: UploadItem; onDismiss: () => vo
       </div>
     </li>
   );
-}
-
-// The photo's own edit form (alt text, caption, crop and focal point), in a
-// drawer over the album. Opens as it mounts; the grid unmounts it once it's
-// closed.
-function EditPhotoDrawer({ id, onSaved, onClosed }: { id: number; onSaved: () => void; onClosed: () => void }) {
-  const [DocumentDrawer, , { openDrawer, isDrawerOpen }] = useDocumentDrawer({ collectionSlug: "photos", id });
-  const opened = useRef(false);
-
-  useEffect(() => {
-    openDrawer();
-  }, [openDrawer]);
-
-  useEffect(() => {
-    if (isDrawerOpen) opened.current = true;
-    else if (opened.current) onClosed();
-  }, [isDrawerOpen, onClosed]);
-
-  return <DocumentDrawer onSave={onSaved} />;
 }

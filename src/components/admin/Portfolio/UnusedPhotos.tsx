@@ -1,9 +1,11 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Button, ConfirmationModal, toast, useConfig, useModal } from "@payloadcms/ui";
+import { Button, ConfirmationModal, MoreIcon, Popup, PopupList, toast, useConfig, useModal } from "@payloadcms/ui";
+import EditPhotoDrawer from "@/components/admin/EditPhotoDrawer";
 import type { UnusedPhoto } from "@/lib/photo-usage";
+import AlbumPicker, { type PickedAlbum } from "./AlbumPicker";
 
 // "Unused photos" at the bottom of Categories & Albums: photos in no album
 // and not used anywhere on the site (lib/photo-usage.ts), e.g. one taken out
@@ -15,12 +17,23 @@ import type { UnusedPhoto } from "@/lib/photo-usage";
 // with its upload date. Shows 60 at a time with "Show more"; search and
 // sort cover every unused photo, not just those showing.
 //
-// Pick photos, then "Move to Trash": POST /api/photos/trash-unused, which
-// checks each one is still unused first (a photo added to an album or used
-// since the page loaded is left alone, and she's told). From the Trash tab
-// they can be restored or deleted for good. Opens by itself for a
-// #unused-photos link (a photo's ✕ when it's in no album). Styles:
-// .unused-photos in admin-overrides.css.
+// Each tile: the photo opens its edit form in a drawer (EditPhotoDrawer,
+// the album page's "Edit photo details"), and the tile shows the change
+// once it's saved; the ring picks it; its ⋯ menu has Edit photo details,
+// Add to album… and Move to Trash. With photos picked, the bar at the
+// bottom does the same for all of them.
+//
+// Add to album…: pick an album (AlbumPicker.tsx); the photos are put in it
+// one ordinary photo save at a time, in the order they were picked, so
+// they land at its end in that order (Photos.ts), and then leave this
+// section (they're in an album now).
+//
+// Move to Trash: POST /api/photos/trash-unused, which checks each photo is
+// still unused first (one added to an album or used since the page loaded
+// is left alone, and she's told). From the Trash tab they can be restored
+// or deleted for good. Opens by itself for a #unused-photos link (a
+// photo's ✕ when it's in no album). Styles: .unused-photos in
+// admin-overrides.css.
 
 const PAGE = 60;
 const MODAL = "unused-photos-trash";
@@ -31,6 +44,7 @@ type Sort = "newest" | "oldest" | "name";
 const nameOf = (photo: UnusedPhoto) => photo.alt?.trim() || photo.filename || `Photo ${photo.id}`;
 const dateOf = (value: string) =>
   new Date(value).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+const photosText = (n: number) => (n === 1 ? "1 photo" : `${n} photos`);
 
 export default function UnusedPhotos({ count }: { count: number }) {
   const { config } = useConfig();
@@ -44,18 +58,27 @@ export default function UnusedPhotos({ count }: { count: number }) {
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState<Sort>("newest");
   const [shown, setShown] = useState(PAGE);
+  // Insertion order is the order she picked them in.
   const [picked, setPicked] = useState<ReadonlySet<number>>(() => new Set());
   const [busy, setBusy] = useState(false);
+  const [editing, setEditing] = useState<number | null>(null);
+  // What the Trash confirmation and the album picker act on: the picked
+  // photos, or the one photo whose menu was used.
+  const [trashIds, setTrashIds] = useState<number[]>([]);
+  const [albumIds, setAlbumIds] = useState<number[] | null>(null);
 
-  const load = () =>
-    fetch(`${apiBase}/photos/unused`, { credentials: "include" })
-      .then(async (res) => {
-        const json = await res.json().catch(() => null);
-        if (!res.ok) throw new Error(json?.error ?? "The unused photos couldn't be loaded.");
-        setPhotos(json.photos as UnusedPhoto[]);
-        setLoadError(null);
-      })
-      .catch((err: Error) => setLoadError(err.message));
+  const load = useCallback(
+    () =>
+      fetch(`${apiBase}/photos/unused`, { credentials: "include" })
+        .then(async (res) => {
+          const json = await res.json().catch(() => null);
+          if (!res.ok) throw new Error(json?.error ?? "The unused photos couldn't be loaded.");
+          setPhotos(json.photos as UnusedPhoto[]);
+          setLoadError(null);
+        })
+        .catch((err: Error) => setLoadError(err.message)),
+    [apiBase],
+  );
 
   const openSection = () => {
     setOpen(true);
@@ -86,6 +109,7 @@ export default function UnusedPhotos({ count }: { count: number }) {
   }, [photos, search, sort]);
   const visible = matching.slice(0, shown);
   const allShownPicked = visible.length > 0 && visible.every((photo) => picked.has(photo.id));
+  const byId = useMemo(() => new Map((photos ?? []).map((photo) => [photo.id, photo])), [photos]);
 
   const toggle = (id: number) =>
     setPicked((prev) => {
@@ -94,9 +118,22 @@ export default function UnusedPhotos({ count }: { count: number }) {
       else next.add(id);
       return next;
     });
+  const unpick = (ids: number[]) =>
+    setPicked((prev) => new Set([...prev].filter((id) => !ids.includes(id))));
+
+  // After any change: this list again, and the page (its count).
+  const refresh = async () => {
+    await load();
+    router.refresh();
+  };
+
+  const askToTrash = (ids: number[]) => {
+    setTrashIds(ids);
+    openModal(MODAL);
+  };
 
   const moveToTrash = async () => {
-    const ids = [...picked];
+    const ids = trashIds;
     setBusy(true);
     try {
       const res = await fetch(`${apiBase}/photos/trash-unused`, {
@@ -108,25 +145,58 @@ export default function UnusedPhotos({ count }: { count: number }) {
       const json = await res.json().catch(() => null);
       if (!res.ok) throw new Error(json?.error ?? json?.errors?.[0]?.message ?? "Something went wrong.");
       const { trashed, skipped } = json as { trashed: number[]; skipped: number[] };
-      if (trashed.length) {
-        toast.success(`${trashed.length === 1 ? "1 photo" : `${trashed.length} photos`} moved to the Trash.`);
-      }
+      if (trashed.length) toast.success(`${photosText(trashed.length)} moved to the Trash.`);
       if (skipped.length) {
         toast.warning(
           `${skipped.length === 1 ? "1 photo was" : `${skipped.length} photos were`} left alone: added to an album or used on the site since this page loaded.`,
         );
       }
-      setPicked(new Set());
+      unpick(ids);
     } catch (err) {
       toast.error(`Nothing was moved to the Trash: ${err instanceof Error ? err.message : ""}`);
     } finally {
       setBusy(false);
-      await load();
-      router.refresh();
+      setTrashIds([]);
+      await refresh();
+    }
+  };
+
+  // Each photo is an ordinary save setting its album, one after another in
+  // the order picked, so they land at the album's end in that order.
+  const addToAlbum = async (album: PickedAlbum, ids: number[]) => {
+    setBusy(true);
+    let done = 0;
+    try {
+      for (const id of ids) {
+        const res = await fetch(`${apiBase}/photos/${id}`, {
+          method: "PATCH",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ event: album.id }),
+        });
+        const json = await res.json().catch(() => null);
+        if (!res.ok) throw new Error(json?.errors?.[0]?.message ?? "Something went wrong.");
+        done += 1;
+      }
+      toast.success(`${photosText(done)} added to ${album.title}.`);
+    } catch (err) {
+      const photo = byId.get(ids[done]);
+      toast.error(
+        `${done ? `${photosText(done)} added to ${album.title}, then ` : ""}“${photo ? nameOf(photo) : "a photo"}” couldn't be added: ${
+          err instanceof Error ? err.message : ""
+        }`,
+      );
+    } finally {
+      unpick(ids.slice(0, done));
+      setBusy(false);
+      await refresh();
     }
   };
 
   const total = photos?.length ?? count;
+  const pickedIds = [...picked];
+  const closeEditor = useCallback(() => setEditing(null), []);
+  const closePicker = useCallback(() => setAlbumIds(null), []);
 
   return (
     <section
@@ -209,29 +279,16 @@ export default function UnusedPhotos({ count }: { count: number }) {
                   </label>
                   <ul className="unused-photos__grid">
                     {visible.map((photo) => (
-                      <li key={photo.id}>
-                        <button
-                          type="button"
-                          className={`unused-photos__photo${picked.has(photo.id) ? " unused-photos__photo--picked" : ""}`}
-                          aria-pressed={picked.has(photo.id)}
-                          disabled={busy}
-                          onClick={() => toggle(photo.id)}
-                        >
-                          <span className="unused-photos__frame">
-                            {photo.thumbnail ? (
-                              // eslint-disable-next-line @next/next/no-img-element -- admin thumbnail from the media store
-                              <img src={photo.thumbnail} alt="" loading="lazy" />
-                            ) : (
-                              <span className="unused-photos__no-preview">No preview</span>
-                            )}
-                            <span className="unused-photos__check" aria-hidden="true" />
-                          </span>
-                          <span className="unused-photos__name" title={nameOf(photo)}>
-                            {nameOf(photo)}
-                          </span>
-                          <span className="unused-photos__date">{dateOf(photo.createdAt)}</span>
-                        </button>
-                      </li>
+                      <UnusedTile
+                        key={photo.id}
+                        photo={photo}
+                        picked={picked.has(photo.id)}
+                        disabled={busy}
+                        onOpen={() => setEditing(photo.id)}
+                        onToggle={() => toggle(photo.id)}
+                        onAddToAlbum={() => setAlbumIds([photo.id])}
+                        onTrash={() => askToTrash([photo.id])}
+                      />
                     ))}
                   </ul>
                   {matching.length > shown && (
@@ -251,7 +308,10 @@ export default function UnusedPhotos({ count }: { count: number }) {
                     <Button buttonStyle="secondary" size="medium" margin={false} disabled={busy} onClick={() => setPicked(new Set())}>
                       Clear
                     </Button>
-                    <Button buttonStyle="primary" size="medium" margin={false} disabled={busy} onClick={() => openModal(MODAL)}>
+                    <Button buttonStyle="secondary" size="medium" margin={false} disabled={busy} onClick={() => setAlbumIds(pickedIds)}>
+                      Add {picked.size} to album…
+                    </Button>
+                    <Button buttonStyle="primary" size="medium" margin={false} disabled={busy} onClick={() => askToTrash(pickedIds)}>
                       Move {picked.size} to Trash
                     </Button>
                   </span>
@@ -262,13 +322,105 @@ export default function UnusedPhotos({ count }: { count: number }) {
         </div>
       )}
 
+      {editing !== null && <EditPhotoDrawer key={editing} id={editing} onSaved={() => void refresh()} onClosed={closeEditor} />}
+
+      {albumIds !== null && (
+        <AlbumPicker count={albumIds.length} onPick={(album) => void addToAlbum(album, albumIds)} onClosed={closePicker} />
+      )}
+
       <ConfirmationModal
         modalSlug={MODAL}
-        heading={picked.size === 1 ? "Move this photo to the Trash?" : `Move ${picked.size} photos to the Trash?`}
+        heading={trashIds.length === 1 ? "Move this photo to the Trash?" : `Move ${trashIds.length} photos to the Trash?`}
         body="They're not in any album or used on your site. You can restore them from the Trash tab until you delete them for good."
         confirmLabel="Move to Trash"
         onConfirm={moveToTrash}
+        onCancel={() => setTrashIds([])}
       />
     </section>
+  );
+}
+
+// One unused photo: the photo itself opens its edit form, the ring picks
+// it, the ⋯ menu has the rest. Three separate controls, so each has its own
+// name for screen readers and keyboard focus.
+function UnusedTile({
+  photo,
+  picked,
+  disabled,
+  onOpen,
+  onToggle,
+  onAddToAlbum,
+  onTrash,
+}: {
+  photo: UnusedPhoto;
+  picked: boolean;
+  disabled: boolean;
+  onOpen: () => void;
+  onToggle: () => void;
+  onAddToAlbum: () => void;
+  onTrash: () => void;
+}) {
+  const name = nameOf(photo);
+  return (
+    <li className={`unused-photos__tile${picked ? " unused-photos__tile--picked" : ""}`}>
+      <button type="button" className="unused-photos__photo" disabled={disabled} title={`Edit ${name}`} onClick={onOpen}>
+        <span className="unused-photos__frame">
+          {photo.thumbnail ? (
+            // eslint-disable-next-line @next/next/no-img-element -- admin thumbnail from the media store
+            <img src={photo.thumbnail} alt="" loading="lazy" />
+          ) : (
+            <span className="unused-photos__no-preview">No preview</span>
+          )}
+        </span>
+        <span className="unused-photos__name">{name}</span>
+        <span className="unused-photos__date">{dateOf(photo.createdAt)}</span>
+      </button>
+      <button
+        type="button"
+        className="unused-photos__check"
+        role="checkbox"
+        aria-checked={picked}
+        aria-label={`Select ${name}`}
+        disabled={disabled}
+        onClick={onToggle}
+      />
+      <Popup
+        button={<MoreIcon />}
+        buttonClassName="unused-photos__menu-button"
+        className="unused-photos__menu"
+        horizontalAlign="right"
+        size="medium"
+        disabled={disabled}
+        render={({ close }) => (
+          <PopupList.ButtonGroup buttonSize="small">
+            <PopupList.Button
+              onClick={() => {
+                close();
+                onOpen();
+              }}
+            >
+              Edit photo details
+            </PopupList.Button>
+            <PopupList.Button
+              onClick={() => {
+                close();
+                onAddToAlbum();
+              }}
+            >
+              Add to album…
+            </PopupList.Button>
+            <PopupList.Button
+              className="album-photos__danger"
+              onClick={() => {
+                close();
+                onTrash();
+              }}
+            >
+              Move to Trash
+            </PopupList.Button>
+          </PopupList.ButtonGroup>
+        )}
+      />
+    </li>
   );
 }
