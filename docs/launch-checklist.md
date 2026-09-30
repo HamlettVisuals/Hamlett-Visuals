@@ -106,3 +106,23 @@ as it's done.
       never goes on the command line or into shell history). It sets that one
       account's password and clears the failed-login lock; with a wrong email,
       mismatched or too-short password it changes nothing.
+- [ ] **Drop the unused `photos.category` column.** Nothing on the site reads
+      it (albums set a photo's category through the album). It still shows
+      on the photo form and in the Photos list's columns, so first remove
+      the field from `src/collections/Photos.ts` (and "category" from its
+      `defaultColumns`), then `npm run payload migrate:create
+      drop_photo_category`: it should only drop `photos.category_id` and
+      `_photos_v.version_category_id` (plus their index and foreign key).
+      Back up first (see docs/build-2-plan.md, Environment notes), check the
+      SQL, run it before deploying.
+- [ ] **Drop `events.sort_date`.** Albums are in her drag order now
+      (`albumOrder`); the date-based sort key is only still read by the
+      Albums collection's default sort (`defaultSort: "-sortDate"` in
+      `src/collections/Events.ts`, used wherever Payload lists albums
+      itself, e.g. the Album dropdown on a photo) and the package form's
+      album dropdown
+      (`sortOptions: "-sortDate"` in `src/collections/PricingRows.ts`).
+      Point those at `albumOrder` or `-createdAt`, remove the `sortDate`
+      field and the `setSortDate` hook, then a migration that drops
+      `events.sort_date` and `_events_v.version_sort_date` (and their
+      indexes). Backup first, check the SQL, run it before deploying.

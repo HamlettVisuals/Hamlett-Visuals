@@ -76,8 +76,8 @@ export default function AddExistingPhotos({
 }: {
   apiBase: string;
   albumId: number;
-  /** After the photos are added (or some were, before a failure). */
-  onAdded: () => Promise<void>;
+  /** After the photos are added (or some were, before a failure), with the ids added. */
+  onAdded: (added: number[]) => Promise<void>;
   onClosed: () => void;
 }) {
   const { closeModal, isModalOpen, openModal } = useModal();
@@ -143,12 +143,12 @@ export default function AddExistingPhotos({
       );
       setPicked(ids.slice(done));
       setAdding(null);
-      await onAdded();
+      await onAdded(ids.slice(0, done));
       return;
     }
     setAdding(null);
     setPicked([]);
-    await onAdded();
+    await onAdded(ids);
     closeModal(ADD_PHOTOS_DRAWER);
   };
 

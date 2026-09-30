@@ -22,6 +22,7 @@ import {
   toast,
   useConfig,
   useDocumentDrawer,
+  useDocumentEvents,
   useDocumentInfo,
   useForm,
   useFormFields,
@@ -62,7 +63,16 @@ import { useUploads, type UploadItem } from "./useUploads";
 // starting value, so the form isn't marked changed by it and the database
 // default is untouched. "Add existing photos" picks photos already in the
 // library (AddExistingPhotos.tsx); it waits while uploads run, since both
-// add photos at the album's end. Styles: .album-photos in
+// add photos at the album's end.
+//
+// Live Preview: the category page reads the album's photos from the server,
+// so after each photo change is saved the preview is asked to refresh. The
+// change is reported as a document event (useDocumentEvents), which
+// Payload's Live Preview passes to the page as "payload-document-event";
+// the site's RefreshRouteOnSave (components/LivePreviewRefresh.tsx) then
+// re-renders it with fresh data (router.refresh(); every photo save and
+// reorder has already refreshed the site's cache). Changes close together,
+// like a batch of uploads, are reported once. Styles: .album-photos in
 // admin-overrides.css.
 
 type Photo = {
@@ -83,6 +93,9 @@ const DELETE_MODAL = "album-photos-delete";
 // Picked up only by an album that has just been saved (within a minute).
 let pendingForNewAlbum: { files: File[]; at: number } | null = null;
 const PENDING_MS = 60_000;
+
+// Photo changes within this long of each other refresh the preview once.
+const PREVIEW_REFRESH_MS = 800;
 
 const hasFiles = (event: DragEvent) => Array.from(event.dataTransfer?.types ?? []).includes("Files");
 
@@ -132,6 +145,28 @@ export default function AlbumPhotos() {
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
   );
 
+  const { reportUpdate } = useDocumentEvents();
+  const previewTimer = useRef<number | undefined>(undefined);
+  // The event names the photo that changed (the last one, for a batch):
+  // Payload's own listeners read its `doc.id` (a relationship field checks
+  // whether the update is to the document it points at).
+  const refreshPreview = useCallback(
+    (photoId: number) => {
+      window.clearTimeout(previewTimer.current);
+      previewTimer.current = window.setTimeout(() => {
+        reportUpdate({
+          entitySlug: "photos",
+          id: photoId,
+          doc: { id: photoId },
+          operation: "update",
+          updatedAt: new Date().toISOString(),
+        });
+      }, PREVIEW_REFRESH_MS);
+    },
+    [reportUpdate],
+  );
+  useEffect(() => () => window.clearTimeout(previewTimer.current), []);
+
   const fetchPhotos = useCallback(async () => {
     const query = new URLSearchParams({
       "where[event][equals]": String(albumId),
@@ -175,7 +210,10 @@ export default function AlbumPhotos() {
     apiBase,
     albumId,
     alt: `Photo from ${typeof title === "string" && title.trim() ? title.trim() : "this album"}`,
-    onPhotoAdded: load,
+    onPhotoAdded: async (photoId) => {
+      await load();
+      refreshPreview(photoId);
+    },
   });
   const addUploads = uploads.add;
 
@@ -251,12 +289,14 @@ export default function AlbumPhotos() {
   };
 
   // Runs one photo change: shows it as busy, reloads the grid afterwards
-  // (success or not), and reports a failure above the grid.
-  const run = async (work: () => Promise<void>, failure: string) => {
+  // (success or not), and reports a failure above the grid. A change to a
+  // photo (`changed`) also refreshes the Live Preview once it's saved.
+  const run = async (work: () => Promise<void>, failure: string, changed?: number) => {
     setError(null);
     setBusy(true);
     try {
       await work();
+      if (changed !== undefined) refreshPreview(changed);
     } catch (err) {
       setError(`${failure} ${err instanceof Error ? err.message : ""}`.trim());
     } finally {
@@ -275,6 +315,7 @@ export default function AlbumPhotos() {
           moved,
         }),
       "The new order wasn't saved:",
+      moved,
     );
   };
 
@@ -295,7 +336,7 @@ export default function AlbumPhotos() {
     run(async () => {
       await request(`${apiBase}/photos/${photo.id}`, "PATCH", { event: null });
       toast.success(`Removed "${label(photo)}" from this album. It's still in your photos, under "Not in an album".`);
-    }, "The photo wasn't removed:");
+    }, "The photo wasn't removed:", photo.id);
 
   const askToDelete = (photo: Photo) =>
     run(async () => {
@@ -310,7 +351,7 @@ export default function AlbumPhotos() {
     await run(async () => {
       await request(`${apiBase}/photos/${photo.id}`, "PATCH", { deletedAt: new Date().toISOString() });
       toast.success(`"${label(photo)}" moved to the Photos Trash.`);
-    }, "The photo wasn't deleted:");
+    }, "The photo wasn't deleted:", photo.id);
     setDeleting(null);
   };
 
@@ -403,11 +444,18 @@ export default function AlbumPhotos() {
       )}
 
       {picking && albumId != null && (
-        <AddExistingPhotos apiBase={apiBase} albumId={albumId} onAdded={load} onClosed={closePicker} />
+        <AddExistingPhotos apiBase={apiBase} albumId={albumId} onAdded={async (ids) => {
+            await load();
+            if (ids.length) refreshPreview(ids[ids.length - 1]);
+          }}
+          onClosed={closePicker} />
       )}
 
       {editing !== null && (
-        <EditPhotoDrawer key={editing} id={editing} onSaved={() => void load()} onClosed={() => setEditing(null)} />
+        <EditPhotoDrawer key={editing} id={editing} onSaved={() => {
+            void load();
+            refreshPreview(editing);
+          }} onClosed={() => setEditing(null)} />
       )}
 
       <ConfirmationModal

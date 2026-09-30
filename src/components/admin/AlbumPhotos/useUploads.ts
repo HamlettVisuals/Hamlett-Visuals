@@ -37,7 +37,8 @@ export function useUploads({
   albumId: number | null;
   /** Alt text for new photos, e.g. "Photo from Vacation". */
   alt: string;
-  onPhotoAdded: () => Promise<void>;
+  /** After each photo is saved, with its id. */
+  onPhotoAdded: (photoId: number) => Promise<void>;
 }) {
   const [items, setItems] = useState<UploadItem[]>([]);
   const queue = useRef<Queued[]>([]);
@@ -70,8 +71,8 @@ export function useUploads({
         update(key, { status: "uploading", progress: 0 });
         const stored = await putPhotoInStorage(file, base, (progress) => update(key, { progress }));
         update(key, { status: "saving", progress: 1 });
-        await createAlbumPhoto(file, stored, { apiBase: base, albumId: album, alt: latest.current.alt });
-        await latest.current.onPhotoAdded();
+        const photo = await createAlbumPhoto(file, stored, { apiBase: base, albumId: album, alt: latest.current.alt });
+        await latest.current.onPhotoAdded(photo.id);
         remove(key);
       } catch (err) {
         update(key, { status: "error", error: err instanceof Error ? err.message : "The upload failed." });

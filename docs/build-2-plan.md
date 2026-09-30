@@ -73,6 +73,10 @@ and `Photos.ts` (order hooks, `/reorder-albums` endpoint),
 
 ## Build 2 commits
 
+Status: 5 to 8 built and tested with every write faked (`96efadd` grid,
+`cb8df9e` uploads, `228094e` add existing photos, then Live Preview and
+wrap-up). Still to do: one real end-to-end test, with the user's go.
+
 Each commit: Playwright tests with **all writes and uploads faked** (the
 local dev server uses the live database; the user signs in), `npm run build`
 before committing, don't push.
@@ -162,8 +166,18 @@ right.
 - Albums created on the live site by the pre-Build-1 code had no order key;
   they sort at the top of their category and get a key when next saved or
   dragged.
-- `photos.category` is set on album photos but nothing reads it; hidden and
-  to be dropped later (checklist).
+- `photos.category` is set on album photos but nothing reads it; to be
+  dropped later (launch checklist). It isn't actually hidden: it still
+  shows on the photo form and in the Photos list.
+- `events.sort_date` is no longer used for album order; to be dropped once
+  its last two readers move (launch checklist).
+
+### Mobile follow-ups
+
+- Every studio page scrolls about 15px sideways on phones. It's Payload's
+  own side menu: its header (`.nav__header`) is as wide as the screen plus
+  a few pixels, even while the menu is closed. Not caused by any of our
+  pages; found while testing the album photo grid at 390px.
 
 ## Environment notes
 
