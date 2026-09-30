@@ -22,6 +22,11 @@ import config from "@payload-config";
 // (if any) is both promoted and attached in one step. Any other photos on
 // the submission are simply left un-promoted, still visible on the
 // submission itself for reference.
+//
+// The promoted photo belongs to the testimonial only: it isn't put in the
+// submission's album (that would add it to the album's gallery on the
+// site) or given a category. It's in no album and used by the testimonial,
+// so the studio doesn't count it as unused (lib/photo-usage.ts).
 export async function POST(
   request: Request,
   { params }: { params: Promise<{ id: string }> },
@@ -121,8 +126,6 @@ export async function POST(
       collection: "photos",
       data: {
         alt: `${submission.name}'s testimonial photo`,
-        event: eventId ?? undefined,
-        category: !eventId ? categoryId : undefined,
       },
       file: {
         data: buffer,
