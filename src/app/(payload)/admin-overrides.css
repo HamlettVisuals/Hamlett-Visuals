@@ -740,84 +740,16 @@
    content's width; the name takes the rest. */
 .collection-list--categories #heading-name,
 .collection-list--categories #heading-coverPhoto,
-.collection-list--categories #heading-albums,
 .collection-list--categories #heading-published,
 .collection-list--categories .cell-name,
 .collection-list--categories .cell-coverPhoto,
-.collection-list--categories .cell-albums,
 .collection-list--categories .cell-published {
   min-width: 0;
 }
 
 .collection-list--categories #heading-coverPhoto,
-.collection-list--categories #heading-albums,
 .collection-list--categories #heading-published {
   width: 1%;
-}
-
-.collection-list--categories .cell-albums {
-  white-space: nowrap;
-}
-
-/* "3 albums →" (CategoryCells.tsx): its own column, or under the name on
-   phones, where the column is hidden. */
-.category-albums {
-  display: inline-flex;
-  align-items: center;
-  min-height: 44px;
-  color: var(--theme-text);
-  font-weight: 600;
-  text-decoration: underline;
-  text-underline-offset: 3px;
-}
-
-.category-albums--none {
-  color: var(--theme-elevation-500);
-  font-weight: 400;
-  text-decoration: none;
-}
-
-.category-name-cell__albums {
-  display: none;
-}
-
-@media (max-width: 768px) {
-  .collection-list--categories #heading-albums,
-  .collection-list--categories .cell-albums {
-    display: none;
-  }
-
-  .category-name-cell__albums {
-    display: block;
-    font-size: 13px;
-  }
-
-  .category-name-cell__albums .category-albums {
-    min-height: 0;
-  }
-}
-
-/* On touch phones the name and "3 albums →" are two 44px targets (see the
-   cell-link rule under pointer: coarse above), stacked rather than
-   overlapping: each would otherwise take half of the other's area. */
-@media (pointer: coarse) and (max-width: 768px) {
-  /* Payload clips the cell's content box, which would cut the links'
-     padding (their tap area) off. */
-  .collection-list--categories .category-name-cell {
-    overflow: visible;
-  }
-
-  .collection-list--categories .category-name-cell a:not(.category-albums) {
-    margin-bottom: 0;
-  }
-
-  /* Its 44px box reaches into the cell's bottom padding, but not past the
-     row, where the next row would cover it. */
-  .category-name-cell__albums .category-albums {
-    min-height: 44px;
-    margin-top: 0;
-    margin-bottom: -6px;
-  }
 }
 
 /* "Other" is pinned last: no drag handle on its row. */
@@ -1075,11 +1007,10 @@ button.category-status:focus-visible {
   line-height: 1.4;
 }
 
-/* Albums list view (collections/Events.ts). The main list is grouped by
-   category (components/admin/AlbumsListView.tsx); the Trash tab keeps
-   Payload's table (cells in AlbumCells.tsx). On both: the search bar and
-   Trash tab stay; bulk-select checkboxes and their bar, the Columns /
-   Filters / Group-by buttons and Payload's "Create New" pill go. */
+/* Albums list view (collections/Events.ts): the list itself redirects to
+   Categories & Albums, so this is its Trash tab and any picker drawer
+   (cells in AlbumCells.tsx). Bulk-select checkboxes and their bar, the
+   Columns / Filters / Group-by buttons and Payload's "Create New" pill go. */
 .collection-list--events .list-create-new-doc__create-new-button,
 .collection-list--events .list-controls__toggle-columns,
 .collection-list--events .list-controls__toggle-where,
@@ -1091,15 +1022,6 @@ button.category-status:focus-visible {
 .collection-list--events .collection-list__list-selection,
 .collection-list--events .cell-_select,
 .collection-list--events #heading-_select {
-  display: none;
-}
-
-/* While the grouped list is showing, Payload's own table, page controls
-   and "No results" (from its hidden, paged query) go. The Trash tab and
-   picker drawers don't render the grouped list, so they keep them. */
-.collection-list--events:has(.albums-grouped) .collection-list__tables,
-.collection-list--events:has(.albums-grouped) .page-controls,
-.collection-list--events:has(.albums-grouped) .no-results {
   display: none;
 }
 
@@ -1261,25 +1183,219 @@ button.category-status:focus-visible {
   font-size: 14px;
 }
 
-/* Album rows: thumbnail, title, date, Live/Hidden. On phones the date
-   drops under the title and the pill stays on the right. */
-.albums-grouped__rows {
+/* Categories & Albums (components/admin/Portfolio). One section per
+   category: a header row (drag handle, open/close, cover, name, count,
+   Live/Hidden, Edit category, + Add album) and, when open, its albums.
+   On phones the header's actions drop to a second line. */
+.portfolio {
+  padding: 0 var(--gutter-h) 48px;
+}
+
+.portfolio__title {
+  margin: 16px 0 12px;
+}
+
+.portfolio__intro {
+  margin-bottom: 18px;
+}
+
+.portfolio__search-input {
+  width: 100%;
+  height: 46px;
+  padding: 0 14px;
+  border: none;
+  border-radius: var(--style-radius-m, 4px);
+  background: var(--theme-elevation-50);
+  color: var(--theme-text);
+  font: inherit;
+}
+
+.portfolio__search-input:focus-visible {
+  outline: 2px solid var(--theme-elevation-800);
+  outline-offset: 0;
+}
+
+.portfolio__sections {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.portfolio__section {
+  border: 1px solid var(--theme-elevation-150);
+  border-radius: var(--style-radius-m, 6px);
+  background: var(--theme-bg);
+  scroll-margin-top: calc(var(--app-header-height, 56px) + 12px);
+}
+
+.portfolio__section--flash {
+  animation: grouped-list-flash 1.6s ease-out;
+}
+
+.portfolio__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  min-height: 60px;
+  padding: 6px 10px 6px 2px;
+  border-radius: var(--style-radius-m, 6px);
+  background: var(--theme-elevation-50);
+}
+
+.portfolio__section--open .portfolio__head {
+  border-bottom: 1px solid var(--theme-elevation-100);
+  border-radius: var(--style-radius-m, 6px) var(--style-radius-m, 6px) 0 0;
+}
+
+.portfolio__section--muted .portfolio__head {
+  background: var(--theme-elevation-0, var(--theme-bg));
+}
+
+.portfolio__section--muted .portfolio__name,
+.portfolio__section--muted .portfolio__thumb {
+  opacity: 0.6;
+}
+
+.portfolio__handle,
+.portfolio__handle-slot {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 32px;
+  min-height: 44px;
+  color: var(--theme-elevation-400);
+}
+
+.portfolio__handle::before {
+  content: "\22EE\22EE";
+  letter-spacing: -3px;
+}
+
+.portfolio__toggle {
+  display: flex;
+  flex: 1 1 240px;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  min-height: 44px;
+  padding: 0 6px 0 0;
+  border: none;
+  background: none;
+  color: var(--theme-text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* "Other": its note wraps under the name rather than squeezing it. */
+.portfolio__toggle--static {
+  flex-wrap: wrap;
+  cursor: default;
+}
+
+.portfolio__toggle:focus-visible,
+.portfolio__link:focus-visible,
+.portfolio__album-title:focus-visible {
+  outline: 2px solid var(--theme-elevation-800);
+  outline-offset: 2px;
+}
+
+.portfolio__chevron {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  margin: 0 4px;
+  border-right: 2px solid var(--theme-elevation-500);
+  border-bottom: 2px solid var(--theme-elevation-500);
+  transform: rotate(-45deg);
+  transition: transform 0.15s ease;
+}
+
+.portfolio__toggle[aria-expanded="true"] .portfolio__chevron {
+  transform: rotate(45deg) translate(-2px, -2px);
+}
+
+.portfolio__chevron--none {
+  visibility: hidden;
+}
+
+.portfolio__thumb {
+  flex: none;
+}
+
+.portfolio__name {
+  font-size: 16px;
+  font-weight: 700;
+  overflow-wrap: break-word;
+}
+
+.portfolio__count {
+  flex: none;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--theme-elevation-150);
+  color: var(--theme-elevation-700);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.portfolio__note {
+  color: var(--theme-elevation-500);
+  font-size: 13px;
+}
+
+.portfolio__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 6px;
+  margin-left: auto;
+}
+
+.portfolio__link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 8px;
+  color: var(--theme-text);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  white-space: nowrap;
+}
+
+.portfolio__empty {
+  margin: 0;
+  padding: 14px 16px 14px 42px;
+  color: var(--theme-elevation-500);
+  font-size: 14px;
+}
+
+.portfolio__albums {
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.albums-grouped__row {
+.portfolio__album {
   display: grid;
-  grid-template-columns: 44px minmax(0, 1fr) 130px 96px;
+  grid-template-columns: 32px 44px minmax(0, 1fr) 130px 96px;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
   min-height: 60px;
-  padding: 8px 14px;
+  padding: 8px 14px 8px 2px;
   border-top: 1px solid var(--theme-elevation-100);
 }
 
-.albums-grouped__title {
+.portfolio__album:first-child {
+  border-top: none;
+}
+
+.portfolio__album-title {
   display: inline-flex;
   align-items: center;
   justify-self: start;
@@ -1291,56 +1407,65 @@ button.category-status:focus-visible {
   overflow-wrap: anywhere;
 }
 
-.albums-grouped__date {
+.portfolio__date {
   color: var(--theme-elevation-600);
   font-size: 14px;
   white-space: nowrap;
 }
 
-.albums-grouped__status {
+.portfolio__status {
   justify-self: start;
 }
 
 @media (max-width: 768px) {
-  .albums-grouped__row {
-    grid-template-columns: 44px minmax(0, 1fr) auto;
-    grid-template-areas:
-      "thumb title status"
-      "thumb date status";
-    column-gap: 12px;
-    row-gap: 0;
-    padding: 8px 12px;
+  .portfolio__actions {
+    width: 100%;
+    margin-left: 40px;
   }
 
-  .albums-grouped__thumb {
+  .portfolio__album {
+    grid-template-columns: 32px 44px minmax(0, 1fr) auto;
+    grid-template-areas:
+      "handle thumb title status"
+      "handle thumb date status";
+    column-gap: 10px;
+    row-gap: 0;
+    padding: 8px 10px 8px 2px;
+  }
+
+  .portfolio__album > .portfolio__handle {
+    grid-area: handle;
+  }
+
+  .portfolio__album > .portfolio__thumb {
     grid-area: thumb;
   }
 
-  .albums-grouped__title {
+  .portfolio__album-title {
     grid-area: title;
     align-self: end;
     min-height: 0;
     padding-top: 4px;
   }
 
-  .albums-grouped__date {
+  .portfolio__date {
     grid-area: date;
     align-self: start;
     font-size: 13px;
   }
 
-  .albums-grouped__status {
+  .portfolio__status {
     grid-area: status;
   }
 }
 
 @media (pointer: coarse) {
   /* The Live/Hidden pill is 32px tall; its tap area is 44. */
-  .albums-grouped__status .category-status {
+  .portfolio .category-status {
     position: relative;
   }
 
-  .albums-grouped__status .category-status::after {
+  .portfolio .category-status::after {
     content: "";
     position: absolute;
     top: 50%;
@@ -1352,13 +1477,11 @@ button.category-status:focus-visible {
 }
 
 @media (pointer: coarse) and (max-width: 768px) {
-  /* Title and date share the row's height on phones; the title's tap area
-     still reaches 44px (the row is 60px tall). */
-  .albums-grouped__title {
+  .portfolio__album-title {
     position: relative;
   }
 
-  .albums-grouped__title::after {
+  .portfolio__album-title::after {
     content: "";
     position: absolute;
     inset: -12px 0 -8px;

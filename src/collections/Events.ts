@@ -85,11 +85,6 @@ export const Events: CollectionConfig = {
       // ✕ back to this list, in the top bar of the Edit and History tabs.
       // See components/admin/CloseEditorButton.tsx.
       views: {
-        // Albums grouped by category in place of the table (the Trash tab
-        // keeps Payload's table) — see components/admin/AlbumsListView.tsx.
-        list: {
-          Component: "/components/admin/AlbumsListView#default",
-        },
         edit: {
           default: { actions: [CLOSE_EDITOR_BUTTON] },
           versions: { actions: [CLOSE_EDITOR_BUTTON] },
@@ -100,8 +95,8 @@ export const Events: CollectionConfig = {
     hideAPIURL: true,
     useAsTitle: "title",
     defaultColumns: ["cover", "title", "category", "date", "published"],
-    // The main list shows every album, grouped (AlbumsListView.tsx); only
-    // the Trash tab pages. Search is by title.
+    // The list itself is the Categories & Albums page (proxy.ts redirects
+    // there); Payload's table only shows on the Trash tab. Search is by title.
     pagination: { defaultLimit: 25, limits: [25, 50, 100] },
     listSearchableFields: ["title"],
     // Item-scoped Live Preview (docs/collection-live-preview.md): the

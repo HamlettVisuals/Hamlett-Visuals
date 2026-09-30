@@ -31,6 +31,21 @@ function forceDragListQuery(request: NextRequest) {
   return changed ? NextResponse.redirect(url) : null;
 }
 
+// The Categories and Albums lists are one page now, Categories & Albums
+// (components/admin/Portfolio). Their list URLs (from bookmarks, the
+// editor's ✕ and breadcrumbs, and where Payload lands after a delete) go
+// there; edit and create pages are untouched. GET only, as above.
+const PORTFOLIO_REDIRECTS: Record<string, string> = {
+  "/hv-studio/collections/categories": "/hv-studio/portfolio",
+  "/hv-studio/collections/events": "/hv-studio/portfolio",
+};
+
+function redirectToPortfolio(request: NextRequest) {
+  const target = PORTFOLIO_REDIRECTS[request.nextUrl.pathname.replace(/\/$/, "")];
+  if (request.method !== "GET" || !target) return null;
+  return NextResponse.redirect(new URL(target, request.url));
+}
+
 // Restricts the admin login's ?redirect= to pages inside /hv-studio (see
 // lib/admin-redirect.ts). Payload's login form trusts any same-origin path;
 // this runs first and rewrites the URL so the form only ever sees a safe
@@ -52,6 +67,8 @@ function restrictLoginRedirect(request: NextRequest) {
 
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  const portfolio = redirectToPortfolio(request);
+  if (portfolio) return portfolio;
   if (DRAG_LISTS.some((list) => pathname === list || pathname === `${list}/trash`)) {
     return forceDragListQuery(request) ?? NextResponse.next();
   }
@@ -65,6 +82,7 @@ export const config = {
     "/hv-studio/login",
     "/hv-studio/collections/categories",
     "/hv-studio/collections/categories/trash",
+    "/hv-studio/collections/events",
     "/hv-studio/collections/pricing-rows",
     "/hv-studio/collections/pricing-rows/trash",
     "/hv-studio/collections/backstage",

@@ -23,6 +23,9 @@ export type LeafNode =
       path: `/${string}`;
       slug: string;
       label: string;
+      // Other pages that count as this one in the sidebar (e.g. a
+      // category's or album's edit page for Categories & Albums).
+      alsoActiveFor?: `/${string}`[];
     };
 
 export type DisabledNode = {
@@ -65,8 +68,13 @@ export const editorTree: TreeNode[] = [
         anchor: "portfolio",
         children: [
           { kind: "global", slug: "categories-intro", label: "Categories Intro" },
-          { kind: "collection", slug: "categories", label: "Categories" },
-          { kind: "collection", slug: "events", label: "Albums" },
+          {
+            kind: "view",
+            path: "/portfolio",
+            slug: "portfolio",
+            label: "Categories & Albums",
+            alsoActiveFor: ["/collections/categories", "/collections/events"],
+          },
           { kind: "collection", slug: "photos", label: "Photos" },
         ],
       },
@@ -120,6 +128,11 @@ export function nodeHref(node: LeafNode | GroupNode, adminRoute: string): string
 // its documents). Anchor-only groups never match: they aren't a page.
 export function isActive(node: LeafNode | GroupNode, pathname: string, adminRoute: string): boolean {
   if (isGroup(node) && node.anchor) return false;
-  const href = nodeHref(node, adminRoute);
-  return pathname.startsWith(href) && ["/", undefined].includes(pathname[href.length]);
+  const under = (href: string) => pathname.startsWith(href) && ["/", undefined].includes(pathname[href.length]);
+  if (under(nodeHref(node, adminRoute))) return true;
+  return (
+    !isGroup(node) &&
+    node.kind === "view" &&
+    (node.alsoActiveFor ?? []).some((path) => under(formatAdminURL({ adminRoute, path })))
+  );
 }

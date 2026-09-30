@@ -5,9 +5,10 @@ import { useSearchParams } from "next/navigation";
 import { Link } from "@payloadcms/ui";
 
 // A list split into collapsible sections, each with a heading, a count, an
-// optional "+ Add …" link and its own empty message. Built for the Albums
-// list (category → albums, see AlbumsGroupedList.tsx) and meant to be reused
-// for Photos later (category → album → photos): a section's `children` can
+// optional "+ Add …" link and its own empty message. First built for the
+// grouped Albums list (since replaced by Categories & Albums), kept for the
+// album page's "Add existing photos" picker (category → album → photos): a
+// section's `children` can
 // be rows, a grid, or another GroupedList. Sections start expanded; which
 // ones are collapsed isn't remembered between visits. A section whose `id`
 // is in the URL's #hash is opened and scrolled to (the Categories list

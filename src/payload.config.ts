@@ -141,6 +141,13 @@ export default buildConfig({
           Component: "/components/admin/EditorOverview#default",
           path: "/editor",
         },
+        // Categories and their albums on one page, reordered by dragging;
+        // the Categories and Albums list URLs redirect here (src/proxy.ts).
+        portfolio: {
+          Component: "/components/admin/Portfolio#default",
+          path: "/portfolio",
+          exact: true,
+        },
       },
     },
     importMap: {

@@ -6,8 +6,9 @@ import type { DefaultCellComponentProps } from "payload";
 import { ListIntro } from "@/components/admin/CategoryCells";
 
 // Custom pieces of the Albums list view (collections/Events.ts, slug
-// `events`). The main list is grouped by category (AlbumsListView.tsx);
-// these cells are for the table the Trash tab still uses. The thumbnail
+// `events`). The list itself is the Categories & Albums page
+// (components/admin/Portfolio); these cells are for Payload's table on the
+// Trash tab and in picker drawers. The thumbnail
 // cell is a server component of its own (AlbumThumbnailCell.tsx); the
 // Live/Hidden pill is the Categories one (CategoryCells.tsx). Layout rules
 // live in app/(payload)/admin-overrides.css under .collection-list--events.

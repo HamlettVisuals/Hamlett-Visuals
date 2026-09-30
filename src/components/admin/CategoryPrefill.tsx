@@ -4,8 +4,9 @@ import { useEffect, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import { useDocumentInfo, useForm, useFormFields } from "@payloadcms/ui";
 
-// A new album opened from a category's "+ Add album" link on the Albums
-// list (AlbumsGroupedList.tsx) arrives as /create?category=<id>. This sets
+// A new album opened from a category's "+ Add album" link on the
+// Categories & Albums page (components/admin/Portfolio) arrives as
+// /create?category=<id>. This sets
 // the Category field from that, once, on new albums only. It's set as the
 // field's starting value too, so the form isn't marked as changed: leaving
 // without saving doesn't ask about unsaved changes. The field's own

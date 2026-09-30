@@ -4,18 +4,16 @@ import { default as default_4318ce57f942bf59d91183db3cbd0fbb } from '../../../co
 import { default as default_09fb0216af9ed654c0c7dfe04dbfd66c } from '../../../components/admin/HiddenDiff'
 import { default as default_05d63ad5a72bb5528538c90265118706 } from '../../../components/admin/CharacterCounter'
 import { CategoryThumbnailCell as CategoryThumbnailCell_34f53f145c1dd1973f992a6af63ac90d } from '../../../components/admin/CategoryCells'
-import { EmptyField as EmptyField_271eec196f6613c6ae3ecc547136025a } from '../../../components/admin/AlbumCells'
-import { CategoryAlbumsCell as CategoryAlbumsCell_34f53f145c1dd1973f992a6af63ac90d } from '../../../components/admin/CategoryCells'
 import { CategoriesListDescription as CategoriesListDescription_34f53f145c1dd1973f992a6af63ac90d } from '../../../components/admin/CategoryCells'
 import { default as default_49f4009bbc7bc7fd7fd116764fa09aa1 } from '../../../components/admin/EditHistory'
 import { default as default_a779bcd001681498b9df2066a3cdc326 } from '../../../components/admin/PreviewSizeButtons'
 import { default as default_f9fe0edb7b576d729d7593eacd2325b9 } from '../../../components/admin/NewDocumentTitle'
 import { default as default_6aeb1fbc8f89ed5df824f9ed2a8ef3f4 } from '../../../components/admin/CloseEditorButton'
+import { EmptyField as EmptyField_271eec196f6613c6ae3ecc547136025a } from '../../../components/admin/AlbumCells'
 import { default as default_f7ada3d495e51370acd8dcac7a5e5f13 } from '../../../components/admin/AlbumThumbnailCell'
 import { AlbumTitleCell as AlbumTitleCell_271eec196f6613c6ae3ecc547136025a } from '../../../components/admin/AlbumCells'
 import { default as default_3a3eaabf72269361ebb781883a437931 } from '../../../components/admin/CategoryPrefill'
 import { AlbumsListDescription as AlbumsListDescription_271eec196f6613c6ae3ecc547136025a } from '../../../components/admin/AlbumCells'
-import { default as default_c6e59401226c61c79a78f8d4c163ff2c } from '../../../components/admin/AlbumsListView'
 import { default as default_3217d5da994dedfd8949de6baed57944 } from '../../../components/admin/CropPreview'
 import { default as default_f21c27ddc71a218bc5a17d940513ff86 } from '../../../components/admin/PackageThumbnailCell'
 import { PackageTitleCell as PackageTitleCell_24f49b6f3fd3d212d674670488897cc5 } from '../../../components/admin/PackageCells'
@@ -72,6 +70,7 @@ import { default as default_beebdd1cde60416cd3f6a700617bab88 } from '../../../co
 import { S3ClientUploadHandler as S3ClientUploadHandler_f97aa6c64367fa259c5bc0567239ef24 } from '@payloadcms/storage-s3/client'
 import { default as default_417d8d667e84e4656bf87771dc7c88df } from '../../../components/admin/KanbanBoard'
 import { default as default_d497c752e6aa0ef2ce3452cd1f73ca34 } from '../../../components/admin/EditorOverview'
+import { default as default_fc2c3601ead4127e86340d30ffe8a352 } from '../../../components/admin/Portfolio'
 import { CollectionCards as CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1 } from '@payloadcms/next/rsc'
 
 /** @type import('payload').ImportMap */
@@ -82,18 +81,16 @@ export const importMap = {
   "/components/admin/HiddenDiff#default": default_09fb0216af9ed654c0c7dfe04dbfd66c,
   "/components/admin/CharacterCounter#default": default_05d63ad5a72bb5528538c90265118706,
   "/components/admin/CategoryCells#CategoryThumbnailCell": CategoryThumbnailCell_34f53f145c1dd1973f992a6af63ac90d,
-  "/components/admin/AlbumCells#EmptyField": EmptyField_271eec196f6613c6ae3ecc547136025a,
-  "/components/admin/CategoryCells#CategoryAlbumsCell": CategoryAlbumsCell_34f53f145c1dd1973f992a6af63ac90d,
   "/components/admin/CategoryCells#CategoriesListDescription": CategoriesListDescription_34f53f145c1dd1973f992a6af63ac90d,
   "/components/admin/EditHistory#default": default_49f4009bbc7bc7fd7fd116764fa09aa1,
   "/components/admin/PreviewSizeButtons#default": default_a779bcd001681498b9df2066a3cdc326,
   "/components/admin/NewDocumentTitle#default": default_f9fe0edb7b576d729d7593eacd2325b9,
   "/components/admin/CloseEditorButton#default": default_6aeb1fbc8f89ed5df824f9ed2a8ef3f4,
+  "/components/admin/AlbumCells#EmptyField": EmptyField_271eec196f6613c6ae3ecc547136025a,
   "/components/admin/AlbumThumbnailCell#default": default_f7ada3d495e51370acd8dcac7a5e5f13,
   "/components/admin/AlbumCells#AlbumTitleCell": AlbumTitleCell_271eec196f6613c6ae3ecc547136025a,
   "/components/admin/CategoryPrefill#default": default_3a3eaabf72269361ebb781883a437931,
   "/components/admin/AlbumCells#AlbumsListDescription": AlbumsListDescription_271eec196f6613c6ae3ecc547136025a,
-  "/components/admin/AlbumsListView#default": default_c6e59401226c61c79a78f8d4c163ff2c,
   "/components/admin/CropPreview#default": default_3217d5da994dedfd8949de6baed57944,
   "/components/admin/PackageThumbnailCell#default": default_f21c27ddc71a218bc5a17d940513ff86,
   "/components/admin/PackageCells#PackageTitleCell": PackageTitleCell_24f49b6f3fd3d212d674670488897cc5,
@@ -150,5 +147,6 @@ export const importMap = {
   "@payloadcms/storage-s3/client#S3ClientUploadHandler": S3ClientUploadHandler_f97aa6c64367fa259c5bc0567239ef24,
   "/components/admin/KanbanBoard#default": default_417d8d667e84e4656bf87771dc7c88df,
   "/components/admin/EditorOverview#default": default_d497c752e6aa0ef2ce3452cd1f73ca34,
+  "/components/admin/Portfolio#default": default_fc2c3601ead4127e86340d30ffe8a352,
   "@payloadcms/next/rsc#CollectionCards": CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1
 }
