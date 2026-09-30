@@ -2354,3 +2354,130 @@ a.editor-overview__tile:focus-visible,
   margin: 0 0 12px;
   padding-left: 20px;
 }
+
+/* Adding photos: the "Upload photos" button, the drop hint, the whole
+   panel lit up while files are dragged over it, and one tile per file on
+   its way in (a preview under a progress bar, or why it wasn't added). */
+.album-photos {
+  border-radius: var(--style-radius-m, 6px);
+  transition: box-shadow 0.15s, background-color 0.15s;
+}
+
+.album-photos--dropping {
+  background: var(--theme-elevation-50);
+  box-shadow: 0 0 0 8px var(--theme-elevation-50), 0 0 0 10px var(--theme-elevation-500);
+}
+
+.album-photos__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  margin-bottom: 12px;
+}
+
+.album-photos__file-input {
+  display: none;
+}
+
+.album-photos__drop-hint {
+  color: var(--theme-elevation-600);
+  font-size: 13px;
+}
+
+.album-photos--dropping .album-photos__drop-hint {
+  color: var(--theme-text);
+  font-weight: 600;
+}
+
+.album-photos__upload {
+  display: flex;
+  align-items: flex-end;
+  border: 1px dashed var(--theme-elevation-300);
+}
+
+.album-photos__img--pending {
+  position: absolute;
+  inset: 0;
+  opacity: 0.45;
+}
+
+.album-photos__upload-info {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+  padding: 8px;
+  background: linear-gradient(transparent, var(--theme-bg) 45%);
+  font-size: 12px;
+}
+
+.album-photos__upload-name {
+  overflow: hidden;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.album-photos__upload-status {
+  color: var(--theme-elevation-700);
+}
+
+.album-photos__progress {
+  display: block;
+  height: 6px;
+  overflow: hidden;
+  border-radius: 3px;
+  background: var(--theme-elevation-150);
+}
+
+.album-photos__progress-bar {
+  display: block;
+  height: 100%;
+  background: var(--theme-success-500, #2f8a4c);
+  transition: width 0.2s;
+}
+
+/* Grows to fit the reason (the row grows with it) rather than clipping it. */
+.album-photos__upload--error {
+  aspect-ratio: auto;
+  min-height: 132px;
+  align-items: stretch;
+  border-color: var(--theme-error-400, #e07a7a);
+  background: var(--theme-error-50, #fdecec);
+}
+
+.album-photos__upload--error .album-photos__upload-info {
+  justify-content: flex-start;
+  background: none;
+}
+
+.album-photos__upload--error .album-photos__upload-name {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.album-photos__upload-error {
+  color: var(--theme-error-700, #8a1f1f);
+}
+
+.album-photos__dismiss {
+  align-self: flex-start;
+  min-height: 32px;
+  margin-top: auto;
+  padding: 0 10px;
+  border: 1px solid var(--theme-elevation-250);
+  border-radius: var(--style-radius-m, 4px);
+  background: var(--theme-bg);
+  color: var(--theme-text);
+  font: inherit;
+  cursor: pointer;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .album-photos,
+  .album-photos__progress-bar {
+    transition: none;
+  }
+}

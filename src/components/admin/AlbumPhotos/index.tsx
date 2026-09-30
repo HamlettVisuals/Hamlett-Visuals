@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
+import { useCallback, useEffect, useRef, useState, type CSSProperties, type DragEvent } from "react";
+import { usePathname } from "next/navigation";
 import {
   closestCenter,
   DndContext,
@@ -13,6 +14,7 @@ import {
 } from "@dnd-kit/core";
 import { arrayMove, rectSortingStrategy, SortableContext, sortableKeyboardCoordinates, useSortable } from "@dnd-kit/sortable";
 import {
+  Button,
   ConfirmationModal,
   MoreIcon,
   Popup,
@@ -21,9 +23,13 @@ import {
   useConfig,
   useDocumentDrawer,
   useDocumentInfo,
+  useForm,
+  useFormFields,
   useModal,
 } from "@payloadcms/ui";
 import { comparePhotos } from "@/lib/manual-order";
+import { RASTER_IMAGE_MIME_TYPES } from "@/lib/raster-image-types";
+import { useUploads, type UploadItem } from "./useUploads";
 
 // The album's photos, inside the album's edit form (a `ui` field,
 // collections/Events.ts, so Live Preview keeps working): a grid in her
@@ -41,8 +47,19 @@ import { comparePhotos } from "@/lib/manual-order";
 // drag through /api/photos/reorder-photos (order key only, no History
 // version, lib/reorder-within.ts), the rest as ordinary photo saves. The
 // album's form holds nothing the grid changes, so it isn't touched. If a
-// save fails the grid reloads what's saved and shows why. Styles:
-// .album-photos in admin-overrides.css.
+// save fails the grid reloads what's saved and shows why.
+//
+// Adding photos: "Upload photos" or dropping files on the panel uploads
+// them straight to R2 with a progress bar each (upload.ts, useUploads.ts),
+// into this album, at its end, with alt text "Photo from <album title>".
+// Reordering waits while uploads run, since the order being saved has to
+// match the album's photos. A new album has nothing to add photos to yet,
+// so the button reads "Save & upload photos": it saves the album (Payload's
+// own Save, so the same checks and messages), and once Payload has moved to
+// the saved album's page, the files picked are uploaded there
+// (pendingForNewAlbum below). New albums also start Hidden, as the form's
+// starting value, so the form isn't marked changed by it and the database
+// default is untouched. Styles: .album-photos in admin-overrides.css.
 
 type Photo = {
   id: number;
@@ -55,6 +72,15 @@ type Photo = {
 };
 
 const DELETE_MODAL = "album-photos-delete";
+
+// Files picked with "Save & upload photos" on a new album, waiting for the
+// album to be saved. Kept outside the component: Payload moves to the saved
+// album's page after the first save, which may mount this panel afresh.
+// Picked up only by an album that has just been saved (within a minute).
+let pendingForNewAlbum: { files: File[]; at: number } | null = null;
+const PENDING_MS = 60_000;
+
+const hasFiles = (event: DragEvent) => Array.from(event.dataTransfer?.types ?? []).includes("Files");
 
 const transformStyle = (transform: { x: number; y: number } | null, transition?: string): CSSProperties => ({
   transform: transform ? `translate3d(${transform.x}px, ${transform.y}px, 0)` : undefined,
@@ -87,6 +113,12 @@ export default function AlbumPhotos() {
   const [busy, setBusy] = useState(false);
   const [editing, setEditing] = useState<number | null>(null);
   const [deleting, setDeleting] = useState<{ photo: Photo; uses: string[] } | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [dropping, setDropping] = useState(false);
+  const dragDepth = useRef(0);
+  const fileInput = useRef<HTMLInputElement>(null);
+  const { submit, dispatchFields } = useForm();
+  const title = useFormFields(([fields]) => fields.title?.value);
 
   const sensors = useSensors(
     useSensor(MouseSensor, { activationConstraint: { distance: 5 } }),
@@ -128,6 +160,85 @@ export default function AlbumPhotos() {
   useEffect(() => {
     if (albumId != null) void load();
   }, [albumId, load]);
+
+  const uploads = useUploads({
+    apiBase,
+    albumId,
+    alt: `Photo from ${typeof title === "string" && title.trim() ? title.trim() : "this album"}`,
+    onPhotoAdded: load,
+  });
+  const addUploads = uploads.add;
+
+  // New albums start Hidden: the form's starting value, set once the form
+  // has loaded its own (as CategoryPrefill.tsx does).
+  useEffect(() => {
+    if (id) return;
+    const timer = window.setTimeout(() => {
+      dispatchFields({ type: "UPDATE", path: "published", value: false, initialValue: false });
+    }, 0);
+    return () => window.clearTimeout(timer);
+  }, [id, dispatchFields]);
+
+  // "Save & upload photos": the album is saved, so upload what was picked.
+  // Only once Payload has moved to the saved album's page: the panel on the
+  // create page learns the new id a moment before it's replaced, and
+  // uploads started there would lose their progress tiles.
+  const pathname = usePathname();
+  const onSavedAlbumPage = albumId != null && Boolean(pathname?.endsWith(`/${albumId}`));
+  useEffect(() => {
+    if (!onSavedAlbumPage || !pendingForNewAlbum) return;
+    const timer = window.setTimeout(() => {
+      const pending = pendingForNewAlbum;
+      pendingForNewAlbum = null;
+      if (pending && Date.now() - pending.at <= PENDING_MS) addUploads(pending.files);
+    }, 0);
+    return () => window.clearTimeout(timer);
+  }, [onSavedAlbumPage, addUploads]);
+
+  const saveThenUpload = async (files: File[]) => {
+    setError(null);
+    setSaving(true);
+    pendingForNewAlbum = { files, at: Date.now() };
+    const result = await submit().catch(() => undefined);
+    if (!result || !result.res.ok) {
+      pendingForNewAlbum = null;
+      setError("The album wasn't saved, so no photos were uploaded. Fix what's marked above, then try again.");
+    }
+    setSaving(false);
+  };
+
+  const addFiles = (list: FileList | null | undefined) => {
+    const files = Array.from(list ?? []);
+    if (!files.length || saving) return;
+    if (albumId == null) void saveThenUpload(files);
+    else addUploads(files);
+  };
+
+  const dropProps = {
+    onDragEnter: (event: DragEvent) => {
+      if (!hasFiles(event)) return;
+      event.preventDefault();
+      dragDepth.current += 1;
+      setDropping(true);
+    },
+    onDragOver: (event: DragEvent) => {
+      if (!hasFiles(event)) return;
+      event.preventDefault();
+      event.dataTransfer.dropEffect = "copy";
+    },
+    onDragLeave: (event: DragEvent) => {
+      if (!hasFiles(event)) return;
+      dragDepth.current = Math.max(0, dragDepth.current - 1);
+      if (dragDepth.current === 0) setDropping(false);
+    },
+    onDrop: (event: DragEvent) => {
+      if (!hasFiles(event)) return;
+      event.preventDefault();
+      dragDepth.current = 0;
+      setDropping(false);
+      addFiles(event.dataTransfer.files);
+    },
+  };
 
   // Runs one photo change: shows it as busy, reloads the grid afterwards
   // (success or not), and reports a failure above the grid.
@@ -193,22 +304,46 @@ export default function AlbumPhotos() {
     setDeleting(null);
   };
 
-  if (albumId == null) {
-    return (
-      <div className="album-photos field-type">
-        <PhotosHeading count={null} />
-        <p className="album-photos__empty">Save the album first, then add its photos here.</p>
-      </div>
-    );
-  }
+  const isNew = albumId == null;
+  const lockedReason = uploads.active ? "Wait for the uploads to finish" : undefined;
 
   return (
-    <div className="album-photos field-type" aria-busy={busy || photos === null}>
-      <PhotosHeading count={photos?.length ?? null} />
+    <div
+      className={`album-photos field-type${dropping ? " album-photos--dropping" : ""}`}
+      aria-busy={busy || saving || (!isNew && photos === null)}
+      {...dropProps}
+    >
+      <PhotosHeading count={isNew ? null : (photos?.length ?? null)} />
       <p className="album-photos__note">
-        Photo changes save as you make them. Drag &#8942;&#8942; to change the order; the first photo is the album&apos;s
-        cover.
+        {isNew ? (
+          "Add photos now and the album is saved first, or save it and add them after."
+        ) : (
+          <>
+            Photo changes save as you make them. Drag &#8942;&#8942; to change the order; the first photo is the
+            album&apos;s cover.
+          </>
+        )}
       </p>
+
+      <div className="album-photos__actions">
+        <Button buttonStyle="secondary" size="medium" margin={false} disabled={saving} onClick={() => fileInput.current?.click()}>
+          {saving ? "Saving the album…" : isNew ? "Save & upload photos" : "Upload photos"}
+        </Button>
+        <input
+          ref={fileInput}
+          className="album-photos__file-input"
+          type="file"
+          multiple
+          accept={RASTER_IMAGE_MIME_TYPES.join(",")}
+          tabIndex={-1}
+          aria-hidden="true"
+          onChange={(event) => {
+            addFiles(event.target.files);
+            event.target.value = "";
+          }}
+        />
+        <span className="album-photos__drop-hint">{dropping ? "Drop to add them" : "or drop photos here"}</span>
+      </div>
 
       {error && (
         <p className="album-photos__error" role="alert">
@@ -216,9 +351,9 @@ export default function AlbumPhotos() {
         </p>
       )}
 
-      {photos === null ? (
+      {isNew ? null : photos === null ? (
         <p className="album-photos__empty">Loading photos…</p>
-      ) : photos.length === 0 ? (
+      ) : photos.length === 0 && uploads.items.length === 0 ? (
         <p className="album-photos__empty">No photos in this album yet.</p>
       ) : (
         <DndContext id={`album-photos-${albumId}`} sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
@@ -229,12 +364,16 @@ export default function AlbumPhotos() {
                   key={photo.id}
                   photo={photo}
                   isCover={index === 0}
-                  disabled={busy}
+                  disabled={busy || uploads.active}
+                  lockedReason={lockedReason}
                   onSetCover={() => setAsCover(photo)}
                   onEdit={() => setEditing(photo.id)}
                   onRemove={() => void removeFromAlbum(photo)}
                   onDelete={() => void askToDelete(photo)}
                 />
+              ))}
+              {uploads.items.map((item) => (
+                <UploadTile key={item.key} item={item} onDismiss={() => uploads.dismiss(item.key)} />
               ))}
             </ul>
           </SortableContext>
@@ -284,6 +423,7 @@ function PhotoTile({
   photo,
   isCover,
   disabled,
+  lockedReason,
   onSetCover,
   onEdit,
   onRemove,
@@ -292,6 +432,7 @@ function PhotoTile({
   photo: Photo;
   isCover: boolean;
   disabled: boolean;
+  lockedReason?: string;
   onSetCover: () => void;
   onEdit: () => void;
   onRemove: () => void;
@@ -322,7 +463,7 @@ function PhotoTile({
         type="button"
         className="album-photos__handle"
         aria-label={`Drag to reorder ${name}`}
-        title={`Drag to reorder ${name}`}
+        title={lockedReason ?? `Drag to reorder ${name}`}
         disabled={disabled}
         {...attributes}
         {...(disabled ? {} : listeners)}
@@ -374,6 +515,55 @@ function PhotoTile({
           </PopupList.ButtonGroup>
         )}
       />
+    </li>
+  );
+}
+
+// A file on its way in: its preview, a progress bar while it goes to R2,
+// then "Saving…" while the photo is made; or why it wasn't added.
+function UploadTile({ item, onDismiss }: { item: UploadItem; onDismiss: () => void }) {
+  const [previewFailed, setPreviewFailed] = useState(false);
+  const percent = Math.round(item.progress * 100);
+  const status = {
+    waiting: "Waiting…",
+    uploading: `Uploading ${percent}%`,
+    saving: "Saving…",
+    error: "Not added",
+  }[item.status];
+
+  return (
+    <li className={`album-photos__tile album-photos__upload${item.status === "error" ? " album-photos__upload--error" : ""}`}>
+      {item.preview && !previewFailed && item.status !== "error" && (
+        // eslint-disable-next-line @next/next/no-img-element -- local preview of the picked file
+        <img className="album-photos__img album-photos__img--pending" src={item.preview} alt="" onError={() => setPreviewFailed(true)} />
+      )}
+      <div className="album-photos__upload-info">
+        <span className="album-photos__upload-name" title={item.name}>
+          {item.name}
+        </span>
+        <span className="album-photos__upload-status" aria-live="polite">
+          {status}
+        </span>
+        {item.status === "error" ? (
+          <>
+            <span className="album-photos__upload-error">{item.error}</span>
+            <button type="button" className="album-photos__dismiss" onClick={onDismiss}>
+              Dismiss
+            </button>
+          </>
+        ) : (
+          <span
+            className="album-photos__progress"
+            role="progressbar"
+            aria-label={`Uploading ${item.name}`}
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-valuenow={percent}
+          >
+            <span className="album-photos__progress-bar" style={{ width: `${percent}%` }} />
+          </span>
+        )}
+      </div>
     </li>
   );
 }
