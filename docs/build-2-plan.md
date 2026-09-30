@@ -74,8 +74,33 @@ and `Photos.ts` (order hooks, `/reorder-albums` endpoint),
 ## Build 2 commits
 
 Status: 5 to 8 built and tested with every write faked (`96efadd` grid,
-`cb8df9e` uploads, `228094e` add existing photos, then Live Preview and
-wrap-up). Still to do: one real end-to-end test, with the user's go.
+`cb8df9e` uploads, `228094e` add existing photos, `60872a9` Live Preview
+and wrap-up), then one real end-to-end test on 2026-09-30 (backup first:
+`hamlet-visuals-public-2026-09-30-17-41-before-e2e.dump`). A Hidden album
+in Test, "Save & upload" of 3 camera JPEGs (13.8, 14.0, 18.9MB) and a
+0.5MB phone photo, reorder, cover, Live and back, then the album and its
+photos deleted permanently. All checks passed; the database, R2 and the
+public Test page (local and live) ended exactly as before.
+
+Upload timings (local dev server, this network), per file:
+
+| File | Size | Link | To R2 | Save (read back, resize, thumbnail) | Total |
+|---|---|---|---|---|---|
+| D80A5928.JPG | 13.8MB | 0.4s | 2.1s | 6.5s | 9.0s |
+| YEE09327.jpg | 14.0MB | 0.2s | 2.4s | 5.5s | 8.2s |
+| YEE09379.jpg | 18.9MB | 0.2s | 3.2s | 6.6s | 10.0s |
+| IMG_3220.JPG | 0.5MB | 0.2s | 0.4s | 3.0s | 3.6s |
+
+About 9s per camera photo one at a time, so a 300-photo album is roughly
+45 minutes with the page open. The save is two-thirds of it; on Vercel
+the server reads the file back from R2 inside the cloud, so it should be
+faster there (measure on a preview). Ways to speed it up if needed:
+upload the next file to R2 while the current one saves (no ordering
+risk), or shrink photos in the browser before uploading.
+
+Found on the way: each upload leaves two identical History rows, from the
+storage plugin saving the photo again after storing its thumbnail. Older
+photos uploaded through Payload's own form have the same, so it isn't new.
 
 Each commit: Playwright tests with **all writes and uploads faked** (the
 local dev server uses the live database; the user signs in), `npm run build`
