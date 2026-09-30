@@ -6,6 +6,7 @@ import { OTHER_SESSION_TYPE } from "#src/lib/booking-session-type.ts";
 import { serverURL } from "#src/lib/server-url.ts";
 import { CLOSE_EDITOR_BUTTON } from "#src/lib/admin-components.ts";
 import { keyAtStart } from "#src/lib/manual-order.ts";
+import { reorderWithin } from "#src/lib/reorder-within.ts";
 
 // Newest first means by the shoot date, or when the album was added if it
 // has no date. Postgres can't sort by "date, else createdAt" through
@@ -139,6 +140,30 @@ export const Events: CollectionConfig = {
   hooks: {
     beforeChange: [setSortDate, setAlbumOrder],
   },
+  endpoints: [
+    {
+      // A drag on the Categories & Albums page: POST
+      // /api/events/reorder-albums { category, order: [ids], moved: id }.
+      // See lib/reorder-within.ts.
+      path: "/reorder-albums",
+      method: "post",
+      handler: async (req) => {
+        const body = (await req.json?.().catch(() => null)) as { category?: unknown; order?: unknown; moved?: unknown } | null;
+        const isId = (value: unknown): value is number => Number.isInteger(value);
+        if (!body || !isId(body.category) || !isId(body.moved) || !Array.isArray(body.order) || !body.order.every(isId)) {
+          return Response.json({ error: "Invalid reorder." }, { status: 400 });
+        }
+        return reorderWithin({
+          req,
+          collection: "events",
+          scopeField: "category",
+          scopeId: body.category,
+          order: body.order,
+          moved: body.moved,
+        });
+      },
+    },
+  ],
   // Powers the History tab (restore an earlier save). No drafts — Save
   // writes straight through, same as before.
   versions: true,

@@ -1268,6 +1268,63 @@ button.category-status:focus-visible {
   color: var(--theme-elevation-400);
 }
 
+/* The handle is the only thing that starts a drag, so it alone opts out
+   of touch scrolling; press-and-hold still decides (PortfolioList.tsx). */
+button.portfolio__handle {
+  padding: 0;
+  border: none;
+  border-radius: 4px;
+  background: none;
+  cursor: grab;
+  touch-action: none;
+  -webkit-touch-callout: none;
+  user-select: none;
+}
+
+button.portfolio__handle:hover:not(:disabled) {
+  color: var(--theme-elevation-800);
+  background: var(--theme-elevation-100);
+}
+
+button.portfolio__handle:focus-visible {
+  outline: 2px solid var(--theme-elevation-800);
+  outline-offset: -2px;
+}
+
+button.portfolio__handle:disabled {
+  cursor: default;
+  opacity: 0.4;
+}
+
+/* While a category is dragged: its place in the list, and the lifted copy
+   following the pointer (DragOverlay). */
+.portfolio__section--placeholder {
+  opacity: 0.35;
+}
+
+.portfolio__head--lifted {
+  border: 1px solid var(--theme-elevation-800);
+  border-radius: var(--style-radius-m, 6px);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.18);
+  cursor: grabbing;
+}
+
+.portfolio__album--dragging {
+  position: relative;
+  z-index: 2;
+  background: var(--theme-bg);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.16), 0 0 0 1px var(--theme-elevation-800);
+}
+
+.portfolio__error {
+  margin: 12px 0 0;
+  padding: 10px 14px;
+  border-radius: var(--style-radius-m, 4px);
+  background: var(--theme-error-50, #fdecec);
+  color: var(--theme-error-700, #8a1f1f);
+  font-size: 14px;
+}
+
 .portfolio__handle::before {
   content: "\22EE\22EE";
   letter-spacing: -3px;

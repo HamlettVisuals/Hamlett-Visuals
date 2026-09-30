@@ -17,6 +17,8 @@ export type PortfolioCategory = {
   name: string;
   slug: string;
   published: boolean;
+  /** Its stored drag-order key (`_order`), for Payload's /api/reorder. */
+  order: string | null;
   /** The CRM-only "Other": last, muted, no albums. */
   isOther: boolean;
   /** The category's own cover photo (its homepage tile). */
