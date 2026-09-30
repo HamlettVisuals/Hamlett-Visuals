@@ -16,6 +16,8 @@ import { default as default_3a3eaabf72269361ebb781883a437931 } from '../../../co
 import { default as default_7c8c5c0d9554eea49a6c66eb4a6ad058 } from '../../../components/admin/AlbumPhotos'
 import { AlbumsListDescription as AlbumsListDescription_271eec196f6613c6ae3ecc547136025a } from '../../../components/admin/AlbumCells'
 import { default as default_3217d5da994dedfd8949de6baed57944 } from '../../../components/admin/CropPreview'
+import { PhotoStepNav as PhotoStepNav_90c8c21c9d2d6b9765f53be2921a1014 } from '../../../components/admin/PhotoNav'
+import { PhotoCloseButton as PhotoCloseButton_90c8c21c9d2d6b9765f53be2921a1014 } from '../../../components/admin/PhotoNav'
 import { default as default_f21c27ddc71a218bc5a17d940513ff86 } from '../../../components/admin/PackageThumbnailCell'
 import { PackageTitleCell as PackageTitleCell_24f49b6f3fd3d212d674670488897cc5 } from '../../../components/admin/PackageCells'
 import { PackagePriceCell as PackagePriceCell_24f49b6f3fd3d212d674670488897cc5 } from '../../../components/admin/PackageCells'
@@ -95,6 +97,8 @@ export const importMap = {
   "/components/admin/AlbumPhotos#default": default_7c8c5c0d9554eea49a6c66eb4a6ad058,
   "/components/admin/AlbumCells#AlbumsListDescription": AlbumsListDescription_271eec196f6613c6ae3ecc547136025a,
   "/components/admin/CropPreview#default": default_3217d5da994dedfd8949de6baed57944,
+  "/components/admin/PhotoNav#PhotoStepNav": PhotoStepNav_90c8c21c9d2d6b9765f53be2921a1014,
+  "/components/admin/PhotoNav#PhotoCloseButton": PhotoCloseButton_90c8c21c9d2d6b9765f53be2921a1014,
   "/components/admin/PackageThumbnailCell#default": default_f21c27ddc71a218bc5a17d940513ff86,
   "/components/admin/PackageCells#PackageTitleCell": PackageTitleCell_24f49b6f3fd3d212d674670488897cc5,
   "/components/admin/PackageCells#PackagePriceCell": PackagePriceCell_24f49b6f3fd3d212d674670488897cc5,

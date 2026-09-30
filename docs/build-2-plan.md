@@ -170,6 +170,29 @@ inside the form and keeps Live Preview working.
   `events.sort_date` (no longer used for order), both via migrations with a
   backup first.
 
+## After Build 2: the Photos page retired (2026-09-30)
+
+Photos have no page of their own any more. They're added in albums
+(upload or "Add existing photos"), or straight from a photo field (a
+category's cover or page photo, hero slides, About, a testimonial, Site
+Settings: each has Create New, Choose from existing, and drag and drop).
+
+- The sidebar and Editor overview no longer list Photos; the Photos list
+  and Trash URLs redirect to Categories & Albums and its Trash tab
+  (src/proxy.ts). A photo's own page (`/collections/photos/<id>`, with its
+  History tab) still opens; its ✕ and breadcrumbs lead to its album, or to
+  Unused photos if it's in none (components/admin/PhotoNav.tsx).
+- "Where is this photo used" is one check, found from the config
+  (lib/photo-usage.ts): every photo field in any collection or global,
+  rich text included, trashed documents and retired hidden fields
+  counted. It drives the delete warnings and "unused".
+- Unused photos (bottom of Categories & Albums): in no album and used
+  nowhere, worked out on each visit. Search, sort, pick, Move to Trash
+  (each re-checked first).
+- The Trash tab has a third section, Deleted photos, with a warning on
+  Delete permanently if the photo is still used somewhere.
+- Publishing a testimonial no longer puts its photo in an album.
+
 ## Mockups
 
 Made during planning (in the old session's scratchpad, may be gone): album

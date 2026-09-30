@@ -73,9 +73,11 @@ export const editorTree: TreeNode[] = [
             path: "/portfolio",
             slug: "portfolio",
             label: "Categories & Albums",
-            alsoActiveFor: ["/collections/categories", "/collections/events"],
+            // Photos have no page of their own any more: they're added in
+            // albums, and the rest (unused ones) are at the bottom of
+            // Categories & Albums. A photo's own edit page still counts.
+            alsoActiveFor: ["/collections/categories", "/collections/events", "/collections/photos"],
           },
-          { kind: "collection", slug: "photos", label: "Photos" },
         ],
       },
       { kind: "global", slug: "about", label: "About" },

@@ -335,7 +335,16 @@ export default function AlbumPhotos() {
   const removeFromAlbum = (photo: Photo) =>
     run(async () => {
       await request(`${apiBase}/photos/${photo.id}`, "PATCH", { event: null });
-      toast.success(`Removed "${label(photo)}" from this album. It's still in your photos, under "Not in an album".`);
+      // Say where it went: still used somewhere (a cover, a slide…), or now
+      // under Unused photos on Categories & Albums.
+      const { uses } = (await request(`${apiBase}/photos/${photo.id}/usage`, "GET").catch(() => ({ uses: null }))) as {
+        uses: string[] | null;
+      };
+      toast.success(
+        uses?.length
+          ? `Removed "${label(photo)}" from this album. It's still used as ${uses.join(", ")}.`
+          : `Removed "${label(photo)}" from this album. It's now under Unused photos on Categories & Albums.`,
+      );
     }, "The photo wasn't removed:", photo.id);
 
   const askToDelete = (photo: Photo) =>

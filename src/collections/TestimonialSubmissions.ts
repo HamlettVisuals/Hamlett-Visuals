@@ -95,7 +95,7 @@ export const TestimonialSubmissions: CollectionConfig = {
       hasMany: true,
       admin: {
         description:
-          "Photos the client attached, if any. Private until you promote one into the Photos library when publishing.",
+          "Photos the client attached, if any. Private until you publish one with the testimonial.",
       },
     },
     {

@@ -1,13 +1,15 @@
 import type { CollectionBeforeChangeHook, CollectionConfig } from "payload";
 import { isAdmin } from "#src/access/isAdmin.ts";
 import { RASTER_IMAGE_MIME_TYPES } from "#src/lib/raster-image-types.ts";
-import { CLOSE_EDITOR_BUTTON } from "#src/lib/admin-components.ts";
 import { removeRefusedUpload } from "#src/lib/upload-limits.ts";
 import { resizeLargePhotos } from "#src/lib/photo-resize.ts";
 import { PHOTO_MAX_MB } from "#src/lib/upload-sizes.ts";
 import { keyAtEnd } from "#src/lib/manual-order.ts";
 import { findPhotoUsage, findUnusedPhotos } from "#src/lib/photo-usage.ts";
 import { reorderWithin } from "#src/lib/reorder-within.ts";
+
+// The ✕ on a photo's edit page (components/admin/PhotoNav.tsx).
+const PHOTO_CLOSE_BUTTON = "/components/admin/PhotoNav#PhotoCloseButton";
 
 const idOf = (value: unknown) =>
   value && typeof value === "object" ? (value as { id: number | string }).id : (value as number | string | null | undefined);
@@ -59,15 +61,18 @@ export const Photos: CollectionConfig = {
         beforeDocumentControls: [
           "/components/admin/EditHistory#default",
           "/components/admin/PreviewSizeButtons#default",
+          // Breadcrumbs back to the photo's album, or to Unused photos.
+          "/components/admin/PhotoNav#PhotoStepNav",
         ],
       },
-      // ✕ back to this list, in the top bar of the Edit and History tabs.
-      // See components/admin/CloseEditorButton.tsx.
+      // ✕ in the top bar of the Edit and History tabs: back to the photo's
+      // album, or to Unused photos on Categories & Albums. There's no Photos
+      // list page any more (src/proxy.ts). See components/admin/PhotoNav.tsx.
       views: {
         edit: {
-          default: { actions: [CLOSE_EDITOR_BUTTON] },
-          versions: { actions: [CLOSE_EDITOR_BUTTON] },
-          version: { actions: [CLOSE_EDITOR_BUTTON] },
+          default: { actions: [PHOTO_CLOSE_BUTTON] },
+          versions: { actions: [PHOTO_CLOSE_BUTTON] },
+          version: { actions: [PHOTO_CLOSE_BUTTON] },
         },
       },
     },
@@ -75,7 +80,7 @@ export const Photos: CollectionConfig = {
     useAsTitle: "alt",
     defaultColumns: ["filename", "alt", "event", "category"],
     description:
-      "Every photo you upload — the library that events, testimonials, and the homepage draw from.",
+      "A photo on your site: in an album, or used as a cover, hero slide, portrait or elsewhere.",
   },
   access: {
     read: () => true,

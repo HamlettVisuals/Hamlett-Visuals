@@ -35,11 +35,16 @@ function forceDragListQuery(request: NextRequest) {
 // and Trash URLs (from bookmarks, the editor's ✕ and breadcrumbs, and where
 // Payload lands after a delete or restore) go there; edit and create pages
 // are untouched. GET only, as above.
+// Photos too: they're added in albums, and photos in no album and used
+// nowhere are listed under Unused photos on the same page. A photo's own
+// edit page (/collections/photos/<id>) and /create still open as before.
 const PORTFOLIO_REDIRECTS: Record<string, string> = {
   "/hv-studio/collections/categories": "/hv-studio/portfolio",
   "/hv-studio/collections/events": "/hv-studio/portfolio",
   "/hv-studio/collections/categories/trash": "/hv-studio/portfolio/trash",
   "/hv-studio/collections/events/trash": "/hv-studio/portfolio/trash",
+  "/hv-studio/collections/photos": "/hv-studio/portfolio",
+  "/hv-studio/collections/photos/trash": "/hv-studio/portfolio/trash",
 };
 
 function redirectToPortfolio(request: NextRequest) {
@@ -86,6 +91,8 @@ export const config = {
     "/hv-studio/collections/categories/trash",
     "/hv-studio/collections/events",
     "/hv-studio/collections/events/trash",
+    "/hv-studio/collections/photos",
+    "/hv-studio/collections/photos/trash",
     "/hv-studio/collections/pricing-rows",
     "/hv-studio/collections/pricing-rows/trash",
     "/hv-studio/collections/backstage",

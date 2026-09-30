@@ -107,7 +107,9 @@ as it's done.
       account's password and clears the failed-login lock; with a wrong email,
       mismatched or too-short password it changes nothing.
 - [ ] **Drop the unused `photos.category` column.** Nothing on the site reads
-      it (albums set a photo's category through the album). It still shows
+      it (albums set a photo's category through the album), and nothing
+      writes it any more (publishing a testimonial stopped setting it on
+      2026-09-30). It still shows
       on the photo form and in the Photos list's columns, so first remove
       the field from `src/collections/Photos.ts` (and "category" from its
       `defaultColumns`), then `npm run payload migrate:create
