@@ -26,6 +26,7 @@ import {
 import { Button, Link, useConfig } from "@payloadcms/ui";
 import { formatAdminURL } from "payload/shared";
 import { StatusToggle } from "@/components/admin/CategoryCells";
+import PortfolioTabs from "./Tabs";
 import type { PortfolioAlbum, PortfolioCategory, Thumbnail } from "./types";
 
 // The Categories & Albums page (see index.tsx for the data): one section
@@ -236,7 +237,10 @@ export default function PortfolioList({
 
   return (
     <div className="portfolio">
-      <h1 className="portfolio__title">Categories &amp; Albums</h1>
+      <div className="portfolio__title-row">
+        <h1 className="portfolio__title">Categories &amp; Albums</h1>
+        <PortfolioTabs current="all" />
+      </div>
       <div className="categories-list-intro portfolio__intro">
         <p className="categories-list-intro__text">
           Your portfolio: each category is a homepage tile with its own page, and each album is one shoot inside it.

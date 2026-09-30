@@ -1191,8 +1191,121 @@ button.category-status:focus-visible {
   padding: 0 var(--gutter-h) 48px;
 }
 
-.portfolio__title {
+.portfolio__title-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
   margin: 16px 0 12px;
+}
+
+.portfolio__title {
+  margin: 0;
+}
+
+.portfolio__tabs {
+  display: flex;
+  gap: 4px;
+}
+
+.portfolio__tabs a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 14px;
+  border-radius: var(--style-radius-m, 4px);
+  color: var(--theme-text);
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.portfolio__tabs a:hover {
+  background: var(--theme-elevation-50);
+}
+
+.portfolio__tabs a[aria-current="page"] {
+  background: var(--theme-elevation-100);
+  font-weight: 600;
+}
+
+/* Trash tab (Portfolio/TrashList.tsx). */
+.portfolio-trash__intro {
+  margin: 0 0 18px;
+  max-width: 70ch;
+  color: var(--theme-elevation-700);
+}
+
+.portfolio-trash__heading {
+  padding-left: 12px;
+}
+
+.portfolio-trash__empty {
+  padding-left: 16px;
+}
+
+.portfolio-trash__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  min-height: 60px;
+  padding: 8px 14px;
+  border-top: 1px solid var(--theme-elevation-100);
+}
+
+.portfolio-trash__row:first-child {
+  border-top: none;
+}
+
+.portfolio-trash__text {
+  display: flex;
+  flex: 1 1 200px;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.portfolio-trash__title {
+  font-weight: 600;
+  overflow-wrap: break-word;
+}
+
+.portfolio-trash__meta {
+  color: var(--theme-elevation-600);
+  font-size: 13px;
+}
+
+.portfolio-trash__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.portfolio-trash__button {
+  min-height: 44px;
+  padding: 0 14px;
+  border: 1px solid var(--theme-elevation-250);
+  border-radius: var(--style-radius-m, 4px);
+  background: var(--theme-bg);
+  color: var(--theme-text);
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.portfolio-trash__button:hover:not(:disabled) {
+  background: var(--theme-elevation-50);
+}
+
+.portfolio-trash__button:disabled {
+  opacity: 0.5;
+  cursor: progress;
+}
+
+.portfolio-trash__button--danger {
+  border-color: var(--theme-error-400, #e07a7a);
+  color: var(--theme-error-700, #8a1f1f);
 }
 
 .portfolio__intro {

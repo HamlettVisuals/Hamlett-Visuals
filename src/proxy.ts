@@ -12,7 +12,6 @@ import { safeAdminRedirect } from "@/lib/admin-redirect";
 // server actions POST to this same path.
 const DRAG_LIST_QUERY = { limit: "100", sort: "_order" };
 const DRAG_LISTS = [
-  "/hv-studio/collections/categories",
   "/hv-studio/collections/pricing-rows",
   "/hv-studio/collections/backstage",
 ];
@@ -32,12 +31,15 @@ function forceDragListQuery(request: NextRequest) {
 }
 
 // The Categories and Albums lists are one page now, Categories & Albums
-// (components/admin/Portfolio). Their list URLs (from bookmarks, the
-// editor's ✕ and breadcrumbs, and where Payload lands after a delete) go
-// there; edit and create pages are untouched. GET only, as above.
+// (components/admin/Portfolio), with one Trash tab for both. Their list
+// and Trash URLs (from bookmarks, the editor's ✕ and breadcrumbs, and where
+// Payload lands after a delete or restore) go there; edit and create pages
+// are untouched. GET only, as above.
 const PORTFOLIO_REDIRECTS: Record<string, string> = {
   "/hv-studio/collections/categories": "/hv-studio/portfolio",
   "/hv-studio/collections/events": "/hv-studio/portfolio",
+  "/hv-studio/collections/categories/trash": "/hv-studio/portfolio/trash",
+  "/hv-studio/collections/events/trash": "/hv-studio/portfolio/trash",
 };
 
 function redirectToPortfolio(request: NextRequest) {
@@ -83,6 +85,7 @@ export const config = {
     "/hv-studio/collections/categories",
     "/hv-studio/collections/categories/trash",
     "/hv-studio/collections/events",
+    "/hv-studio/collections/events/trash",
     "/hv-studio/collections/pricing-rows",
     "/hv-studio/collections/pricing-rows/trash",
     "/hv-studio/collections/backstage",

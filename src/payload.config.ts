@@ -148,6 +148,12 @@ export default buildConfig({
           path: "/portfolio",
           exact: true,
         },
+        // Its Trash tab: deleted categories and albums together.
+        portfolioTrash: {
+          Component: "/components/admin/Portfolio/Trash#default",
+          path: "/portfolio/trash",
+          exact: true,
+        },
       },
     },
     importMap: {

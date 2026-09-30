@@ -71,6 +71,7 @@ import { S3ClientUploadHandler as S3ClientUploadHandler_f97aa6c64367fa259c5bc056
 import { default as default_417d8d667e84e4656bf87771dc7c88df } from '../../../components/admin/KanbanBoard'
 import { default as default_d497c752e6aa0ef2ce3452cd1f73ca34 } from '../../../components/admin/EditorOverview'
 import { default as default_fc2c3601ead4127e86340d30ffe8a352 } from '../../../components/admin/Portfolio'
+import { default as default_049c80a619990eb26596514fbc6cee26 } from '../../../components/admin/Portfolio/Trash'
 import { CollectionCards as CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1 } from '@payloadcms/next/rsc'
 
 /** @type import('payload').ImportMap */
@@ -148,5 +149,6 @@ export const importMap = {
   "/components/admin/KanbanBoard#default": default_417d8d667e84e4656bf87771dc7c88df,
   "/components/admin/EditorOverview#default": default_d497c752e6aa0ef2ce3452cd1f73ca34,
   "/components/admin/Portfolio#default": default_fc2c3601ead4127e86340d30ffe8a352,
+  "/components/admin/Portfolio/Trash#default": default_049c80a619990eb26596514fbc6cee26,
   "@payloadcms/next/rsc#CollectionCards": CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1
 }
