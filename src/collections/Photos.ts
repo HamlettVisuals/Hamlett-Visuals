@@ -272,13 +272,17 @@ export const Photos: CollectionConfig = {
       },
     },
     {
+      // Retired: "eligible for the homepage" was never wired up; nothing
+      // reads it. Hidden until the column is dropped
+      // (docs/launch-checklist.md).
       name: "featured",
       type: "checkbox",
       defaultValue: false,
       admin: {
-        description:
-          "Check this to make the photo eligible for use on the homepage.",
-        position: "sidebar",
+        hidden: true,
+        disableListColumn: true,
+        disableListFilter: true,
+        disableBulkEdit: true,
       },
     },
   ],
