@@ -3,6 +3,7 @@ import config from "@payload-config";
 import Hero from "@/components/home/Hero";
 import Categories from "@/components/home/Categories";
 import About from "@/components/home/About";
+import { emptyListingPages } from "@/lib/listing-pages";
 import FeaturedOffer from "@/components/home/FeaturedOffer";
 import Offers from "@/components/home/Offers";
 import BookingCta from "@/components/home/BookingCta";
@@ -36,6 +37,8 @@ export default async function Home() {
   });
   const hero = await payload.findGlobal({ slug: "hero" });
   const about = await payload.findGlobal({ slug: "about" });
+  // Quick links to a page with nothing published yet are left out (lib/listing-pages.ts).
+  const emptyPages = await emptyListingPages(payload);
   const categoriesIntro = await payload.findGlobal({ slug: "categories-intro" });
   // Depth 2: the featured package, then its category (for the link and the
   // hidden/trashed check in components/home/FeaturedOffer.tsx).
@@ -103,7 +106,7 @@ export default async function Home() {
       <Categories categoriesIntro={categoriesIntro} categories={categories} />
 
       {/* 3. About */}
-      <About about={about} />
+      <About about={about} hiddenHrefs={emptyPages} />
 
       {/* 4. Hot offer */}
       <FeaturedOffer featuredOffer={featuredOffer} samplePhotos={samplePhotos} />

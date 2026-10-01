@@ -230,7 +230,7 @@ export interface Category {
   deletedAt?: string | null;
 }
 /**
- * Every photo you upload — the library that events, testimonials, and the homepage draw from.
+ * A photo on your site: in an album, or used as a cover, hero slide, portrait or elsewhere.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "photos".
@@ -250,13 +250,7 @@ export interface Photo {
    */
   event?: (number | null) | Event;
   albumOrder?: string | null;
-  /**
-   * Only set this if the photo isn't part of a specific shoot above — for example, a category's cover photo.
-   */
   category?: (number | null) | Category;
-  /**
-   * Check this to make the photo eligible for use on the homepage.
-   */
   featured?: boolean | null;
   prefix?: string | null;
   updatedAt: string;
@@ -720,7 +714,7 @@ export interface TestimonialSubmission {
    */
   testimonialText: string;
   /**
-   * Photos the client attached, if any. Private until you promote one into the Photos library when publishing.
+   * Photos the client attached, if any. Private until you publish one with the testimonial.
    */
   photos?: (number | TestimonialPhoto)[] | null;
   /**
@@ -739,7 +733,7 @@ export interface TestimonialSubmission {
   createdAt: string;
 }
 /**
- * Photos clients attach to a testimonial submission — private until you promote one into the Photos library from the submission's review screen.
+ * Photos clients attach to a testimonial submission — private until you publish one with the testimonial from the submission's review screen.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "testimonial-photos".

@@ -54,6 +54,8 @@ export function useMaxLength(max: number) {
 
 export type LinkTextField = {
   name: string;
+  /** Column label (optional); see LinkRowsEditorProps.hrefLabel. */
+  label?: string;
   placeholder: string;
   max: number;
 };
@@ -83,6 +85,7 @@ function LinkTextInput({ path, spec }: { path: string; spec: LinkTextField }) {
         field.setValue(e.target.value.slice(0, spec.max))
       }
       showError={field.showError}
+      label={spec.label}
       placeholder={spec.placeholder}
       inputRef={ref as React.RefObject<HTMLInputElement>}
       AfterInput={<CounterBadge length={text.length} max={spec.max} />}
@@ -96,6 +99,7 @@ function LinkRow({
   count,
   textFields,
   options,
+  hrefLabel,
   summary,
   notes,
   moveRow,
@@ -107,6 +111,7 @@ function LinkRow({
   count: number;
   textFields: LinkTextField[];
   options: OptionObject[] | null;
+  hrefLabel?: string;
   summary: string;
   notes: React.ReactNode[];
   moveRow: (from: number, to: number) => void;
@@ -147,6 +152,7 @@ function LinkRow({
               options={options}
               isClearable={false}
               showError={href.showError}
+              label={hrefLabel}
               placeholder="Goes to…"
               onChange={(option) => {
                 if (option && !Array.isArray(option)) href.setValue(option.value);
@@ -227,6 +233,13 @@ export type LinkRowsEditorProps = {
   className?: string;
   /** Destinations left out of the "Goes to" dropdown (the field's validate refuses them too). */
   excludeDestinations?: string[];
+  /**
+   * Column label for the destination dropdown. With column labels (here or
+   * on textFields) each input gets a small label above it: shown over the
+   * first row only while each row fits on one line, like column headings,
+   * and over every row once rows wrap (CSS: .nav-links--labelled).
+   */
+  hrefLabel?: string;
   /** Rendered after the Add button (e.g. a crowding warning). */
   afterAdd?: (rows: LinkRowValues[]) => React.ReactNode;
   children?: React.ReactNode;
@@ -244,9 +257,11 @@ export default function LinkRowsEditor({
   rowNotes,
   className,
   excludeDestinations,
+  hrefLabel,
   afterAdd,
   children,
 }: LinkRowsEditorProps) {
+  const labelled = Boolean(hrefLabel) || textFields.some((f) => f.label);
   const { field } = fieldProps;
   const path = fieldProps.path ?? field.name;
   const schemaPath = fieldProps.schemaPath ?? field.name;
@@ -312,7 +327,10 @@ export default function LinkRowsEditor({
   );
 
   return (
-    <div className={`field-type ${baseClass}${className ? ` ${className}` : ""}`} id={`field-${path}`}>
+    <div
+      className={`field-type ${baseClass}${labelled ? ` ${baseClass}--labelled` : ""}${className ? ` ${className}` : ""}`}
+      id={`field-${path}`}
+    >
       <h3 className={`${baseClass}__title`}>{title}</h3>
       <p className={`${baseClass}__intro`}>{intro}</p>
       {showError && <FieldError path={path} showError />}
@@ -347,6 +365,7 @@ export default function LinkRowsEditor({
                     count={rows.length}
                     textFields={textFields}
                     options={options}
+                    hrefLabel={hrefLabel}
                     summary={summarize(rowValues, destination)}
                     notes={notes}
                     moveRow={moveRow}

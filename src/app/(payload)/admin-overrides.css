@@ -506,6 +506,34 @@
   }
 }
 
+/* Column labels (LinkRowsEditor's hrefLabel / textFields[].label; About's
+   quick links). Small, above each input. While a row fits on one line
+   (wider than 640px of pane) they act as column headings over the first
+   row only; the rest keep them for screen readers. Once rows wrap, every
+   input shows its label. On one-line rows the handle and menu line up with
+   the inputs, not the labels; wrapped rows keep them centred as before. */
+.nav-links--labelled .nav-links__fields .field-label {
+  margin-bottom: 2px;
+  color: var(--theme-elevation-500);
+  font-size: 12px;
+}
+
+@container (min-width: 641px) {
+  .nav-links--labelled .nav-links__line {
+    align-items: flex-end;
+  }
+
+
+  .nav-links--labelled .nav-links__row:not(:first-child) .field-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}
+
 /* Payload caps its error bubble at 75% of the input and truncates the
    text, which cut "This field is required." short in the narrow label box. */
 .nav-links .field-error.tooltip {

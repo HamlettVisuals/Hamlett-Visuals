@@ -19,9 +19,17 @@ import type { About as AboutGlobal } from "@/payload-types";
 //
 // The cards come from the About global's `quickLinks` (globals/About.ts;
 // limits in lib/about-limits.ts). Each card's icon follows its destination
-// (lib/quick-link-icons.tsx). With no links, the cards block isn't rendered
-// at all, so no margin is left behind.
-export default function About({ about }: { about: AboutGlobal }) {
+// (lib/quick-link-icons.tsx). A card going to a page with nothing published
+// yet (Backstage, Testimonials) is left out until that page has something:
+// `hiddenHrefs` comes from lib/listing-pages.ts. With no links, the cards
+// block isn't rendered at all, so no margin is left behind.
+export default function About({
+  about,
+  hiddenHrefs = [],
+}: {
+  about: AboutGlobal;
+  hiddenHrefs?: string[];
+}) {
   // Live Preview overlays the admin's current unsaved form state on top of
   // `about` via postMessage — same mechanism as Hero.tsx. `apiRoute` matters
   // more here than it did for Hero: `portrait` is an upload relation, and
@@ -36,9 +44,10 @@ export default function About({ about }: { about: AboutGlobal }) {
   const portrait =
     data.portrait && typeof data.portrait === "object" ? data.portrait : null;
   // Rows being typed into in the editor can be half-filled; a card needs a
-  // destination and a title to be worth showing.
+  // destination and a title to be worth showing, and a destination that
+  // isn't an empty page.
   const quickLinks = (data.quickLinks ?? []).filter(
-    (link) => link?.href && link.title?.trim(),
+    (link) => link?.href && link.title?.trim() && !hiddenHrefs.includes(link.href),
   );
 
   return (

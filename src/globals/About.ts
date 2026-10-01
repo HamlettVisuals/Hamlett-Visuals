@@ -1,4 +1,11 @@
 import type { GlobalConfig } from "payload";
+import {
+  BoldFeature,
+  InlineToolbarFeature,
+  ItalicFeature,
+  LinkFeature,
+  lexicalEditor,
+} from "@payloadcms/richtext-lexical";
 import { publicReadAdminWrite } from "#src/access/isAdmin.ts";
 import { serverURL } from "#src/lib/server-url.ts";
 import { navDestinations } from "#src/lib/nav-destinations.ts";
@@ -59,6 +66,22 @@ export const About: GlobalConfig = {
     {
       name: "bio",
       type: "richText",
+      // Paragraphs, bold, italic and links to web pages, nothing else: the
+      // bio sits beside her photo and is styled as plain paragraphs, so
+      // headings, lists, tables or images would look out of place there.
+      // Bold, italic and links are applied from the toolbar that appears
+      // over selected text. Paragraphs are built into the editor; with no
+      // other block to switch to, ParagraphFeature would only add a
+      // one-option "Paragraph" menu, so it's left out. Internal links (to a
+      // studio document) are off: only addresses.
+      editor: lexicalEditor({
+        features: () => [
+          BoldFeature(),
+          ItalicFeature(),
+          LinkFeature({ enabledCollections: [] }),
+          InlineToolbarFeature(),
+        ],
+      }),
       admin: {
         description:
           "The paragraph(s) about you and your work, shown next to your photo.",
@@ -88,23 +111,25 @@ export const About: GlobalConfig = {
       ],
       fields: [
         {
+          // The card's small caption, e.g. "Backstage".
           name: "label",
           type: "text",
-          label: "Small label",
+          label: "Title",
           required: true,
           maxLength: QUICK_LINK_LABEL_MAX,
         },
         {
+          // The card's main line, e.g. "Reels & behind the scenes".
           name: "title",
           type: "text",
-          label: "Title",
+          label: "Subtitle",
           required: true,
           maxLength: QUICK_LINK_TITLE_MAX,
         },
         {
           name: "href",
           type: "select",
-          label: "Goes to",
+          label: "Links to",
           required: true,
           // Same pick-only destinations as Header/Nav, so a card can't
           // point somewhere that doesn't exist.

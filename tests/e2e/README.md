@@ -85,6 +85,7 @@ Results are:
 | `album-live-preview.test.cjs` | Live Preview refreshing after photo changes |
 | `card-drawer-scroll.test.cjs` | Kanban drawers scroll to their end on phones, tablets and desktop, incl. an on-screen keyboard |
 | `calendar.test.cjs` | The kanban Calendar at seven sizes: markers per day, agenda, taps, a crowded day |
+| `about-editor.test.cjs` | The About editor: Bio limited to paragraphs, bold, italic and links; Quick links column labels (wide and phone); a link to an empty Backstage/Testimonials page hidden on the homepage, with the editor's note |
 | `photo-usage.test.mts` | `lib/photo-usage.ts` on a stand-in config (no browser, no sign-in) |
 
 ## Unit tests
@@ -95,7 +96,9 @@ machine. `email.test.mts` covers the site's emails (the sender address,
 the inquiry emails when Resend accepts, refuses, can't be reached or isn't
 set up, Payload's Resend adapter, and the config choosing it) against a
 fake Resend; a "[Resend API Error]" line in its output is the simulated
-"can't be reached" case.
+"can't be reached" case. `listing-pages.test.mts` covers the rule that hides an About
+quick link while its page has nothing published, and shows it again
+once it has.
 
 ## Test data
 
