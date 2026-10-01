@@ -28,9 +28,10 @@ import type { FeaturedOffer as FeaturedOfferGlobal, PricingRow } from "@/payload
 // accent halo — the one sanctioned static shadow on the site.
 //
 // The package is the one picked in the Featured Offer global's "Featured
-// package". With None picked, or a package that's since been hidden or
-// trashed or whose category is hidden or trashed (lib/featured-package.ts),
-// the whole section is left out — visitors never see an empty spotlight.
+// package". With its "Show on homepage" switch off, no package picked, or
+// a package that's since been hidden or trashed or whose category is
+// hidden or trashed (lib/featured-package.ts), the whole section is left
+// out — visitors never see an empty spotlight.
 
 export default function FeaturedOffer({
   featuredOffer,
@@ -50,7 +51,8 @@ export default function FeaturedOffer({
     depth: 2,
   });
 
-  const offer = availablePackage(data.featuredPackage);
+  // Off only when explicitly switched off (older saves have no value).
+  const offer = data.showOnHomepage === false ? null : availablePackage(data.featuredPackage);
   if (!offer) return null;
 
   return (

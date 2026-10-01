@@ -6,9 +6,10 @@ import { serverURL } from "#src/lib/server-url.ts";
 
 // The "Popular right now" spotlight (src/components/home/FeaturedOffer.tsx):
 // which Package it features, plus the heading and badge text around it
-// (the badge text also marks that package in Offers & pricing). With no
-// package picked, or one that's since been hidden or trashed or whose
-// category is hidden or trashed, the section isn't shown at all.
+// (the badge text also marks that package in Offers & pricing). With
+// "Show on homepage" off, no package picked, or one that's since been
+// hidden or trashed or whose category is hidden or trashed, the section
+// isn't shown at all, and no Offers & pricing row gets the badge.
 export const FeaturedOffer: GlobalConfig = {
   slug: "featured-offer",
   label: "Featured Offer",
@@ -43,11 +44,29 @@ export const FeaturedOffer: GlobalConfig = {
   versions: true,
   fields: [
     {
+      // Hides the spotlight (and the badge in Offers & pricing) without
+      // losing the package, heading and badge below, which are greyed out
+      // while it's off (FeaturedOfferSwitchField.tsx). Replaced the
+      // package dropdown's old "None" choice.
+      name: "showOnHomepage",
+      type: "checkbox",
+      label: "Show on homepage",
+      defaultValue: true,
+      admin: {
+        description:
+          "Turn off to hide this spotlight from your homepage. Your package, heading and badge are kept for when you turn it back on.",
+        components: {
+          Field: "/components/admin/FeaturedOfferSwitchField#default",
+        },
+      },
+    },
+    {
       // Replaces the old per-row `featured` checkbox on Packages
-      // (kept there, hidden, so the column isn't dropped). A dropdown with a
-      // "None" choice (components/admin/FeaturedPackageField.tsx) listing
-      // only packages the site can show; filterOptions is the same rule,
-      // enforced on save.
+      // (kept there, hidden, so the column isn't dropped). A dropdown
+      // (components/admin/FeaturedPackageField.tsx) listing only packages
+      // the site can show, with a warning when the picked one won't show
+      // or has no sample photos; filterOptions is the same rule, enforced
+      // on save. To hide the section, turn off "Show on homepage" above.
       name: "featuredPackage",
       type: "relationship",
       relationTo: "pricing-rows",
@@ -55,7 +74,7 @@ export const FeaturedOffer: GlobalConfig = {
       label: "Featured package",
       filterOptions: AVAILABLE_PACKAGE_WHERE,
       admin: {
-        description: "Pick the package to spotlight, or None to hide this section.",
+        description: "The package to spotlight.",
         components: {
           Field: "/components/admin/FeaturedPackageField#default",
         },

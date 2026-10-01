@@ -245,7 +245,10 @@ right.
 - Migrations: generated files import `MigrateUpArgs` / `MigrateDownArgs`
   without `type`, which Node's type stripping refuses at load time; change
   them to `type` imports before running.
-- Vercel's build runs `payload migrate`; run migrations yourself first, after
-  a backup and approval, so the deploy finds nothing pending.
+- `npm run build` is `payload migrate && next build`, so every build runs
+  pending migrations first: Vercel's, and a local one too, against the same
+  live database. Run migrations yourself first, after a backup and
+  approval, so neither build finds anything pending; never build locally
+  with an unapproved migration file in `src/migrations`.
 - The project was in OneDrive, which kept locking files in `.next` (builds
   failed with EPERM until `.next` was deleted). It's being moved out.

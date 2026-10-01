@@ -39,7 +39,8 @@ import type { FeaturedOffer as FeaturedOfferGlobal, PricingRow } from "@/payload
 // prefers-reduced-motion.
 //
 // "Featured" and the badge text are the Featured Offer global's, followed
-// live while that global is open in Live Preview. With no rows to show the
+// live while that global is open in Live Preview. With its "Show on
+// homepage" switch off, no row is featured. With no rows to show the
 // whole section is left out rather than leaving a bare heading.
 //
 // Each row follows the Packages editor's unsaved title, price prefix,
@@ -179,7 +180,7 @@ export default function Offers({
     apiRoute: "/hv-studio/api",
     depth: 0,
   });
-  const picked = data.featuredPackage;
+  const picked = data.showOnHomepage === false ? null : data.featuredPackage;
   const featuredId = typeof picked === "object" && picked !== null ? picked.id : picked;
   const badge = data.badgeLabel || "Hot offer";
 

@@ -2966,3 +2966,27 @@ a.editor-overview__tile:focus-visible,
   flex-wrap: wrap;
   gap: 8px;
 }
+
+/* Featured Offer: the warning under the package dropdown
+   (FeaturedPackageField.tsx), and the fields greyed out while "Show on
+   homepage" is off (FeaturedOfferSwitchField.tsx, which also makes them
+   inert). */
+/* The switch and the dropdown are wrapped in plain divs, which Payload's
+   between-fields gap (.render-fields > .field-type) doesn't reach. */
+.render-fields > .featured-offer-switch,
+.render-fields > .featured-package-field {
+  margin-bottom: var(--spacing-field);
+}
+
+.featured-package-field__warning {
+  margin: 6px 0 0;
+  color: var(--theme-warning-700, #92400e);
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.featured-offer-off {
+  opacity: 0.45;
+  filter: grayscale(1);
+  cursor: not-allowed;
+}

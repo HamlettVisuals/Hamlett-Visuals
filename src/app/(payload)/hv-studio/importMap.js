@@ -47,6 +47,7 @@ import { BoldFeatureClient as BoldFeatureClient_e70f5e05f09f93e00b997edb1ef0c864
 import { ItalicFeatureClient as ItalicFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
 import { default as default_16d9ddff4d9bc0b942eb2a46f2a32f20 } from '../../../components/admin/AboutQuickLinksField'
 import { default as default_651ba4359426e21e5e75ce26d08a4169 } from '../../../components/admin/QuickLinksDiff'
+import { default as default_e6cc04a80888376b3a32c35320e256c8 } from '../../../components/admin/FeaturedOfferSwitchField'
 import { default as default_ec7d0821a0034acc48d37adac94c8805 } from '../../../components/admin/FeaturedPackageField'
 import { default as default_fc623a9f5bba3245f394e25f9cc96ad7 } from '../../../components/admin/ContactLineIntro'
 import { default as default_656bea43dbcc31aeaa2c7e2919cc66cf } from '../../../components/admin/ContactSwitchField'
@@ -113,6 +114,7 @@ export const importMap = {
   "@payloadcms/richtext-lexical/client#ItalicFeatureClient": ItalicFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
   "/components/admin/AboutQuickLinksField#default": default_16d9ddff4d9bc0b942eb2a46f2a32f20,
   "/components/admin/QuickLinksDiff#default": default_651ba4359426e21e5e75ce26d08a4169,
+  "/components/admin/FeaturedOfferSwitchField#default": default_e6cc04a80888376b3a32c35320e256c8,
   "/components/admin/FeaturedPackageField#default": default_ec7d0821a0034acc48d37adac94c8805,
   "/components/admin/ContactLineIntro#default": default_fc623a9f5bba3245f394e25f9cc96ad7,
   "/components/admin/ContactSwitchField#default": default_656bea43dbcc31aeaa2c7e2919cc66cf,

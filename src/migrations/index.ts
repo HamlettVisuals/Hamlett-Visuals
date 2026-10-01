@@ -3,6 +3,7 @@ import * as migration_20260927_173643_site_settings_logo_height from './20260927
 import * as migration_20260927_174805_site_settings_footer_logo_height from './20260927_174805_site_settings_footer_logo_height';
 import * as migration_20260927_180544_hero_slides from './20260927_180544_hero_slides';
 import * as migration_20260930_003958_album_and_photo_order from './20260930_003958_album_and_photo_order';
+import * as migration_20261001_233049_featured_offer_show_on_homepage from './20261001_233049_featured_offer_show_on_homepage';
 
 export const migrations = [
   {
@@ -28,6 +29,11 @@ export const migrations = [
   {
     up: migration_20260930_003958_album_and_photo_order.up,
     down: migration_20260930_003958_album_and_photo_order.down,
-    name: '20260930_003958_album_and_photo_order'
+    name: '20260930_003958_album_and_photo_order',
+  },
+  {
+    up: migration_20261001_233049_featured_offer_show_on_homepage.up,
+    down: migration_20261001_233049_featured_offer_show_on_homepage.down,
+    name: '20261001_233049_featured_offer_show_on_homepage'
   },
 ];

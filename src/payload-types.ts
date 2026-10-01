@@ -1507,7 +1507,11 @@ export interface About {
 export interface FeaturedOffer {
   id: number;
   /**
-   * Pick the package to spotlight, or None to hide this section.
+   * Turn off to hide this spotlight from your homepage. Your package, heading and badge are kept for when you turn it back on.
+   */
+  showOnHomepage?: boolean | null;
+  /**
+   * The package to spotlight.
    */
   featuredPackage?: (number | null) | PricingRow;
   /**
@@ -1803,6 +1807,7 @@ export interface AboutSelect<T extends boolean = true> {
  * via the `definition` "featured-offer_select".
  */
 export interface FeaturedOfferSelect<T extends boolean = true> {
+  showOnHomepage?: T;
   featuredPackage?: T;
   heading?: T;
   badgeLabel?: T;
