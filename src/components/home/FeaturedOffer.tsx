@@ -103,7 +103,12 @@ function FeaturedOfferCard({
             {data.title}
           </Link>
         </h3>
-        {category && <p className="mt-1 text-caption text-muted">{category.name}</p>}
+        {/* The category only when it differs from the name, as on the
+            Offers & pricing rows (Offers.tsx). */}
+        {category?.name &&
+          category.name.trim().toLowerCase() !== (data.title ?? "").trim().toLowerCase() && (
+            <p className="mt-1 text-caption text-muted">{category.name}</p>
+          )}
 
         <OfferPrice
           lead={data.priceLead || "From"}

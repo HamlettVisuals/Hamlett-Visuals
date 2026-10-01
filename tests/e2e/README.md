@@ -87,7 +87,7 @@ Results are:
 | `calendar.test.cjs` | The kanban Calendar at seven sizes: markers per day, agenda, taps, a crowded day |
 | `about-editor.test.cjs` | The About editor: Bio limited to paragraphs, bold, italic and links; Quick links column labels (wide and phone); a link to an empty Backstage/Testimonials page hidden on the homepage, with the editor's note |
 | `featured-offer.test.cjs` | Featured Offer: the Show on homepage switch (greyed fields, spotlight and badge hidden in Live Preview), package labels, hidden-package and no-photos warnings (mocked) |
-| `offers-category.test.cjs` | Offers & pricing rows show the category under the name only when it differs (homepage, and an unsaved title in Live Preview) |
+| `offers-category.test.cjs` | Offers & pricing rows and the spotlight card show the category under the name only when it differs (homepage, and an unsaved title in Live Preview) |
 | `photo-usage.test.mts` | `lib/photo-usage.ts` on a stand-in config (no browser, no sign-in) |
 
 ## Unit tests
