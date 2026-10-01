@@ -106,9 +106,13 @@ function OfferRow({
               {data.title}
             </Link>
           </h3>
-          {category && (
-            <p className="mt-1 text-caption text-muted">{category.name}</p>
-          )}
+          {/* The category only when it adds something: a package named
+              like its category ("Real Estate") doesn't repeat it. Same
+              rule as the studio's package dropdown (FeaturedPackageField). */}
+          {category?.name &&
+            category.name.trim().toLowerCase() !== (data.title ?? "").trim().toLowerCase() && (
+              <p className="mt-1 text-caption text-muted">{category.name}</p>
+            )}
         </div>
         <OfferPrice
           lead={data.priceLead || "From"}
