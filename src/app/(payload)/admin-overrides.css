@@ -1035,6 +1035,14 @@ button.category-status:focus-visible {
   line-height: 1.4;
 }
 
+/* Under the Booking Section's switches (ContactLineAloneNote.tsx). */
+.contact-line-alone-note {
+  margin-top: -8px;
+  color: var(--theme-elevation-650);
+  font-size: 13px;
+  line-height: 1.4;
+}
+
 /* Albums list view (collections/Events.ts): the list itself redirects to
    Categories & Albums, so this is its Trash tab and any picker drawer
    (cells in AlbumCells.tsx). Bulk-select checkboxes and their bar, the

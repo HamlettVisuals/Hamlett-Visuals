@@ -14,7 +14,7 @@ import { serverURL } from "#src/lib/server-url.ts";
 // on the Site Settings global instead of being repeated here.
 export const BookingCta: GlobalConfig = {
   slug: "booking-cta",
-  label: "Booking CTA",
+  label: "Booking Section",
   admin: {
     hideAPIURL: true,
     components: {
@@ -136,6 +136,14 @@ export const BookingCta: GlobalConfig = {
       admin: {
         components: { Field: "/components/admin/ContactSwitchField#default" },
         custom: { contact: "instagram" },
+      },
+    },
+    {
+      // "Text on its own" note when all three switches are off.
+      name: "contactLineAloneNote",
+      type: "ui",
+      admin: {
+        components: { Field: "/components/admin/ContactLineAloneNote#default" },
       },
     },
   ],

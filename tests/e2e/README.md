@@ -90,6 +90,7 @@ Results are:
 | `offers-category.test.cjs` | Offers & pricing rows and the spotlight card show the category under the name only when it differs (homepage, and an unsaved title in Live Preview) |
 | `packages-list.test.cjs` | Packages list: title links to the edit page, category cover or placeholder, the Featured tag (incl. mocked spotlight states), drag handles and the Live/Hidden pill, compact rows that fit at 375, 390 and 844x390 (desktop unchanged) |
 | `package-editor.test.cjs` | Package editor: field order and sections, the featured note (incl. mocked spotlight states), its own description, features wrapping on a phone |
+| `booking-section.test.cjs` | Booking Section: its name in the page title, breadcrumb, sidebar and Editor overview (and "Booking Page"), the note when all contact switches are off but the contact line has text |
 | `photo-usage.test.mts` | `lib/photo-usage.ts` on a stand-in config (no browser, no sign-in) |
 
 ## Unit tests
