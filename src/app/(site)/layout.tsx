@@ -12,8 +12,11 @@ import "../globals.css";
 
 // Display / headings. Variable font — the opsz axis is kept so
 // `font-optical-sizing: auto` (set in globals.css) gives a lighter, more open
-// cut at hero scale and a sturdier cut at heading scale. No italic is loaded:
-// italics are not a default style on this site.
+// cut at hero scale and a sturdier cut at heading scale. No italic is loaded
+// here: italics are not a default style on this site. The one exception is
+// the testimonial quotes on /testimonials, the only place a third typeface
+// (and italics) is allowed, chosen from the curated registry in
+// lib/quote-fonts.ts (Lora by default) and loaded by that page alone.
 const fraunces = Fraunces({
   subsets: ["latin"],
   display: "swap",

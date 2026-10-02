@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { GalleryPhoto } from "./types";
 import HoverZoomImage from "@/components/HoverZoomImage";
+import { formatAlbumDate } from "@/lib/album-date";
 import { DEFAULT_LOCATION, generateAltText } from "@/lib/generate-alt-text";
 import GalleryEmptyState from "./GalleryEmptyState";
 import { GALLERY_ROW_CLASS, GALLERY_TILE_CLASS, tileAspect, tileSizes, tileStyle } from "./galleryRow";
@@ -30,17 +31,6 @@ export type EventRowProps = {
   /** Index of the clicked photo within this event's own photos array. */
   onPhotoClick: (index: number) => void;
 };
-
-/**
- * "June 2026". Payload stores a day-only date as that day at 12:00 UTC, so
- * it's formatted in UTC to keep the month right in every time zone.
- */
-function formatAlbumDate(value: string | null | undefined): string | null {
-  if (!value) return null;
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return null;
-  return date.toLocaleDateString("en-US", { month: "long", year: "numeric", timeZone: "UTC" });
-}
 
 /** Net pointer movement below this, in px, still counts as a click rather than a drag. */
 const DRAG_CLICK_THRESHOLD = 5;

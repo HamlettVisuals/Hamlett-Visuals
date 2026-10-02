@@ -58,6 +58,17 @@ never reads as a control.
 
 Two families, clearly distinct. No third typeface. No italic as a default.
 
+One scoped exception: the quotes on `/testimonials` are the one place a third
+typeface, and italics, are allowed. The font comes from the curated registry in
+`src/lib/quote-fonts.ts` (Lora Italic 400 by default; also Literata, Fraunces
+Soft, Merriweather Light and Petrona), set at `text-title` with line-height
+1.5. The registry also holds the site's own upright Fraunces, which the
+homepage Testimonials Section uses for a single quote; each place picks its
+own key. Names and context lines under the quotes
+stay Inter. Add a font to that registry rather than anywhere else, and keep it
+a soft, readable text italic, not a script. Don't extend italic or a third
+typeface anywhere else.
+
 | | Family | Weights | Used for |
 |---|---|---|---|
 | Display | **Fraunces** (variable, `opsz` axis on) | 400 hero-scale, 500 everything else | h1–h6, hero headline |

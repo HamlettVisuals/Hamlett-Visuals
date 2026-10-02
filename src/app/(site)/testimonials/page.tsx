@@ -2,32 +2,49 @@ import Link from "next/link";
 import { getPayload } from "payload";
 import config from "@payload-config";
 import HoverZoomImage from "@/components/HoverZoomImage";
+import { formatAlbumDate } from "@/lib/album-date";
 import { generateAltText } from "@/lib/generate-alt-text";
+import { comparePhotos } from "@/lib/manual-order";
+import { QUOTE_CLASS, quoteFontProps, type QuoteFontKey } from "@/lib/quote-fonts";
+import { trimQuoteMarks } from "@/lib/quote-marks";
 import { resolvePhoto } from "@/lib/resolve-photo";
-import type { Category, Event, Testimonial } from "@/payload-types";
+import type { Category, Event, Photo, Testimonial } from "@/payload-types";
+import QuoteFontPreview from "./QuoteFontPreview";
 
 // Full testimonials page. The teaser (src/components/home/Testimonials.tsx)
 // stays text-only and untouched by design; this page is the whole set,
 // grouped by category (in the Categories list's drag order), each entry paired
-// with its photo and — when a testimonial has one — a deep link back to the
-// actual session (/portfolio/[category]#[eventSlug], landing on the matching
-// EventRow — see src/components/Gallery/EventRow.tsx and the
-// scroll-padding-top rule in globals.css that keeps it clear of the sticky
-// header on both a same-page jump and a fresh page load with the hash
-// already in the URL).
+// with a photo and a link: to the session itself when the testimonial names
+// one (/portfolio/[event's category]#[eventSlug], landing on the matching
+// EventRow — see src/components/Gallery/EventRow.tsx), otherwise to the
+// category's gallery. The scroll-padding-top rule in globals.css keeps both
+// that target and this page's own category anchors clear of the sticky
+// header.
 //
-// Quotes lead at text-title so they read as the page's main content; the
-// client name, context, photo and gallery link sit under/beside each as
-// quiet attribution. Flat throughout — hairline rules between entries (the
-// same device the Offers list uses for real item boundaries) and the
-// existing .link-chip-inline pill (reused from OfferActions) for the gallery
-// link. No cards, no shadow.
+// Quotes lead at text-title size so they read as the page's main content,
+// set in a font from the curated registry (lib/quote-fonts.ts) — the one
+// place the site allows a third typeface and italics. The client name,
+// context, photo and link sit under/beside each as quiet attribution in
+// Inter. Flat throughout —
+// hairline rules between entries (the same device the Offers list uses for
+// real item boundaries) and the existing .link-chip-inline pill (reused from
+// OfferActions) for the link. No cards, no shadow.
+
+// The quote font, from lib/quote-fonts.ts. Hardcoded for now; an admin
+// setting can replace this one line later.
+const TESTIMONIALS_PAGE_QUOTE_FONT: QuoteFontKey = "lora";
 
 export const metadata = {
   title: "Testimonials — Hamlett Visuals",
 };
 
-function resolveCategory(category: Testimonial["category"]): Category | null {
+// TODO(backend pass): the testimonial form is only reachable from her
+// one-time emailed link (/testimonial-request/[token]), so there's nowhere
+// public for "Leave a review" to go yet. Point this at the public
+// submission page once it exists.
+const LEAVE_REVIEW_HREF = "#leave-a-review";
+
+function resolveCategory(category: Testimonial["category"] | Event["category"]): Category | null {
   return typeof category === "object" && category !== null ? category : null;
 }
 
@@ -35,32 +52,95 @@ function resolveEvent(event: Testimonial["event"]): Event | null {
   return typeof event === "object" && event !== null ? event : null;
 }
 
-export default async function TestimonialsPage() {
+type Entry = {
+  testimonial: Testimonial;
+  href: string;
+  linkLabel: string;
+  context: string;
+  photo: Photo | null;
+  eventName?: string;
+};
+
+export default async function TestimonialsPage({ searchParams }: PageProps<"/testimonials">) {
+  // Dev only: ?fontPreview=1 shows every registry font (QuoteFontPreview).
+  // searchParams is only read in development, so the live page renders
+  // exactly as before.
+  const fontPreview =
+    process.env.NODE_ENV === "development" && (await searchParams).fontPreview === "1";
+  const quoteFont = quoteFontProps(TESTIMONIALS_PAGE_QUOTE_FONT);
+
   const payload = await getPayload({ config });
-  // depth: 1 so category/event/photo all come back populated in one query —
-  // no separate lookups needed, unlike the two-query Category -> Event ->
-  // Photo fetch on /portfolio/[category] (there, one Events query can back
-  // many Photos; here each Testimonial already carries its own relations).
+  // depth: 2 so category, event, photo, the category's cover and the
+  // event's own category all come back populated in one query.
   const { docs: testimonials } = await payload.find({
     collection: "testimonials",
     where: { published: { equals: true } },
-    depth: 1,
+    depth: 2,
     limit: 0,
   });
+
+  // A linked album only counts while its page shows it: the album and its
+  // category both published. Otherwise the entry falls back to the
+  // testimonial's category, as if no album were linked.
+  const linkedEvent = (testimonial: Testimonial) => {
+    const event = resolveEvent(testimonial.event);
+    const eventCategory = event && resolveCategory(event.category);
+    return event?.published && eventCategory?.published ? { event, eventCategory } : null;
+  };
+
+  // Albums have no cover field yet; their cover is their first photo in her
+  // order, the one that leads the album's row (same as AlbumThumbnailCell).
+  // One query for every linked album.
+  const linkedEventIds = [
+    ...new Set(testimonials.flatMap((t) => linkedEvent(t)?.event.id ?? [])),
+  ];
+  const { docs: albumPhotos } = linkedEventIds.length
+    ? await payload.find({
+        collection: "photos",
+        where: { event: { in: linkedEventIds } },
+        depth: 0,
+        limit: 0,
+      })
+    : { docs: [] };
+  const albumCovers = new Map<number, Photo>();
+  for (const photo of albumPhotos.toSorted(comparePhotos)) {
+    if (typeof photo.event === "number" && photo.url && !albumCovers.has(photo.event)) {
+      albumCovers.set(photo.event, photo);
+    }
+  }
 
   // Group by category (skipping testimonials with no category set), in the
   // Categories list's drag order (`_order`: fractional-index keys, so a
   // plain string comparison sorts them).
-  const groupsByCategory = new Map<
-    number,
-    { category: Category; items: Testimonial[] }
-  >();
+  const groupsByCategory = new Map<number, { category: Category; entries: Entry[] }>();
   for (const testimonial of testimonials) {
     const category = resolveCategory(testimonial.category);
     if (!category) continue;
+    const linked = linkedEvent(testimonial);
+    const date = linked && formatAlbumDate(linked.event.date);
+
+    const photo = [
+      resolvePhoto(testimonial.photo),
+      linked && albumCovers.get(linked.event.id),
+      resolvePhoto(category.coverPhoto),
+    ].find((candidate) => candidate?.url) ?? null;
+
+    const entry: Entry = {
+      testimonial,
+      href: linked
+        ? `/portfolio/${linked.eventCategory.slug}#${linked.event.slug}`
+        : `/portfolio/${category.slug}`,
+      linkLabel: linked ? `View ${linked.event.title}` : `View the ${category.name} gallery`,
+      // Her Context text wins; otherwise the category, plus the album's
+      // month when it has a date. The album's name is on the link already.
+      context: testimonial.context?.trim() || (date ? `${category.name} · ${date}` : category.name),
+      photo,
+      eventName: linked?.event.title,
+    };
+
     const group = groupsByCategory.get(category.id);
-    if (group) group.items.push(testimonial);
-    else groupsByCategory.set(category.id, { category, items: [testimonial] });
+    if (group) group.entries.push(entry);
+    else groupsByCategory.set(category.id, { category, entries: [entry] });
   }
   const groups = Array.from(groupsByCategory.values()).sort(
     (a, b) => ((a.category._order ?? "") < (b.category._order ?? "") ? -1 : 1),
@@ -74,72 +154,108 @@ export default async function TestimonialsPage() {
           A few words from people I&rsquo;ve worked with, sorted by the kind of
           shoot they came for.
         </p>
+        {groups.length >= 2 && (
+          <nav aria-label="Categories" className="mt-5">
+            <ul className="flex flex-wrap items-center gap-x-2 gap-y-1 text-body text-ink">
+              {groups.map(({ category }, index) => (
+                <li key={category.slug} className="flex items-center gap-x-2">
+                  {index > 0 && (
+                    <span aria-hidden="true" className="text-muted">
+                      &middot;
+                    </span>
+                  )}
+                  <a href={`#${category.slug}`} className="link">
+                    {category.name}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        )}
       </header>
+
+      {fontPreview && groups[0] && (
+        <QuoteFontPreview
+          quote={trimQuoteMarks(groups[0].entries[0].testimonial.quote)}
+          clientName={groups[0].entries[0].testimonial.clientName}
+          context={groups[0].entries[0].context}
+          current={TESTIMONIALS_PAGE_QUOTE_FONT}
+        />
+      )}
 
       {groups.length === 0 ? (
         <p className="mt-12 text-body text-muted">No testimonials yet.</p>
       ) : (
         <div className="mt-14 flex flex-col gap-16">
-          {groups.map(({ category, items }) => (
-            <section key={category.slug}>
-              <h2 className="font-display text-heading text-ink">
-                {category.name}
-              </h2>
+          {groups.map(({ category, entries }) => {
+            // Photos alternate sides (left, right, left…) on tablet and up,
+            // counting only the entries that have one.
+            let photoIndex = 0;
+            return (
+              <section key={category.slug} aria-labelledby={category.slug}>
+                <h2 id={category.slug} className="scroll-mt-6 font-display text-heading text-ink">
+                  {category.name}
+                </h2>
 
-              <ul className="mt-6 flex flex-col">
-                {items.map((testimonial) => {
-                  const photo = resolvePhoto(testimonial.photo);
-                  const event = resolveEvent(testimonial.event);
+                <ul className="mt-6 flex flex-col">
+                  {entries.map(({ testimonial, href, linkLabel, context, photo, eventName }) => {
+                    const photoRight = photo?.url ? photoIndex++ % 2 === 1 : false;
 
-                  return (
-                    <li
-                      key={testimonial.id}
-                      className="border-t border-hairline py-8 first:border-t-0 first:pt-0"
-                    >
-                      <div
-                        className={
-                          photo?.url
-                            ? "grid grid-cols-[96px_1fr] gap-4 sm:grid-cols-[160px_1fr] sm:gap-6"
-                            : undefined
-                        }
+                    return (
+                      <li
+                        key={testimonial.id}
+                        className="border-t border-hairline py-10 first:border-t-0 first:pt-0"
                       >
-                        {photo?.url && (
-                          <HoverZoomImage
-                            src={photo.url}
-                            alt={
-                              photo.alt ||
-                              generateAltText({
-                                kind: "testimonial",
-                                eventName: event?.title,
-                                category: category.name,
-                              })
-                            }
-                            sizes="(min-width: 640px) 160px, 96px"
-                            className="aspect-[4/5] w-full"
-                            focal={photo}
-                          />
-                        )}
-
-                        <figure className="min-w-0">
-                          <blockquote className="max-w-measure text-title text-ink">
-                            &ldquo;{testimonial.quote}&rdquo;
-                          </blockquote>
-                          <figcaption className="mt-4 text-caption">
-                            <span className="text-ink">
-                              {testimonial.clientName}
-                            </span>
-                            {testimonial.context && (
-                              <span className="mt-0.5 block text-muted">
-                                {testimonial.context}
-                              </span>
-                            )}
-                          </figcaption>
-
-                          {event && (
+                        <div
+                          className={
+                            photo?.url
+                              ? `grid gap-5 sm:items-center sm:gap-8 ${
+                                  photoRight
+                                    ? "sm:grid-cols-[1fr_200px]"
+                                    : "sm:grid-cols-[200px_1fr]"
+                                }`
+                              : undefined
+                          }
+                        >
+                          {photo?.url && (
+                            // Same destination as the pill below, which is
+                            // the one announced and tabbed to.
                             <Link
-                              href={`/portfolio/${category.slug}#${event.slug}`}
-                              className="link-chip link-chip-inline mt-4"
+                              href={href}
+                              tabIndex={-1}
+                              aria-hidden="true"
+                              className={photoRight ? "sm:order-last" : undefined}
                             >
+                              <HoverZoomImage
+                                src={photo.url}
+                                alt={
+                                  photo.alt ||
+                                  generateAltText({
+                                    kind: "testimonial",
+                                    eventName,
+                                    category: category.name,
+                                  })
+                                }
+                                sizes="(min-width: 640px) 200px, 100vw"
+                                className="aspect-[3/2] w-full sm:aspect-[4/5]"
+                                focal={photo}
+                              />
+                            </Link>
+                          )}
+
+                          <figure className="min-w-0">
+                            <blockquote
+                              className={`${quoteFont.className} ${QUOTE_CLASS}`}
+                              style={quoteFont.style}
+                            >
+                              &ldquo;{trimQuoteMarks(testimonial.quote)}&rdquo;
+                            </blockquote>
+                            <figcaption className="mt-4 text-caption">
+                              <span className="text-ink">{testimonial.clientName}</span>
+                              <span className="mt-0.5 block text-muted">{context}</span>
+                            </figcaption>
+
+                            <Link href={href} className="link-chip link-chip-inline mt-5">
                               <span className="link-chip-icon">
                                 <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
                                   <rect
@@ -161,27 +277,36 @@ export default async function TestimonialsPage() {
                                   />
                                 </svg>
                               </span>
-                              <span className="link-chip-title">
-                                View the {category.name} gallery
-                              </span>
+                              <span className="link-chip-title">{linkLabel}</span>
                             </Link>
-                          )}
-                        </figure>
-                      </div>
-                    </li>
-                  );
-                })}
-              </ul>
-            </section>
-          ))}
+                          </figure>
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </section>
+            );
+          })}
         </div>
       )}
 
-      <p className="mt-16">
-        <Link href="/" className="link text-ink">
-          Back to home
+      <section
+        id="leave-a-review"
+        aria-labelledby="leave-a-review-heading"
+        className="mt-6 border-t border-hairline pt-12"
+      >
+        <h2 id="leave-a-review-heading" className="font-display text-heading text-ink">
+          Worked with me?
+        </h2>
+        <p className="mt-3 max-w-measure text-body text-muted">
+          I&rsquo;d love to hear how it went. Share your experience, and it
+          might end up on this page.
+        </p>
+        <Link href={LEAVE_REVIEW_HREF} className="btn mt-6">
+          Leave a review
         </Link>
-      </p>
+      </section>
     </div>
   );
 }

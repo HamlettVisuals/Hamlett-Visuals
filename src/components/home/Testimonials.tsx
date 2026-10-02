@@ -1,6 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import { quoteFontProps, type QuoteFontKey } from "@/lib/quote-fonts";
+import { trimQuoteMarks } from "@/lib/quote-marks";
 import { serverURL } from "@/lib/server-url";
 import { availableTestimonials } from "@/lib/teaser-testimonials";
 import { useScopedLivePreview } from "@/lib/use-scoped-live-preview";
@@ -20,6 +22,12 @@ import type { Testimonial, TestimonialsTeaser } from "@/payload-types";
 // desktop, four as a 2×2 grid. Long quotes are clamped (QUOTE_LINES) so a
 // row stays balanced; the full text is on /testimonials, linked from the
 // heading row.
+
+// The single quote's font, from lib/quote-fonts.ts (separate from
+// /testimonials' own). Hardcoded for now; an admin setting can replace this
+// one line later. Two or more quotes stay in Inter at text-lead, sized for
+// the grid.
+const HOMEPAGE_QUOTE_FONT: QuoteFontKey = "fraunces-upright";
 
 // Measured on the real section — see the note in lib/testimonials-teaser-limits.ts.
 const QUOTE_LINES_SINGLE = "line-clamp-5";
@@ -56,6 +64,7 @@ export default function Testimonials({
   const testimonials = availableTestimonials(data.testimonials);
   if (testimonials.length === 0) return null;
   const single = testimonials.length === 1;
+  const quoteFont = quoteFontProps(HOMEPAGE_QUOTE_FONT);
 
   return (
     <section id="testimonials" className="border-t border-hairline">
@@ -75,11 +84,12 @@ export default function Testimonials({
                 <blockquote
                   className={
                     single
-                      ? `font-display text-title text-ink ${QUOTE_LINES_SINGLE}`
+                      ? `${quoteFont.className} text-title text-ink ${QUOTE_LINES_SINGLE}`
                       : `max-w-measure text-lead text-ink ${QUOTE_LINES_GRID}`
                   }
+                  style={single ? quoteFont.style : undefined}
                 >
-                  &ldquo;{testimonial.quote}&rdquo;
+                  &ldquo;{trimQuoteMarks(testimonial.quote)}&rdquo;
                 </blockquote>
                 <figcaption className={`text-caption ${single ? "mt-4" : "mt-3"}`}>
                   <span className="text-ink">{testimonial.clientName}</span>
