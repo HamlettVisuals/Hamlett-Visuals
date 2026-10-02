@@ -91,6 +91,7 @@ Results are:
 | `packages-list.test.cjs` | Packages list: title links to the edit page, category cover or placeholder, the Featured tag (incl. mocked spotlight states), drag handles and the Live/Hidden pill, compact rows that fit at 375, 390 and 844x390 (desktop unchanged) |
 | `package-editor.test.cjs` | Package editor: field order and sections, the featured note (incl. mocked spotlight states), its own description, features wrapping on a phone |
 | `booking-section.test.cjs` | Booking Section: its name in the page title, breadcrumb, sidebar and Editor overview (and "Booking Page"), the note when all contact switches are off but the contact line has text |
+| `testimonials-section.test.cjs` | Testimonials Section: its name in the page title, breadcrumb, sidebar and Editor overview; the picks as rows (mocked testimonials): adding with the picker, which leaves out what's picked, removing, the 4 limit, reordering by the handle with a mouse and press-and-hold touch, and the order a save sends |
 | `photo-usage.test.mts` | `lib/photo-usage.ts` on a stand-in config (no browser, no sign-in) |
 
 ## Unit tests

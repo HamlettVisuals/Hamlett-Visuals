@@ -29,7 +29,7 @@ export const Testimonials: CollectionConfig = {
     useAsTitle: "clientName",
     defaultColumns: ["clientName", "category", "published"],
     description:
-      "Client quotes and reviews, shown on the Testimonials page. Pick which ones appear on your homepage in Testimonials Teaser.",
+      "Client quotes and reviews, shown on the Testimonials page. Pick which ones appear on your homepage in Testimonials Section.",
   },
   access: {
     read: () => true,

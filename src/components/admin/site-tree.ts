@@ -91,7 +91,7 @@ export const editorTree: TreeNode[] = [
         ],
       },
       { kind: "global", slug: "booking-cta", label: "Booking Section" },
-      { kind: "global", slug: "testimonials-teaser", label: "Testimonials Preview" },
+      { kind: "global", slug: "testimonials-teaser", label: "Testimonials Section" },
       { kind: "global", slug: "final-cta-footer", label: "Footer" },
     ],
   },

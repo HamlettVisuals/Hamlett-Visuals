@@ -157,7 +157,7 @@ export default function TestimonialPublishPanel() {
       <p style={{ margin: 0, fontSize: 13, color: "var(--theme-elevation-650)" }}>
         To show it on your homepage, pick it in{" "}
         <Link href={formatAdminURL({ adminRoute: config.routes.admin, path: "/globals/testimonials-teaser" }) as `/${string}`} prefetch={false}>
-          Testimonials Teaser
+          Testimonials Section
         </Link>{" "}
         once it&rsquo;s published.
       </p>

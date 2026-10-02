@@ -312,7 +312,7 @@ export interface Event {
   deletedAt?: string | null;
 }
 /**
- * Client quotes and reviews, shown on the Testimonials page. Pick which ones appear on your homepage in Testimonials Teaser.
+ * Client quotes and reviews, shown on the Testimonials page. Pick which ones appear on your homepage in Testimonials Section.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "testimonials".

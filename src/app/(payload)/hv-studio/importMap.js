@@ -53,6 +53,7 @@ import { default as default_ec7d0821a0034acc48d37adac94c8805 } from '../../../co
 import { default as default_fc623a9f5bba3245f394e25f9cc96ad7 } from '../../../components/admin/ContactLineIntro'
 import { default as default_656bea43dbcc31aeaa2c7e2919cc66cf } from '../../../components/admin/ContactSwitchField'
 import { default as default_e4abcc230cd3442cf8a4ebea33949c00 } from '../../../components/admin/ContactLineAloneNote'
+import { default as default_4ac57353bd76e239b598c98824a21755 } from '../../../components/admin/TestimonialPicksField'
 import { default as default_9717a31d15966f2422bf6c61264ebc6d } from '../../../components/admin/TestimonialPicksNote'
 import { default as default_77367a543f762dbbf1879e23275ea1dd } from '../../../components/admin/FooterLinksField'
 import { default as default_f374578049e4e5ccb6fe72e599427a6f } from '../../../components/admin/LogoSizeField'
@@ -122,6 +123,7 @@ export const importMap = {
   "/components/admin/ContactLineIntro#default": default_fc623a9f5bba3245f394e25f9cc96ad7,
   "/components/admin/ContactSwitchField#default": default_656bea43dbcc31aeaa2c7e2919cc66cf,
   "/components/admin/ContactLineAloneNote#default": default_e4abcc230cd3442cf8a4ebea33949c00,
+  "/components/admin/TestimonialPicksField#default": default_4ac57353bd76e239b598c98824a21755,
   "/components/admin/TestimonialPicksNote#default": default_9717a31d15966f2422bf6c61264ebc6d,
   "/components/admin/FooterLinksField#default": default_77367a543f762dbbf1879e23275ea1dd,
   "/components/admin/LogoSizeField#default": default_f374578049e4e5ccb6fe72e599427a6f,

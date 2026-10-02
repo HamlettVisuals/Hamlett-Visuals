@@ -2061,6 +2061,90 @@ button.portfolio__handle:disabled {
    (AlbumMatchNote.tsx). */
 /* Testimonials Teaser: picks that have been hidden or trashed since
    (components/admin/TestimonialPicksNote.tsx). */
+/* Testimonials Section picks as rows (TestimonialPicksField.tsx), with the
+   Categories & Albums drag handle (.portfolio__handle). */
+.testimonial-picks__list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0 0 8px;
+  padding: 0;
+  list-style: none;
+}
+
+.testimonial-picks__row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  padding: 2px 8px 2px 2px;
+  border: 1px solid var(--theme-elevation-150);
+  border-radius: var(--style-radius-m, 6px);
+  background: var(--theme-input-bg, var(--theme-elevation-0));
+}
+
+.testimonial-picks__row--dragging {
+  position: relative;
+  z-index: 1;
+  border-color: var(--theme-elevation-800);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.18);
+}
+
+.testimonial-picks__position {
+  flex: none;
+  width: 1.5em;
+  color: var(--theme-elevation-500);
+  font-size: 13px;
+  text-align: center;
+}
+
+.testimonial-picks__text {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-width: 0;
+  padding: 6px 0;
+}
+
+.testimonial-picks__name {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.testimonial-picks__quote {
+  overflow: hidden;
+  color: var(--theme-elevation-650);
+  font-size: 13px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.testimonial-picks__remove {
+  flex: none;
+  min-height: 36px;
+  padding: 0 10px;
+  border: 1px solid var(--theme-elevation-150);
+  border-radius: var(--style-radius-s, 4px);
+  background: none;
+  color: var(--theme-elevation-800);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.testimonial-picks__remove:hover {
+  background: var(--theme-elevation-100);
+}
+
+.testimonial-picks__add.field-type {
+  margin-bottom: 0;
+}
+
+.testimonial-picks__full {
+  margin: 0;
+  color: var(--theme-elevation-650);
+  font-size: 13px;
+}
+
 .testimonial-picks-note {
   margin: 6px 0 0;
   color: var(--theme-warning-700, #92400e);

@@ -10,7 +10,7 @@ import { HEADING_MAX, LINK_TEXT_MAX } from "#src/lib/testimonials-teaser-limits.
 // left out.
 export const TestimonialsTeaser: GlobalConfig = {
   slug: "testimonials-teaser",
-  label: "Testimonials Teaser",
+  label: "Testimonials Section",
   admin: {
     hideAPIURL: true,
     components: {
@@ -42,8 +42,9 @@ export const TestimonialsTeaser: GlobalConfig = {
   fields: [
     {
       // Replaces the old per-testimonial `featured` checkbox (kept on
-      // Testimonials, hidden, so the column isn't dropped). Payload's
-      // multi-pick with drag-to-reorder; filterOptions offers only
+      // Testimonials, hidden, so the column isn't dropped). Shown as rows
+      // with drag handles and a picker to add more
+      // (TestimonialPicksField.tsx); filterOptions offers only
       // testimonials shown on the site (and nothing more once 4 are
       // picked) and refuses saving while a pick
       // that's since been hidden or trashed is still in the list
@@ -59,8 +60,9 @@ export const TestimonialsTeaser: GlobalConfig = {
         isSortable: true,
         allowCreate: false,
         allowEdit: false,
-        description: `Pick up to ${TESTIMONIAL_PICKS_MAX} testimonials and drag them into the order you want. With none picked, this section is hidden.`,
+        description: `Pick up to ${TESTIMONIAL_PICKS_MAX} testimonials and drag ⋮⋮ to change their order. With none picked, this section is hidden.`,
         components: {
+          Field: "/components/admin/TestimonialPicksField#default",
           afterInput: ["/components/admin/TestimonialPicksNote#default"],
         },
       },
