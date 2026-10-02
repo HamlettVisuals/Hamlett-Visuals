@@ -1405,6 +1405,10 @@ export interface Hero {
         id?: string | null;
       }[]
     | null;
+  /**
+   * How long each photo stays before the next one fades in.
+   */
+  secondsPerPhoto: number;
   heroPhotos?: (number | Photo)[] | null;
   /**
    * The large title text over the homepage photos.
@@ -1568,7 +1572,7 @@ export interface BookingCta {
 export interface TestimonialsTeaser {
   id: number;
   /**
-   * Pick up to 4 testimonials and drag them into the order you want. With none picked, this section is hidden.
+   * Pick up to 4 testimonials and drag ⋮⋮ to change their order. With none picked, this section is hidden.
    */
   testimonials?: (number | Testimonial)[] | null;
   /**
@@ -1763,6 +1767,7 @@ export interface HeroSelect<T extends boolean = true> {
         mobilePhoto?: T;
         id?: T;
       };
+  secondsPerPhoto?: T;
   heroPhotos?: T;
   headline?: T;
   subhead?: T;

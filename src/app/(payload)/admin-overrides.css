@@ -3255,3 +3255,41 @@ a.editor-overview__tile:focus-visible,
   filter: grayscale(1);
   cursor: not-allowed;
 }
+
+/* The Hero's "Seconds per photo" slider (HeroSecondsField.tsx): the
+   slider with the range's ends under it, and its value beside it. */
+.hero-seconds__row {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  max-width: 480px;
+}
+
+.hero-seconds__track {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.hero-seconds__slider {
+  display: block;
+  width: 100%;
+  min-height: 44px;
+  margin: 0;
+  accent-color: var(--theme-elevation-800);
+  cursor: pointer;
+}
+
+.hero-seconds__value {
+  flex: none;
+  min-width: 6.5em;
+  line-height: 44px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.hero-seconds__scale {
+  display: flex;
+  justify-content: space-between;
+  color: var(--theme-elevation-500);
+  font-size: 12px;
+}

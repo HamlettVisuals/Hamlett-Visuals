@@ -7,7 +7,7 @@ import { generateAltText } from "@/lib/generate-alt-text";
 import { resolvePhoto } from "@/lib/resolve-photo";
 import { serverURL } from "@/lib/server-url";
 import { useScopedLivePreview } from "@/lib/use-scoped-live-preview";
-import { HERO_PHOTOS_MAX } from "@/lib/hero-limits";
+import { HERO_PHOTOS_MAX, secondsPerPhoto } from "@/lib/hero-limits";
 import { focalPosition } from "@/lib/focal-position";
 import type { Category, Hero as HeroGlobal, Photo } from "@/payload-types";
 
@@ -31,10 +31,6 @@ import type { Category, Hero as HeroGlobal, Photo } from "@/payload-types";
 // rotates by itself: it starts on the first slide, the indicators still
 // switch slides (a cut, no fade), and the pause button is left out. While it
 // does rotate, pause is always offered (WCAG 2.2.2).
-
-// How long each image is held fully visible before advancing, in ms. The
-// --hero-fade-duration (1200ms) crossfade overlaps the tail of this window.
-const HOLD_MS = 4500;
 
 // A horizontal swipe at least this long (and mostly sideways) changes slide.
 const SWIPE_MIN_PX = 40;
@@ -146,6 +142,12 @@ export default function Hero({
   });
 
   const heroSlides = pickedSlides.length > 0 ? pickedSlides : categorySlides;
+  // How long each image is held before advancing: her "Seconds per photo"
+  // (4.5s unless she's changed it). The --hero-fade-duration (1200ms)
+  // crossfade overlaps the tail of this window and doesn't change with it.
+  // Follows Live Preview like the rest of `data`; a new value applies to the
+  // active bar straight away.
+  const holdMs = secondsPerPhoto(data.secondsPerPhoto) * 1000;
   const slideCount = heroSlides.length;
   const [index, setIndex] = useState(0);
   // Bumped on every slide change, to restart the active bar's fill.
@@ -290,7 +292,7 @@ export default function Hero({
           </div>
           {/* Slide indicators — one short bar per slide, under the button and
               lined up with the text; the active one fills over the hold
-              (HOLD_MS), then the slideshow moves on (see .hero-indicator-fill
+              (holdMs), then the slideshow moves on (see .hero-indicator-fill
               in globals.css). Each bar sits in a 28px-tall button so it's easy
               to hit. In the text's flow rather than pinned to the hero's
               bottom edge, which on phones is only just above the fixed "Ask a
@@ -317,7 +319,7 @@ export default function Hero({
                           key={cycle}
                           className="hero-indicator-fill hero-indicator-fill--animated"
                           style={{
-                            animationDuration: `${HOLD_MS}ms`,
+                            animationDuration: `${holdMs}ms`,
                             animationPlayState: running ? "running" : "paused",
                           }}
                           onAnimationEnd={() => goTo(activeIndex + 1)}

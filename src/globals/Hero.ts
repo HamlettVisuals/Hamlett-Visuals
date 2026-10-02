@@ -1,7 +1,14 @@
 import type { GlobalConfig } from "payload";
 import { publicReadAdminWrite } from "#src/access/isAdmin.ts";
 import { serverURL } from "#src/lib/server-url.ts";
-import { CTA_LABEL_MAX, HERO_PHOTOS_MAX } from "#src/lib/hero-limits.ts";
+import {
+  CTA_LABEL_MAX,
+  HERO_PHOTOS_MAX,
+  SECONDS_PER_PHOTO_DEFAULT,
+  SECONDS_PER_PHOTO_MAX,
+  SECONDS_PER_PHOTO_MIN,
+  SECONDS_PER_PHOTO_STEP,
+} from "#src/lib/hero-limits.ts";
 
 // The hero's rotating slides are the rows in "Hero slides" below, in the
 // order she drags them into. Left empty, they fall back to one photo per
@@ -78,6 +85,26 @@ export const Hero: GlobalConfig = {
           },
         },
       ],
+    },
+    {
+      // How long each slide holds before the next fades in
+      // (components/home/Hero.tsx); shown as a slider
+      // (HeroSecondsField.tsx). The crossfade length is fixed.
+      name: "secondsPerPhoto",
+      type: "number",
+      label: "Seconds per photo",
+      required: true,
+      min: SECONDS_PER_PHOTO_MIN,
+      max: SECONDS_PER_PHOTO_MAX,
+      defaultValue: SECONDS_PER_PHOTO_DEFAULT,
+      validate: (value: number | null | undefined) =>
+        typeof value === "number" && Number.isInteger(value / SECONDS_PER_PHOTO_STEP)
+          ? true
+          : `Pick a value from ${SECONDS_PER_PHOTO_MIN} to ${SECONDS_PER_PHOTO_MAX} seconds, in half seconds.`,
+      admin: {
+        description: "How long each photo stays before the next one fades in.",
+        components: { Field: "/components/admin/HeroSecondsField#default" },
+      },
     },
     {
       // Replaced by "slides" above; its picks were copied there by the
