@@ -92,6 +92,7 @@ Results are:
 | `package-editor.test.cjs` | Package editor: field order and sections, the featured note (incl. mocked spotlight states), its own description, features wrapping on a phone |
 | `booking-section.test.cjs` | Booking Section: its name in the page title, breadcrumb, sidebar and Editor overview (and "Booking Page"), the note when all contact switches are off but the contact line has text |
 | `testimonials-section.test.cjs` | Testimonials Section: its name in the page title, breadcrumb, sidebar and Editor overview; the picks as rows (mocked testimonials): adding with the picker, which leaves out what's picked, removing, the 4 limit, reordering by the handle with a mouse and press-and-hold touch, and the order a save sends |
+| `footer-editor.test.cjs` | The Footer editor: its name in the page title, breadcrumb, sidebar and Editor overview; footer link column labels (wide and phone); a link to an empty Backstage/Testimonials page gets the editor's note (incl. mocked counts) and is hidden in the site's footer |
 | `photo-usage.test.mts` | `lib/photo-usage.ts` on a stand-in config (no browser, no sign-in) |
 
 ## Unit tests

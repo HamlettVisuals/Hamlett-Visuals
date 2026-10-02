@@ -4,6 +4,7 @@ import { getPayload } from "payload";
 import config from "@payload-config";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
+import { emptyListingPages } from "@/lib/listing-pages";
 import FloatingAskButton from "@/components/AskQuestion/FloatingAskButton";
 import LivePreviewRefresh from "@/components/LivePreviewRefresh";
 import LivePreviewHighlight from "@/components/LivePreviewHighlight";
@@ -55,6 +56,8 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
   const headerNav = await payload.findGlobal({ slug: "header-nav" });
   const finalCtaFooter = await payload.findGlobal({ slug: "final-cta-footer" });
   const siteSettings = await payload.findGlobal({ slug: "site-settings" });
+  // Footer links to a page with nothing published yet are left out (lib/listing-pages.ts).
+  const emptyPages = await emptyListingPages(payload);
 
   return (
     <html
@@ -67,6 +70,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
         <Footer
           finalCtaFooter={finalCtaFooter}
           siteSettings={siteSettings}
+          hiddenHrefs={emptyPages}
         />
         <FloatingAskButton />
         <LivePreviewRefresh />

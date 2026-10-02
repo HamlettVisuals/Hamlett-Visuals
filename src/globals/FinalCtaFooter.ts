@@ -16,7 +16,7 @@ import { serverURL } from "#src/lib/server-url.ts";
 // name live on Site Settings, shared with the rest of the site.
 export const FinalCtaFooter: GlobalConfig = {
   slug: "final-cta-footer",
-  label: "Final CTA / Footer",
+  label: "Footer",
   admin: {
     hideAPIURL: true,
     components: {
@@ -103,14 +103,14 @@ export const FinalCtaFooter: GlobalConfig = {
         {
           name: "label",
           type: "text",
-          label: "Link text",
+          label: "Label",
           required: true,
           maxLength: FOOTER_LINK_LABEL_MAX,
         },
         {
           name: "href",
           type: "select",
-          label: "Goes to",
+          label: "Links to",
           required: true,
           options: [...navDestinations],
           validate: (value: string | null | undefined) =>

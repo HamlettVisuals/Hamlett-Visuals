@@ -18,12 +18,17 @@ import type { FinalCtaFooter, SiteSetting } from "@/payload-types";
 // warm ground, flat (no shadow, no card), Fraunces for the wordmark / sign-off
 // / labels, Inter for values.
 
+// A link to a page with nothing published yet (Backstage, Testimonials) is
+// left out until that page has something, like About's quick links:
+// `hiddenHrefs` comes from lib/listing-pages.ts via the layout.
 export default function Footer({
   finalCtaFooter,
   siteSettings,
+  hiddenHrefs = [],
 }: {
   finalCtaFooter: FinalCtaFooter;
   siteSettings: SiteSetting;
+  hiddenHrefs?: string[];
 }) {
   // Two separate globals render in this one component, so two separate
   // (scoped) Live Preview subscriptions — one per document. See
@@ -51,6 +56,7 @@ export default function Footer({
   const showPhone = data.showPhone !== false && phone;
   const showInstagram = data.showInstagram !== false && instagram;
   const siteName = settings.siteName || "Hamlett Visuals";
+  const footerNav = (data.footerNav ?? []).filter((item) => !hiddenHrefs.includes(item.href));
 
   return (
     <footer id="footer" className="border-t border-hairline bg-canvas-tint">
@@ -104,12 +110,12 @@ export default function Footer({
             `lg` each link gets 12.5px of vertical padding for a ~44px tap
             target, and the nav's margins give that padding back so the text
             sits exactly where it did before. */}
-        {(data.footerNav ?? []).length > 0 && (
+        {footerNav.length > 0 && (
           <nav
             aria-label="Footer"
             className="-mb-[12.5px] mt-[calc(4rem-12.5px)] flex flex-wrap items-center justify-center gap-x-6 lg:mb-0 lg:mt-16 lg:flex-nowrap"
           >
-            {(data.footerNav ?? []).map((item) => (
+            {footerNav.map((item) => (
               <Link
                 key={item.id ?? item.href}
                 href={item.href}
