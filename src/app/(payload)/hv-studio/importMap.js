@@ -39,6 +39,7 @@ import { default as default_1b650ef99724fbd75de054d026e34ba4 } from '../../../co
 import { default as default_3ff6a48a77222379c05feba297b20132 } from '../../../components/admin/NavLinksField'
 import { default as default_45f306dc284acabb8024fc7078f1d047 } from '../../../components/admin/NavLinksDiff'
 import { default as default_85c066c9e85977a669a8719b5844b2d5 } from '../../../components/admin/PublishButton'
+import { default as default_c0b10208978094fdc670ddb05bb9198f } from '../../../components/admin/HeroSlideRowLabel'
 import { default as default_e7d1e3ac498c93d1bc0a58c60f173457 } from '../../../components/admin/HeroSecondsField'
 import { RscEntryLexicalCell as RscEntryLexicalCell_44fe37237e0ebf4470c9990d8cb7b07e } from '@payloadcms/richtext-lexical/rsc'
 import { RscEntryLexicalField as RscEntryLexicalField_44fe37237e0ebf4470c9990d8cb7b07e } from '@payloadcms/richtext-lexical/rsc'
@@ -110,6 +111,7 @@ export const importMap = {
   "/components/admin/NavLinksField#default": default_3ff6a48a77222379c05feba297b20132,
   "/components/admin/NavLinksDiff#default": default_45f306dc284acabb8024fc7078f1d047,
   "/components/admin/PublishButton#default": default_85c066c9e85977a669a8719b5844b2d5,
+  "/components/admin/HeroSlideRowLabel#default": default_c0b10208978094fdc670ddb05bb9198f,
   "/components/admin/HeroSecondsField#default": default_e7d1e3ac498c93d1bc0a58c60f173457,
   "@payloadcms/richtext-lexical/rsc#RscEntryLexicalCell": RscEntryLexicalCell_44fe37237e0ebf4470c9990d8cb7b07e,
   "@payloadcms/richtext-lexical/rsc#RscEntryLexicalField": RscEntryLexicalField_44fe37237e0ebf4470c9990d8cb7b07e,

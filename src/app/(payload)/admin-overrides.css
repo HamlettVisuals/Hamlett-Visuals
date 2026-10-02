@@ -3293,3 +3293,49 @@ a.editor-overview__tile:focus-visible,
   color: var(--theme-elevation-500);
   font-size: 12px;
 }
+
+/* Hero slides' collapsed row headers (HeroSlideRowLabel.tsx): thumbnail,
+   slide number and photo name, "+ mobile image" when it has one. */
+.hero-slide-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.hero-slide-label__thumb {
+  flex: none;
+  width: 56px;
+  height: 36px;
+  border-radius: 3px;
+  object-fit: cover;
+  background: var(--theme-elevation-100);
+}
+
+.hero-slide-label__text {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: 8px;
+  min-width: 0;
+}
+
+.hero-slide-label__number {
+  flex: none;
+  color: var(--theme-elevation-500);
+  font-size: 13px;
+}
+
+.hero-slide-label__name {
+  min-width: 0;
+  overflow: hidden;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.hero-slide-label__mobile {
+  flex: none;
+  color: var(--theme-elevation-500);
+  font-size: 13px;
+}

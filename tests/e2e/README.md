@@ -94,6 +94,7 @@ Results are:
 | `testimonials-section.test.cjs` | Testimonials Section: its name in the page title, breadcrumb, sidebar and Editor overview; the picks as rows (mocked testimonials): adding with the picker, which leaves out what's picked, removing, the 4 limit, reordering by the handle with a mouse and press-and-hold touch, and the order a save sends |
 | `footer-editor.test.cjs` | The Footer editor: its name in the page title, breadcrumb, sidebar and Editor overview; footer link column labels (wide and phone); a link to an empty Backstage/Testimonials page gets the editor's note (incl. mocked counts) and is hidden in the site's footer |
 | `hero-seconds.test.cjs` | Hook (Hero) "Seconds per photo": the 2–10s slider in half seconds and its value, Live Preview following a new speed (bar fill and slide changes), the 1200ms crossfade unchanged, the homepage using the saved value, reduced motion never rotating, what Publish sends, the slider on a phone |
+| `hero-slides-collapsed.test.cjs` | Hook (Hero) slides start collapsed; each header shows its photo's thumbnail, slide number and name (and "+ mobile image"), checked against the saved slides; opening a row, a new slide, the phone |
 | `photo-usage.test.mts` | `lib/photo-usage.ts` on a stand-in config (no browser, no sign-in) |
 
 ## Unit tests

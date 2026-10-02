@@ -1,0 +1,132 @@
+// The Hook (Hero) editor's "Hero slides" (globals/Hero.ts): every row starts
+// collapsed when the page opens, and each collapsed header tells the slides
+// apart (HeroSlideRowLabel.tsx): the main image's thumbnail, "Slide 01" and
+// the photo's name (alt text, else file name), "+ mobile image" when it has
+// one. Checked against the saved slides and their photos; opening a row
+// still shows its fields; a new slide reads "No image yet".
+//
+// Every write is faked by the shared guard (lib/guard.cjs), including the
+// collapsed/open preference Payload saves; nothing is saved.
+// Run with `npm run test:e2e hero-slides-collapsed` (see README.md).
+const { launchBrowser, newContext, report, outDir, checkNoSidewaysScroll, ADMIN, API } = require("./lib/harness.cjs");
+
+const r = report("hero-slides-collapsed");
+const { check, section } = r;
+const shots = outDir("hero-slides-collapsed");
+
+const ROWS = "#field-slides .array-field__row";
+
+// Each row: collapsed?, its header's parts, and whether its fields are visible.
+const rowState = (page) =>
+  page.locator(ROWS).evaluateAll((rows) =>
+    rows.map((row) => {
+      const toggle = row.querySelector(".collapsible__toggle");
+      const label = row.querySelector(".hero-slide-label");
+      const thumb = label?.querySelector("img.hero-slide-label__thumb");
+      const upload = row.querySelector(".array-field__fields, .collapsible__content");
+      const box = upload?.getBoundingClientRect();
+      return {
+        collapsed: !!toggle?.classList.contains("collapsible__toggle--collapsed"),
+        number: label?.querySelector(".hero-slide-label__number")?.textContent,
+        name: label?.querySelector(".hero-slide-label__name")?.textContent,
+        mobile: !!label?.querySelector(".hero-slide-label__mobile"),
+        thumb: thumb ? { src: thumb.getAttribute("src"), loaded: thumb.complete && thumb.naturalWidth > 0 } : null,
+        fieldsVisible: !!box && box.height > 20,
+      };
+    }),
+  );
+
+async function open(page) {
+  await page.goto(`${ADMIN}/globals/hero`, { timeout: 120000 });
+  await page.locator(ROWS).first().waitFor({ timeout: 60000 });
+  await page.waitForFunction(() => ![...document.querySelectorAll(".hero-slide-label__name")].some((n) => n.textContent === "Loading…"), null, { timeout: 30000 });
+  await page.waitForTimeout(800);
+}
+
+(async () => {
+  const browser = await launchBrowser();
+  const errors = [];
+  const { ctx, guard } = await newContext(browser, { viewport: { width: 1440, height: 950 } });
+  let page = await ctx.newPage();
+  page.on("pageerror", (e) => errors.push(e.message));
+
+  // What the headers should say, from the saved slides and their photos.
+  const hero = await (await page.request.get(`${API}/globals/hero?depth=1`)).json();
+  const expected = (hero.slides || []).map((slide, i) => ({
+    number: `Slide ${String(i + 1).padStart(2, "0")}`,
+    name: slide.photo ? slide.photo.alt?.trim() || slide.photo.filename : "No image yet",
+    thumb: slide.photo ? slide.photo.sizes?.thumbnail?.url || slide.photo.url : null,
+    mobile: !!slide.mobilePhoto,
+  }));
+  r.lines.push(`(saved: ${expected.length} slides: ${expected.map((e) => `${e.name}${e.mobile ? " +m" : ""}`).join(", ")})`);
+
+  section("on opening, 1440x950");
+  await open(page);
+  let rows = await rowState(page);
+  check(`${expected.length} rows`, rows.length === expected.length && expected.length > 0, rows.length);
+  check("every row starts collapsed", rows.every((row) => row.collapsed && !row.fieldsVisible), rows.map((row) => [row.collapsed, row.fieldsVisible]));
+  rows.forEach((row, i) => {
+    const want = expected[i];
+    if (!want) return;
+    check(`row ${i + 1}: "${want.number} · ${want.name}"${want.mobile ? " + mobile image" : ""}`, row.number === want.number && row.name === want.name && row.mobile === want.mobile, row);
+    check(`row ${i + 1}: its photo's thumbnail, loaded`, !!row.thumb && row.thumb.loaded && (!want.thumb || row.thumb.src === want.thumb), row.thumb);
+  });
+  const names = rows.map((row) => row.name);
+  r.lines.push(`(headers tell slides apart: ${new Set(names).size} different names for ${names.length} rows)`);
+  check("no 'Slide 01'-only headers", rows.every((row) => row.name && row.name !== "Loading…"));
+  await page.locator("#field-slides").screenshot({ path: `${shots}/1-collapsed.png` });
+
+  section("opening and closing a row");
+  await page.locator(`${ROWS} .collapsible__toggle`).first().click();
+  await page.waitForTimeout(600);
+  rows = await rowState(page);
+  check("first row opens and shows its fields", !rows[0].collapsed && rows[0].fieldsVisible, rows[0]);
+  check("the others stay collapsed", rows.slice(1).every((row) => row.collapsed), rows.slice(1).map((row) => row.collapsed));
+  check("header still shows the photo when open", rows[0].name === expected[0].name && !!rows[0].thumb, rows[0]);
+  await page.locator(`${ROWS} .collapsible__toggle`).first().click();
+  await page.waitForTimeout(600);
+  check("and closes again", (await rowState(page))[0].collapsed);
+  const writes = guard.writes(/\/access\//);
+  check("only Payload's open/closed preference was sent (faked)", writes.every((w) => /payload-preferences/.test(w.url)), writes.map((w) => w.url));
+
+  section("a new slide");
+  const addButton = page.locator("#field-slides button.array-field__add-row, #field-slides button:has-text('Add Slide')").first();
+  if ((await addButton.count()) && (await addButton.isEnabled())) {
+    await addButton.click();
+    // Payload renders a new row's label with the server's form state.
+    await page.waitForFunction((sel) => {
+      const rows = document.querySelectorAll(sel);
+      return rows[rows.length - 1]?.querySelector(".hero-slide-label__name");
+    }, ROWS, { timeout: 15000 }).catch(() => {});
+    rows = await rowState(page);
+    const last = rows[rows.length - 1];
+    check(`the new row reads "Slide ${String(rows.length).padStart(2, "0")} · No image yet"`, last.number === `Slide ${String(rows.length).padStart(2, "0")}` && last.name === "No image yet" && !last.thumb, last);
+  } else {
+    r.lines.push("(slides are at the maximum; new slide not checked)");
+  }
+  // Leave without saving (close skips the unsaved-changes prompt).
+  await page.close();
+
+  section("phone, 390x844");
+  const phone = await newContext(browser, { viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, deviceScaleFactor: 3 });
+  page = await phone.ctx.newPage();
+  page.on("pageerror", (e) => errors.push(e.message));
+  await open(page);
+  rows = await rowState(page);
+  check("collapsed on the phone too, with names", rows.length === expected.length && rows.every((row, i) => row.collapsed && row.name === expected[i].name), rows);
+  const fit = await page.locator(ROWS).evaluateAll((els) => els.every((row) => {
+    const label = row.querySelector(".hero-slide-label").getBoundingClientRect();
+    const header = row.querySelector(".array-field__row-header, .collapsible__toggle-wrap").getBoundingClientRect();
+    return label.right <= header.right + 1 && header.right <= document.documentElement.clientWidth;
+  }));
+  check("headers fit the screen", fit);
+  await page.locator("#field-slides").scrollIntoViewIfNeeded();
+  await page.locator("#field-slides").screenshot({ path: `${shots}/2-phone.png` });
+  await checkNoSidewaysScroll(page, r, "no sideways scroll");
+  await page.close();
+
+  check("no page errors", errors.length === 0, errors.slice(0, 3));
+  const stray = [...guard.log, ...phone.guard.log].filter((e) => e.kind !== "pass" && !/payload-preferences|\/access\//.test(e.url));
+  check("nothing else tried to write", stray.length === 0, JSON.stringify(stray).slice(0, 300));
+  await browser.close();
+})().then(() => r.finish(), (err) => r.finish(err));

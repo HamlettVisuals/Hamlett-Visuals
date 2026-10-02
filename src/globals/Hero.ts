@@ -59,6 +59,12 @@ export const Hero: GlobalConfig = {
       labels: { singular: "Slide", plural: "Slides" },
       admin: {
         description: `Optional. Add the photos that rotate behind your headline, then drag them into order (up to ${HERO_PHOTOS_MAX}). Leave empty to use your category cover photos.`,
+        // Closed when the page opens, so the slides read as a short list;
+        // each header shows its photo (HeroSlideRowLabel.tsx).
+        initCollapsed: true,
+        components: {
+          RowLabel: "/components/admin/HeroSlideRowLabel#default",
+        },
       },
       fields: [
         {
