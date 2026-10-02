@@ -116,29 +116,85 @@ const tags = (page) => page.locator(".package-featured-tag").evaluateAll((els) =
   await page.close();
   if (docs.length < 2) r.lines.push("(only one package, so a drag can't be tried; the reorder code is unchanged)");
 
-  section("phone 390x844");
-  const phone = await newContext(browser, { viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, deviceScaleFactor: 3 });
-  page = await phone.ctx.newPage();
+  // Phones and a landscape phone: the row fits inside the page gutters
+  // (no sideways scroll, grey background stops short of the right edge),
+  // the drag handle is exactly its 44px tap target, the title wraps and
+  // category · price stack under it. Then a worst-case title (28
+  // characters, the cap) plus the Featured tag, put in the page by hand.
+  const guards = [guard];
+  const overlap = (a, b) => a && b && a.left < b.right - 1 && b.left < a.right - 1 && a.top < b.bottom - 1 && b.top < a.bottom - 1;
+  const measure = (p) => p.evaluate(() => {
+    const box = (el) => el && (({ left, right, top, bottom, width, height }) => ({ left, right, top, bottom, width, height }))(el.getBoundingClientRect());
+    const wrap = document.querySelector(".table");
+    const row = document.querySelector("tbody tr");
+    const link = row.querySelector(".package-title-cell__link");
+    const range = document.createRange();
+    range.selectNodeContents(link);
+    const visible = [...row.children].filter((td) => td.getBoundingClientRect().width > 0).map((td) => td.className.split(" ").find((c) => c.startsWith("cell-")));
+    return {
+      vw: document.documentElement.clientWidth,
+      wrapScroll: wrap.scrollWidth - wrap.clientWidth,
+      row: box(row), handle: box(row.querySelector(".cell-_dragHandle [aria-roledescription='sortable']")),
+      handleCell: box(row.querySelector(".cell-_dragHandle")),
+      title: box(range), tag: box(row.querySelector(".package-featured-tag")),
+      meta: box(row.querySelector(".album-title-cell__meta")), pill: box(row.querySelector(".cell-published .category-status")),
+      metaShown: getComputedStyle(row.querySelector(".album-title-cell__meta")).display !== "none",
+      visible,
+    };
+  });
+  for (const [w, h] of [[375, 667], [390, 844], [844, 390]]) {
+    section(`${w}x${h}`);
+    const small = await newContext(browser, { viewport: { width: w, height: h }, isMobile: true, hasTouch: true, deviceScaleFactor: 3 });
+    guards.push(small.guard);
+    page = await small.ctx.newPage();
+    watch(page);
+    await openList(page);
+    await checkNoSidewaysScroll(page, r, "no sideways scroll (page)");
+    let m = await measure(page);
+    const phoneWidth = w <= 768;
+    check("the table doesn't scroll sideways", m.wrapScroll <= 0, m.wrapScroll);
+    check("row inside the gutters (background stops before the right edge)", m.row.left >= 15 && m.row.right <= m.vw - 15, { left: m.row.left, right: m.row.right, vw: m.vw });
+    check("drag handle is a 44x44 tap target filling its column", Math.round(m.handle.width) === 44 && Math.round(m.handle.height) === 44 && Math.round(m.handleCell.width) === 44, { handle: m.handle, cell: m.handleCell.width });
+    check(phoneWidth ? "columns: handle, photo, title, pill" : "columns: handle, photo, title, category, price, pill",
+      JSON.stringify(m.visible) === JSON.stringify(phoneWidth
+        ? ["cell-_dragHandle", "cell-thumbnail", "cell-title", "cell-published"]
+        : ["cell-_dragHandle", "cell-thumbnail", "cell-title", "cell-category", "cell-priceAmount", "cell-published"]), m.visible);
+    if (phoneWidth) check("category · price stacked under the title", m.metaShown && m.meta.top >= m.title.bottom - 1, { title: m.title, meta: m.meta });
+    check("pill fully on screen", m.pill.right <= m.vw - 8, m.pill);
+    if (m.tag) check("Featured tag small, clear of the title and the line under it", m.tag.height < 30 && !overlap(m.tag, m.title) && !(m.metaShown && overlap(m.tag, m.meta)), { tag: m.tag, title: m.title, meta: m.meta });
+    await page.screenshot({ path: `${shots}/2-${w}x${h}.png` });
+    // Worst case: the longest title allowed, with the tag.
+    await page.evaluate(() => {
+      const link = document.querySelector("tbody tr .package-title-cell__link");
+      link.textContent = "Wedding Day Full Coverage XL";
+      if (!document.querySelector("tbody tr .package-featured-tag")) {
+        const tag = document.createElement("a");
+        tag.className = "package-featured-tag";
+        tag.textContent = "Featured";
+        link.after(tag);
+      }
+    });
+    await page.waitForTimeout(300);
+    m = await measure(page);
+    check("28-character title: still fits, no sideways scroll", m.wrapScroll <= 0 && m.row.right <= m.vw - 15 && m.pill.right <= m.vw - 8, { wrapScroll: m.wrapScroll, row: m.row.right, pill: m.pill.right, vw: m.vw });
+    check("28-character title: tag doesn't overlap it", !overlap(m.tag, m.title), { tag: m.tag, title: m.title });
+    await page.screenshot({ path: `${shots}/3-${w}x${h}-long-title.png` });
+    await page.close();
+  }
+
+  section("desktop 1440x950 unchanged");
+  page = await ctx.newPage();
   watch(page);
   await openList(page);
-  await checkNoSidewaysScroll(page, r, "no sideways scroll");
-  const layout = await page.evaluate(() => {
-    const box = (sel) => document.querySelector(sel)?.getBoundingClientRect();
-    // The title's visible text (its link is padded to a 44px tap area on touch screens).
-    const link = document.querySelector(".package-title-cell__link");
-    const range = document.createRange();
-    if (link) range.selectNodeContents(link);
-    const title = link ? range.getBoundingClientRect() : null, tag = box(".package-featured-tag"), meta = box(".album-title-cell__meta"), pill = box(".cell-published .category-status");
-    return { title, tag, meta, pill, vw: document.documentElement.clientWidth };
-  });
-  check("title, pill on screen", layout.title && layout.pill && layout.pill.right <= layout.vw, layout);
-  if (layout.tag) check("tag stays small and doesn't overlap the title or the line under it",
-    layout.tag.height < 30 && layout.tag.top >= layout.title.bottom - 1 && (!layout.meta || layout.tag.bottom <= layout.meta.top + 1), layout);
-  await page.screenshot({ path: `${shots}/2-phone.png` });
+  const d = await measure(page);
+  // The same boxes as before this change (row 60..1380, handle cell 48, 20px handle).
+  check("row, handle cell and handle as before", Math.round(d.row.left) === 60 && Math.round(d.row.right) === 1380 && Math.round(d.handleCell.width) === 48 && Math.round(d.handle.width) === 20,
+    { row: [d.row.left, d.row.right], cell: d.handleCell.width, handle: d.handle.width });
+  check("all columns shown", d.visible.length === 6, d.visible);
   await page.close();
 
   check("no page errors", errors.length === 0, errors.slice(0, 3).join(" || "));
-  const stray = [...guard.log, ...phone.guard.log].filter((e) => e.kind !== "pass" && !/payload-preferences|\/access\//.test(e.url) && !/\/api\/pricing-rows\/\d+/.test(e.url));
+  const stray = guards.flatMap((g) => g.log).filter((e) => e.kind !== "pass" && !/payload-preferences|\/access\//.test(e.url) && !/\/api\/pricing-rows\/\d+/.test(e.url));
   check("nothing else tried to write", stray.length === 0, JSON.stringify(stray).slice(0, 300));
   await browser.close();
 })().then(() => r.finish(), (err) => r.finish(err));

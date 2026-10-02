@@ -88,7 +88,7 @@ Results are:
 | `about-editor.test.cjs` | The About editor: Bio limited to paragraphs, bold, italic and links; Quick links column labels (wide and phone); a link to an empty Backstage/Testimonials page hidden on the homepage, with the editor's note |
 | `featured-offer.test.cjs` | Featured Offer: the Show on homepage switch (greyed fields, spotlight and badge hidden in Live Preview), package labels, hidden-package and no-photos warnings (mocked) |
 | `offers-category.test.cjs` | Offers & pricing rows and the spotlight card show the category under the name only when it differs (homepage, and an unsaved title in Live Preview) |
-| `packages-list.test.cjs` | Packages list: title links to the edit page, category cover or placeholder, the Featured tag (incl. mocked spotlight states), drag handles and the Live/Hidden pill, phone layout |
+| `packages-list.test.cjs` | Packages list: title links to the edit page, category cover or placeholder, the Featured tag (incl. mocked spotlight states), drag handles and the Live/Hidden pill, compact rows that fit at 375, 390 and 844x390 (desktop unchanged) |
 | `package-editor.test.cjs` | Package editor: field order and sections, the featured note (incl. mocked spotlight states), its own description, features wrapping on a phone |
 | `photo-usage.test.mts` | `lib/photo-usage.ts` on a stand-in config (no browser, no sign-in) |
 

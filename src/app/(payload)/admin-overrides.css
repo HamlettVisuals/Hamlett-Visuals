@@ -1849,6 +1849,73 @@ button.portfolio__handle:disabled {
   }
 }
 
+/* Tablets and phones (touch screens, landscape phones included): Payload
+   widens a list table past the page gutter on both sides and pads only the
+   left, so rows ran to the right edge of the screen (and could scroll
+   sideways). This list is a handful of rows that fit, so it keeps the
+   page's gutters instead. */
+@media (max-width: 1024px) {
+  .collection-list--pricing-rows .table {
+    left: 0;
+    width: 100%;
+    padding-left: 0;
+    overflow-x: hidden;
+  }
+
+  /* The drag handle is the whole 44px column, with nothing around it. */
+  .collection-list--pricing-rows #heading-_dragHandle,
+  .collection-list--pricing-rows .cell-_dragHandle {
+    width: 44px;
+    padding: 8px 0 0;
+  }
+
+  .collection-list--pricing-rows .cell-_dragHandle [aria-roledescription="sortable"] {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+  }
+}
+
+/* Phones: one compact row that always fits the screen: the drag handle
+   (a 44px tap target with nothing around it), the photo, the title with
+   category and price stacked under it, and the Live/Hidden pill. Fixed
+   column widths, so a long title wraps instead of widening the row. */
+@media (max-width: 768px) {
+  .collection-list--pricing-rows .table table {
+    table-layout: fixed;
+  }
+
+  .collection-list--pricing-rows .table th,
+  .collection-list--pricing-rows .table td {
+    min-width: 0;
+    max-width: none;
+  }
+
+  .collection-list--pricing-rows #heading-thumbnail,
+  .collection-list--pricing-rows .cell-thumbnail {
+    width: 52px;
+    padding: 8px 8px 8px 0;
+  }
+
+  .collection-list--pricing-rows #heading-title,
+  .collection-list--pricing-rows .cell-title {
+    padding: 8px 6px;
+  }
+
+  .collection-list--pricing-rows #heading-published,
+  .collection-list--pricing-rows .cell-published {
+    width: 76px;
+    padding: 14px 8px 8px 6px;
+  }
+
+  .collection-list--pricing-rows #heading-published {
+    padding-top: 8px;
+    white-space: normal;
+  }
+}
+
 /* Backstage list view (collections/Backstage.ts; components/admin/
    BackstageCells.tsx, BackstageThumbnailCell.tsx). Reordered by dragging,
    so the same treatment as Packages. Payload's "Create New" pill and its
