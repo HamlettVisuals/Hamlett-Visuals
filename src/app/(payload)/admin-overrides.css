@@ -1782,6 +1782,62 @@ button.portfolio__handle:disabled {
   white-space: nowrap;
 }
 
+/* The title (PackageTitleCell): a link to the package, underlined like the
+   album titles on Categories & Albums (.portfolio__album-title), with the
+   "Featured" tag beside it. */
+.package-title-cell__line {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  min-width: 0;
+}
+
+.collection-list--pricing-rows .package-title-cell__link {
+  color: var(--theme-text);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  overflow-wrap: anywhere;
+}
+
+.package-featured-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 8px;
+  border: 1px solid var(--theme-warning-300, #fcd34d);
+  border-radius: 999px;
+  background: var(--theme-warning-100, #fef3c7);
+  color: var(--theme-warning-800, #92400e);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 18px;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.package-featured-tag:hover,
+.package-featured-tag:focus-visible {
+  text-decoration: underline;
+}
+
+/* Touch screens grow every list-cell link with padding (.table td a,
+   near the top of this file); on the tag's pill that padding would show,
+   so its larger tap area is an invisible ::after instead. */
+@media (pointer: coarse) {
+  .table td a.package-featured-tag {
+    position: relative;
+    padding-block: 1px;
+    margin-block: 0;
+  }
+
+  .table td a.package-featured-tag::after {
+    content: "";
+    position: absolute;
+    inset: -8px -4px;
+  }
+}
+
 /* Phones: Category and Price move into the small line under the title
    (PackageTitleCell), as on the Albums list. */
 @media (max-width: 768px) {

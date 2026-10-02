@@ -130,9 +130,8 @@ export const PricingRows: CollectionConfig = {
   versions: true,
   fields: [
     {
-      // List column only: the first photo of the package's album (the one
-      // that leads the spotlight's samples), or the neutral placeholder.
-      // Not stored.
+      // List column only: the cover photo of the package's category, or
+      // the neutral placeholder (PackageThumbnailCell.tsx). Not stored.
       name: "thumbnail",
       type: "ui",
       label: "Photo",
@@ -272,7 +271,7 @@ export const PricingRows: CollectionConfig = {
       validate: validateAlbum,
       admin: {
         description:
-          "Optional. A few photos from this album show beside the package when it's in 'Popular right now', and its first photo is the thumbnail in this list. Only live albums in this package's category are listed.",
+          "Optional. A few photos from this album show beside the package when it's in 'Popular right now'. Only live albums in this package's category are listed.",
         placeholder: "Choose an album",
         allowCreate: false,
         allowEdit: false,
