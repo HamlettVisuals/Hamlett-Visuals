@@ -6,9 +6,10 @@ import LinkRowsEditor from "@/components/admin/LinkRowsEditor";
 
 // A package's features (collections/PricingRows.ts → features): the same
 // compact rows as Header/Nav's links (LinkRowsEditor), one capped text
-// input per feature. They show as the ticked list behind the package's
+// box per feature that wraps long text onto more lines (so nothing is cut
+// off on a phone) while staying one line of text. They show as the ticked list behind the package's
 // "Show details" button on the homepage.
-const TEXT_FIELDS = [{ name: "text", placeholder: "e.g. Up to 8 hours of coverage", max: FEATURE_MAX }];
+const TEXT_FIELDS = [{ name: "text", placeholder: "e.g. Up to 8 hours of coverage", max: FEATURE_MAX, multiline: true }];
 
 const PackageFeaturesField: ArrayFieldClientComponent = (props) => (
   <LinkRowsEditor

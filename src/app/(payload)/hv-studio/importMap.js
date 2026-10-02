@@ -19,6 +19,7 @@ import { default as default_3217d5da994dedfd8949de6baed57944 } from '../../../co
 import { PhotoStepNav as PhotoStepNav_90c8c21c9d2d6b9765f53be2921a1014 } from '../../../components/admin/PhotoNav'
 import { PhotoCloseButton as PhotoCloseButton_90c8c21c9d2d6b9765f53be2921a1014 } from '../../../components/admin/PhotoNav'
 import { default as default_f21c27ddc71a218bc5a17d940513ff86 } from '../../../components/admin/PackageThumbnailCell'
+import { default as default_917c38b2a2bb055129e101848646cc97 } from '../../../components/admin/PackageFeaturedNote'
 import { PackageTitleCell as PackageTitleCell_24f49b6f3fd3d212d674670488897cc5 } from '../../../components/admin/PackageCells'
 import { PackagePriceCell as PackagePriceCell_24f49b6f3fd3d212d674670488897cc5 } from '../../../components/admin/PackageCells'
 import { default as default_cd53eada52cbc797d358ed4a85ef4d43 } from '../../../components/admin/PackageFeaturesField'
@@ -86,6 +87,7 @@ export const importMap = {
   "/components/admin/PhotoNav#PhotoStepNav": PhotoStepNav_90c8c21c9d2d6b9765f53be2921a1014,
   "/components/admin/PhotoNav#PhotoCloseButton": PhotoCloseButton_90c8c21c9d2d6b9765f53be2921a1014,
   "/components/admin/PackageThumbnailCell#default": default_f21c27ddc71a218bc5a17d940513ff86,
+  "/components/admin/PackageFeaturedNote#default": default_917c38b2a2bb055129e101848646cc97,
   "/components/admin/PackageCells#PackageTitleCell": PackageTitleCell_24f49b6f3fd3d212d674670488897cc5,
   "/components/admin/PackageCells#PackagePriceCell": PackagePriceCell_24f49b6f3fd3d212d674670488897cc5,
   "/components/admin/PackageFeaturesField#default": default_cd53eada52cbc797d358ed4a85ef4d43,

@@ -18,7 +18,25 @@ import type { FeaturedOffer } from "@/payload-types";
 // Columns and Filters, Payload's own "No results") live in
 // app/(payload)/admin-overrides.css under .collection-list--pricing-rows.
 
+// Payload shows the collection's Description on the list and the edit
+// page alike; the edit page (and "create") gets its own text instead of
+// the list's "Drag to set their order".
 export function PackagesListDescription() {
+  const { config } = useConfig();
+  const pathname = usePathname() ?? "";
+  const listPath = formatAdminURL({ adminRoute: config.routes.admin, path: "/collections/pricing-rows" });
+  const rest = pathname.replace(/\/$/, "").slice(listPath.length);
+  const isEditor = /^\/(?!trash$)[^/]+(\/|$)/.test(rest);
+  if (isEditor) {
+    return (
+      <div className="categories-list-intro">
+        <p className="categories-list-intro__text">
+          One package in the Offers &amp; pricing section of your homepage. The preview shows your changes as you
+          type; Save puts them on your site.
+        </p>
+      </div>
+    );
+  }
   return <ListIntro collectionSlug="pricing-rows" addLabel="+ Add package" />;
 }
 

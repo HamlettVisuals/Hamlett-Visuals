@@ -219,6 +219,11 @@ right.
   shows on the photo form and in the Photos list.
 - `events.sort_date` is no longer used for album order; to be dropped once
   its last two readers move (launch checklist).
+- If packages per category become multiple: the Book button only passes
+  the category (`/booking?type=<category>`), so booking/inquiry/kanban
+  can't tell which package was chosen. Would need a package param and an
+  inquiry field (schema change). Nothing else assumes one package per
+  category (checked 2026-10-01).
 
 ### Mobile follow-ups
 

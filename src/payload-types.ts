@@ -362,17 +362,13 @@ export interface PricingRow {
   id: number;
   _order?: string | null;
   /**
-   * The package name, e.g. "Wedding Day Coverage". Up to 28 characters, so it fits on two lines beside the price on phones.
-   */
-  title: string;
-  /**
    * Turn off to hide this package from your site.
    */
   published?: boolean | null;
   /**
-   * Which category this package belongs to. Its View gallery button opens that category's page.
+   * The package name, e.g. "Wedding Day Coverage". Up to 28 characters, so it fits on two lines beside the price on phones.
    */
-  category: number | Category;
+  title: string;
   /**
    * The small word above the price, e.g. "From" or "Starting at". Up to 13 characters.
    */
@@ -392,7 +388,11 @@ export interface PricingRow {
       }[]
     | null;
   /**
-   * Optional. A few photos from this album show beside the package when it's in 'Popular right now', and its first photo is the thumbnail in this list. Only live albums in this package's category are listed.
+   * Which category this package belongs to. Its View gallery button opens that category's page.
+   */
+  category: number | Category;
+  /**
+   * Optional. A few photos from this album show beside the package in 'Popular right now', so only while it's the featured package. Only live albums in this package's category are listed.
    */
   album?: (number | null) | Event;
   gallery?: (number | Photo)[] | null;
@@ -1036,9 +1036,8 @@ export interface TestimonialsSelect<T extends boolean = true> {
  */
 export interface PricingRowsSelect<T extends boolean = true> {
   _order?: T;
-  title?: T;
   published?: T;
-  category?: T;
+  title?: T;
   priceLead?: T;
   priceAmount?: T;
   summary?: T;
@@ -1048,6 +1047,7 @@ export interface PricingRowsSelect<T extends boolean = true> {
         text?: T;
         id?: T;
       };
+  category?: T;
   album?: T;
   gallery?: T;
   featured?: T;

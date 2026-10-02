@@ -1932,6 +1932,56 @@ button.portfolio__handle:disabled {
   grid-template-columns: minmax(0, 1fr);
 }
 
+/* A feature's text box wraps long text onto more lines instead of cutting
+   it off (LinkRowsEditor's multiline option; Payload's textarea grows with
+   its text). Sized like the one-line inputs, counter on the right as on
+   them, no resize handle. */
+.nav-links__multiline .field-type {
+  margin: 0;
+}
+
+.nav-links__multiline .field-type__wrap textarea,
+.nav-links__multiline .field-type__wrap:has(.char-counter) textarea {
+  min-height: 40px;
+  padding-top: 9px;
+  padding-right: 56px;
+  padding-bottom: 9px;
+  resize: none;
+}
+
+.nav-links__multiline .field-type.textarea .char-counter {
+  top: 20px;
+  transform: translateY(-50%);
+}
+
+/* Package editor: the featured note at the top (PackageFeaturedNote.tsx)
+   and the two sections ("What visitors read", "Where it links"). */
+.package-featured-note {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
+  margin-bottom: var(--spacing-field, 20px);
+  padding: 10px 12px;
+  border: 1px solid var(--theme-elevation-150);
+  border-radius: 4px;
+  color: var(--theme-elevation-700);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.package-featured-note--featured {
+  border-color: var(--theme-warning-300, #fcd34d);
+  background: var(--theme-warning-50, #fffbeb);
+}
+
+.package-featured-note a {
+  color: var(--theme-text);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
 /* Under "Sample photos from album" when the picked album no longer fits
    (AlbumMatchNote.tsx). */
 /* Testimonials Teaser: picks that have been hidden or trashed since

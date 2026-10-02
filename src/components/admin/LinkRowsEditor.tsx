@@ -13,6 +13,7 @@ import {
   Popup,
   PopupList,
   SelectInput,
+  TextareaInput,
   TextInput,
   useField,
   useForm,
@@ -56,6 +57,12 @@ export type LinkTextField = {
   name: string;
   /** Column label (optional); see LinkRowsEditorProps.hrefLabel. */
   label?: string;
+  /**
+   * Wrap long text onto more lines instead of scrolling it out of sight
+   * (a package's features on a phone). Still one line of text: Enter and
+   * pasted line breaks are dropped.
+   */
+  multiline?: boolean;
   placeholder: string;
   max: number;
 };
@@ -76,6 +83,7 @@ function LinkTextInput({ path, spec }: { path: string; spec: LinkTextField }) {
   const field = useField<string>({ path });
   const ref = useMaxLength(spec.max);
   const text = textValue(field.value);
+  if (spec.multiline) return <LinkTextArea path={path} spec={spec} />;
   return (
     <TextInput
       className={`${baseClass}__${spec.name}`}
@@ -90,6 +98,43 @@ function LinkTextInput({ path, spec }: { path: string; spec: LinkTextField }) {
       inputRef={ref as React.RefObject<HTMLInputElement>}
       AfterInput={<CounterBadge length={text.length} max={spec.max} />}
     />
+  );
+}
+
+// Payload's textarea, which grows with its text; see LinkTextField.multiline.
+function LinkTextArea({ path, spec }: { path: string; spec: LinkTextField }) {
+  const field = useField<string>({ path });
+  const wrap = useRef<HTMLDivElement>(null);
+  const text = textValue(field.value);
+  useEffect(() => {
+    const textarea = wrap.current?.querySelector("textarea");
+    if (textarea) textarea.maxLength = spec.max;
+  });
+  // Payload's textarea doesn't pass onKeyDown on, so Enter is stopped here.
+  useEffect(() => {
+    const textarea = wrap.current?.querySelector("textarea");
+    if (!textarea) return;
+    const noEnter = (e: KeyboardEvent) => {
+      if (e.key === "Enter") e.preventDefault();
+    };
+    textarea.addEventListener("keydown", noEnter);
+    return () => textarea.removeEventListener("keydown", noEnter);
+  }, []);
+  return (
+    <div ref={wrap} className={`${baseClass}__${spec.name} ${baseClass}__multiline`}>
+      <TextareaInput
+        path={field.path}
+        value={text}
+        rows={1}
+        onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+          field.setValue(e.target.value.replace(/\s*[\r\n]+\s*/g, " ").slice(0, spec.max))
+        }
+        showError={field.showError}
+        label={spec.label}
+        placeholder={spec.placeholder}
+        AfterInput={<CounterBadge length={text.length} max={spec.max} />}
+      />
+    </div>
   );
 }
 

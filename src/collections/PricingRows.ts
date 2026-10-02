@@ -107,6 +107,9 @@ export const PricingRows: CollectionConfig = {
     // not saved yet). Show/hide, category, album and order only change
     // after saving.
     livePreview: {
+      // Opens with the page, like the homepage editors, until she toggles
+      // it herself (then her choice is remembered).
+      openByDefault: true,
       url: ({ data }) => {
         const id = data?.id;
         if (!id) return `${serverURL}/#live-preview:offers`;
@@ -143,21 +146,9 @@ export const PricingRows: CollectionConfig = {
       },
     },
     {
-      name: "title",
-      type: "text",
-      required: true,
-      maxLength: TITLE_MAX,
-      admin: {
-        description: `The package name, e.g. "Wedding Day Coverage". Up to ${TITLE_MAX} characters, so it fits on two lines beside the price on phones.`,
-        components: {
-          Cell: "/components/admin/PackageCells#PackageTitleCell",
-        },
-      },
-    },
-    {
-      // Directly under Title in the main column, same as Categories and
-      // Albums: the sidebar drops below the form whenever Live Preview is
-      // open, so the switch would move with the preview toggle.
+      // At the top of the main column, same as Categories and Albums: the
+      // sidebar drops below the form whenever Live Preview is open, so the
+      // switch would move with the preview toggle.
       name: "published",
       type: "checkbox",
       defaultValue: true,
@@ -171,115 +162,155 @@ export const PricingRows: CollectionConfig = {
       },
     },
     {
-      name: "category",
-      type: "relationship",
-      relationTo: "categories",
-      required: true,
-      hasMany: false,
-      // Same picker as Albums: categories are only made on the Categories
-      // page, in their drag order, and never "Other" (CRM-only). Trashed
-      // ones are left out by Payload already.
-      filterOptions: { slug: { not_equals: OTHER_SESSION_TYPE } },
+      // Whether this is the package in the homepage spotlight, with a link
+      // to Featured Offer (PackageFeaturedNote.tsx). Not stored.
+      name: "featuredNote",
+      type: "ui",
       admin: {
-        description: "Which category this package belongs to. Its View gallery button opens that category's page.",
-        placeholder: "Choose a category",
-        allowCreate: false,
-        allowEdit: false,
-        sortOptions: "_order",
+        disableListColumn: true,
+        components: {
+          Field: "/components/admin/PackageFeaturedNote#default",
+        },
       },
     },
     {
-      type: "row",
+      // Sections are layout only (no columns): what visitors read, then
+      // where the package links and which photos it borrows.
+      type: "collapsible",
+      label: "What visitors read",
+      admin: { initCollapsed: false },
       fields: [
         {
-          name: "priceLead",
+          name: "title",
           type: "text",
-          label: "Price prefix",
-          defaultValue: "From",
-          maxLength: PRICE_PREFIX_MAX,
+          required: true,
+          maxLength: TITLE_MAX,
           admin: {
-            description: `The small word above the price, e.g. "From" or "Starting at". Up to ${PRICE_PREFIX_MAX} characters.`,
-            width: "50%",
+            description: `The package name, e.g. "Wedding Day Coverage". Up to ${TITLE_MAX} characters, so it fits on two lines beside the price on phones.`,
+            components: {
+              Cell: "/components/admin/PackageCells#PackageTitleCell",
+            },
           },
         },
         {
-          name: "priceAmount",
-          type: "text",
-          label: "Price",
+          type: "row",
+          fields: [
+            {
+              name: "priceLead",
+              type: "text",
+              label: "Price prefix",
+              defaultValue: "From",
+              maxLength: PRICE_PREFIX_MAX,
+              admin: {
+                description: `The small word above the price, e.g. "From" or "Starting at". Up to ${PRICE_PREFIX_MAX} characters.`,
+                width: "50%",
+              },
+            },
+            {
+              name: "priceAmount",
+              type: "text",
+              label: "Price",
+              required: true,
+              maxLength: PRICE_MAX,
+              admin: {
+                description: `Any text, e.g. "$2,800", "$450/hr" or "Custom quote". Up to ${PRICE_MAX} characters, so it leaves room for the name on phones.`,
+                width: "50%",
+                components: {
+                  Cell: "/components/admin/PackageCells#PackagePriceCell",
+                },
+              },
+            },
+          ],
+        },
+        {
+          name: "summary",
+          type: "textarea",
           required: true,
-          maxLength: PRICE_MAX,
+          maxLength: SUMMARY_MAX,
           admin: {
-            description: `Any text, e.g. "$2,800", "$450/hr" or "Custom quote". Up to ${PRICE_MAX} characters, so it leaves room for the name on phones.`,
-            width: "50%",
+            description: `A sentence or two describing this package. Up to ${SUMMARY_MAX} characters, about three lines on a phone.`,
+          },
+        },
+        {
+          name: "features",
+          type: "array",
+          labels: {
+            singular: "Feature",
+            plural: "Features",
+          },
+          maxRows: FEATURES_MAX,
+          admin: {
             components: {
-              Cell: "/components/admin/PackageCells#PackagePriceCell",
+              // Compact rows like Header/Nav's links instead of Payload's
+              // collapsible array cards — see PackageFeaturesField.tsx.
+              Field: "/components/admin/PackageFeaturesField#default",
+              // History's comparison otherwise labels rows "Item 01", "Item 02".
+              Diff: "/components/admin/FeaturesDiff#default",
+            },
+          },
+          fields: [
+            {
+              name: "text",
+              type: "text",
+              required: true,
+              maxLength: FEATURE_MAX,
+            },
+          ],
+        },
+      ],
+    },
+    {
+      type: "collapsible",
+      label: "Where it links",
+      admin: { initCollapsed: false },
+      fields: [
+        {
+          name: "category",
+          type: "relationship",
+          relationTo: "categories",
+          required: true,
+          hasMany: false,
+          // Same picker as Albums: categories are only made on the Categories
+          // page, in their drag order, and never "Other" (CRM-only). Trashed
+          // ones are left out by Payload already.
+          filterOptions: { slug: { not_equals: OTHER_SESSION_TYPE } },
+          admin: {
+            description: "Which category this package belongs to. Its View gallery button opens that category's page.",
+            placeholder: "Choose a category",
+            allowCreate: false,
+            allowEdit: false,
+            sortOptions: "_order",
+          },
+        },
+        {
+          name: "album",
+          type: "relationship",
+          relationTo: "events",
+          hasMany: false,
+          label: "Sample photos from album",
+          // Only live albums in this package's category. Trashed ones are left
+          // out by Payload already.
+          filterOptions: ({ data }) => {
+            const categoryId = idOf(data?.category);
+            return {
+              category: { equals: categoryId ?? 0 },
+              published: { equals: true },
+            };
+          },
+          validate: validateAlbum,
+          admin: {
+            description:
+              "Optional. A few photos from this album show beside the package in 'Popular right now', so only while it's the featured package. Only live albums in this package's category are listed.",
+            placeholder: "Choose an album",
+            allowCreate: false,
+            allowEdit: false,
+            sortOptions: "-sortDate",
+            components: {
+              afterInput: ["/components/admin/AlbumMatchNote#default"],
             },
           },
         },
       ],
-    },
-    {
-      name: "summary",
-      type: "textarea",
-      required: true,
-      maxLength: SUMMARY_MAX,
-      admin: {
-        description: `A sentence or two describing this package. Up to ${SUMMARY_MAX} characters, about three lines on a phone.`,
-      },
-    },
-    {
-      name: "features",
-      type: "array",
-      labels: {
-        singular: "Feature",
-        plural: "Features",
-      },
-      maxRows: FEATURES_MAX,
-      admin: {
-        components: {
-          // Compact rows like Header/Nav's links instead of Payload's
-          // collapsible array cards — see PackageFeaturesField.tsx.
-          Field: "/components/admin/PackageFeaturesField#default",
-          // History's comparison otherwise labels rows "Item 01", "Item 02".
-          Diff: "/components/admin/FeaturesDiff#default",
-        },
-      },
-      fields: [
-        {
-          name: "text",
-          type: "text",
-          required: true,
-          maxLength: FEATURE_MAX,
-        },
-      ],
-    },
-    {
-      name: "album",
-      type: "relationship",
-      relationTo: "events",
-      hasMany: false,
-      label: "Sample photos from album",
-      // Only live albums in this package's category. Trashed ones are left
-      // out by Payload already.
-      filterOptions: ({ data }) => {
-        const categoryId = idOf(data?.category);
-        return {
-          category: { equals: categoryId ?? 0 },
-          published: { equals: true },
-        };
-      },
-      validate: validateAlbum,
-      admin: {
-        description:
-          "Optional. A few photos from this album show beside the package when it's in 'Popular right now'. Only live albums in this package's category are listed.",
-        placeholder: "Choose an album",
-        allowCreate: false,
-        allowEdit: false,
-        sortOptions: "-sortDate",
-        components: {
-          afterInput: ["/components/admin/AlbumMatchNote#default"],
-        },
-      },
     },
     {
       // Retired: replaced by `album` above (the package's photos now come
