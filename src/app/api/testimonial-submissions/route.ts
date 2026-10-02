@@ -93,6 +93,30 @@ export async function POST(request: Request) {
       overrideAccess: true,
     });
 
+    // It also lands in Testimonials, hidden, marked as the client's, for her
+    // to review (Needs review) and publish there. Only what can go on the
+    // site is copied: the words, the name, the category and album. Their
+    // email, social link, private notes and photos stay on the submission
+    // above (linked, admin-only). If this fails the client's submission is
+    // still saved, so it's logged rather than refused.
+    await payload
+      .create({
+        collection: "testimonials",
+        data: {
+          quote: body.testimonialText.trim(),
+          clientName: inquiry.name,
+          category: category?.id,
+          event: event?.id,
+          published: false,
+          source: "client",
+          submission: submission.id,
+        },
+        overrideAccess: true,
+      })
+      .catch((err) =>
+        payload.logger.error({ err }, "[testimonial-submissions] couldn't add the testimonial to Testimonials"),
+      );
+
     await payload.update({
       collection: "inquiries",
       id: inquiry.id,

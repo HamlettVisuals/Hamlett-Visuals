@@ -21,6 +21,12 @@ type Ordered = { albumOrder?: string | null; createdAt?: string | null; id?: num
 const compareKeys = (a: string, b: string) => (a < b ? -1 : a > b ? 1 : 0);
 const time = (value: string | null | undefined) => (value ? Date.parse(value) || 0 : 0);
 
+/** Testimonials within a category: like albums (no key = newest, on top). */
+export const compareTestimonials = (
+  a: { listOrder?: string | null; createdAt?: string | null },
+  b: { listOrder?: string | null; createdAt?: string | null },
+) => compareAlbums({ albumOrder: a.listOrder, createdAt: a.createdAt }, { albumOrder: b.listOrder, createdAt: b.createdAt });
+
 export function compareAlbums(a: Ordered, b: Ordered): number {
   if (!a.albumOrder || !b.albumOrder) {
     if (a.albumOrder) return 1;

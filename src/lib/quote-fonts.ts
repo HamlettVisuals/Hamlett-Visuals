@@ -1,4 +1,5 @@
 import type { CSSProperties } from "react";
+import { QUOTE_FONT_OPTIONS, type QuoteFontKey } from "@/lib/quote-font-options";
 import { Fraunces, Literata, Lora, Merriweather, Petrona } from "next/font/google";
 
 // The curated fonts the testimonial quotes on /testimonials can be set in —
@@ -7,7 +8,8 @@ import { Fraunces, Literata, Lora, Merriweather, Petrona } from "next/font/googl
 // between Fraunces headings and Inter body text without being a script,
 // plus the site's own upright Fraunces. /testimonials and the homepage
 // Testimonials Section each pick one by key.
-// `label` is the name a future admin dropdown will show.
+// The keys and the names the admin dropdowns show are in
+// lib/quote-font-options.ts, which Payload's config can import.
 //
 // Every font here is declared with `preload: false`. next/font preloads by
 // the route that imports a font, not by whether it's used, so with the
@@ -32,8 +34,6 @@ const merriweather = Merriweather({ subsets: ["latin"], style: "italic", axes: [
 const petrona = Petrona({ subsets: ["latin"], style: "italic", weight: "400", display: "swap", preload: false });
 
 type QuoteFont = {
-  /** Name for the admin dropdown. */
-  label: string;
   /** The next/font definition (or, for a site-wide font, its utility class). */
   font: { className: string };
   weight: number;
@@ -43,10 +43,9 @@ type QuoteFont = {
 };
 
 export const QUOTE_FONTS = {
-  lora: { label: "Lora", font: lora, weight: 400, style: "italic" },
-  literata: { label: "Literata", font: literata, weight: 400, style: "italic" },
+  lora: { font: lora, weight: 400, style: "italic" },
+  literata: { font: literata, weight: 400, style: "italic" },
   "fraunces-soft": {
-    label: "Fraunces Soft",
     font: frauncesSoft,
     weight: 300,
     style: "italic",
@@ -54,29 +53,29 @@ export const QUOTE_FONTS = {
   },
   // Light, with a large x-height and open, rounded italics: the softest
   // of the set at 20px, and very easy to read over several lines.
-  merriweather: { label: "Merriweather Light", font: merriweather, weight: 300, style: "italic" },
+  merriweather: { font: merriweather, weight: 300, style: "italic" },
   // A warm, low-contrast text italic with gentle curves; quieter than Lora,
   // closer in colour to Inter.
-  petrona: { label: "Petrona", font: petrona, weight: 400, style: "italic" },
+  petrona: { font: petrona, weight: 400, style: "italic" },
   // The homepage Testimonials Section's single-quote look: the site's own
   // Fraunces (font-display, loaded once in the root layout, opsz tracking the
   // size via font-optical-sizing: auto), upright 400. No next/font call, so
   // no second copy of Fraunces.
   "fraunces-upright": {
-    label: "Fraunces (upright)",
     font: { className: "font-display" },
     weight: 400,
     style: "normal",
   },
-} satisfies Record<string, QuoteFont>;
+} satisfies Record<QuoteFontKey, QuoteFont>;
 
-export type QuoteFontKey = keyof typeof QUOTE_FONTS;
+export type { QuoteFontKey };
+
+/** Its name in the admin dropdowns (lib/quote-font-options.ts). */
+export const quoteFontLabel = (key: QuoteFontKey) =>
+  QUOTE_FONT_OPTIONS.find((option) => option.key === key)?.label ?? key;
 
 /** Size, line-height and measure for a quote, whatever its font. */
 export const QUOTE_CLASS = "max-w-measure text-title leading-[1.5] text-ink";
-
-/** The fallback when no font is chosen (and, later, when a saved choice is no longer in the registry). */
-export const DEFAULT_QUOTE_FONT: QuoteFontKey = "lora";
 
 /** className + style to put on a quote set in this font. */
 export function quoteFontProps(key: QuoteFontKey): { className: string; style: CSSProperties } {

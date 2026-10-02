@@ -51,6 +51,7 @@ import { About } from "#src/globals/About.ts";
 import { FeaturedOffer } from "#src/globals/FeaturedOffer.ts";
 import { BookingCta } from "#src/globals/BookingCta.ts";
 import { TestimonialsTeaser } from "#src/globals/TestimonialsTeaser.ts";
+import { TestimonialsPage } from "#src/globals/TestimonialsPage.ts";
 import { FinalCtaFooter } from "#src/globals/FinalCtaFooter.ts";
 import { SiteSettings } from "#src/globals/SiteSettings.ts";
 import { Booking } from "#src/globals/Booking.ts";
@@ -99,6 +100,7 @@ export default buildConfig({
         "categories-intro",
         "featured-offer",
         "testimonials-teaser",
+        "testimonials-page",
         "final-cta-footer",
         "site-settings",
         "booking",
@@ -149,6 +151,14 @@ export default buildConfig({
         portfolio: {
           Component: "/components/admin/Portfolio#default",
           path: "/portfolio",
+          exact: true,
+        },
+        // Testimonials grouped by category, reordered by dragging; the
+        // collection's list URL redirects here (src/proxy.ts). Its Trash is
+        // Payload's own.
+        testimonials: {
+          Component: "/components/admin/Testimonials#default",
+          path: "/testimonials",
           exact: true,
         },
         // Its Trash tab: deleted categories and albums together.
@@ -232,6 +242,7 @@ export default buildConfig({
     FeaturedOffer,
     BookingCta,
     TestimonialsTeaser,
+    TestimonialsPage,
     FinalCtaFooter,
     SiteSettings,
     Booking,

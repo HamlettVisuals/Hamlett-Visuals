@@ -29,6 +29,8 @@ const ShowOnWebsiteField: CheckboxFieldClientComponent = ({ field, path, readOnl
   const disabled = readOnly || isOther;
   const id = `field-${path.replace(/\./g, "__")}`;
   const label = typeof field.label === "string" ? field.label : "Show on website";
+  // Testimonials say "Published" where categories and albums say "Live".
+  const onLabel = (field.admin?.custom?.onLabel as string | undefined) ?? "Live";
   const description = isOther
     ? "Used by your CRM, so it's never shown on the site."
     : field.admin?.description;
@@ -54,7 +56,7 @@ const ShowOnWebsiteField: CheckboxFieldClientComponent = ({ field, path, readOnl
           <span className="category-status category-status--crm">CRM only</span>
         ) : (
           <span className={`category-status category-status--${on ? "live" : "hidden"}`}>
-            {on ? "Live" : "Hidden"}
+            {on ? onLabel : "Hidden"}
           </span>
         )}
       </div>

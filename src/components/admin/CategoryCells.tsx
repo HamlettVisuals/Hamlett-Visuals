@@ -149,11 +149,17 @@ export function StatusToggle({
   id,
   initialPublished,
   name,
+  onLabel = "Live",
+  onChange,
 }: {
   collectionSlug: string;
   id: number | string;
   initialPublished: boolean;
   name: string;
+  /** The pill's text when shown, e.g. "Published" for testimonials. */
+  onLabel?: string;
+  /** After a change has saved. */
+  onChange?: (published: boolean) => void;
 }) {
   const { config } = useConfig();
   const [published, setPublished] = useState(initialPublished);
@@ -181,6 +187,7 @@ export function StatusToggle({
           const body = await res.json().catch(() => null);
           throw new Error(body?.errors?.[0]?.message ?? "Couldn't change this — try again.");
         }
+        onChange?.(next);
       } catch (err) {
         setPublished(!next);
         setError(err instanceof Error ? err.message : "Couldn't change this — try again.");
@@ -199,7 +206,7 @@ export function StatusToggle({
         title={published ? "Shown on the site. Click to hide." : "Hidden from the site. Click to show."}
         className={`category-status category-status--${published ? "live" : "hidden"}`}
       >
-        {published ? "Live" : "Hidden"}
+        {published ? onLabel : "Hidden"}
       </button>
       {error && (
         <span className="category-status-cell__error" role="alert">

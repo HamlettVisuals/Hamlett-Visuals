@@ -1,4 +1,4 @@
-import { QUOTE_CLASS, QUOTE_FONTS, quoteFontProps, type QuoteFontKey } from "@/lib/quote-fonts";
+import { QUOTE_CLASS, QUOTE_FONTS, quoteFontLabel, quoteFontProps, type QuoteFontKey } from "@/lib/quote-fonts";
 
 // Dev-only preview of every quote font in lib/quote-fonts.ts, shown at the
 // top of /testimonials with ?fontPreview=1 (page.tsx only renders it in
@@ -21,11 +21,12 @@ export default function QuoteFontPreview({
   return (
     <section className="mt-10 border border-dashed border-accent p-5">
       <p className="text-caption text-muted">
-        Quote fonts (dev only). Switch with <code>TESTIMONIALS_PAGE_QUOTE_FONT</code> (testimonials/page.tsx) or <code>HOMEPAGE_QUOTE_FONT</code> (components/home/Testimonials.tsx).
+        Quote fonts (dev only). Switch in the admin: Testimonials, Page settings (this page) or the Testimonials Section (homepage).
       </p>
       <ul className="mt-4 flex flex-col">
         {keys.map((key) => {
-          const { label, weight, style } = QUOTE_FONTS[key];
+          const { weight, style } = QUOTE_FONTS[key];
+          const label = quoteFontLabel(key);
           const { className, style: css } = quoteFontProps(key);
           return (
             <li key={key} className="border-t border-hairline py-8 first:border-t-0 first:pt-2">

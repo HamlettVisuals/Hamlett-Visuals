@@ -2,7 +2,8 @@
 // the page title, breadcrumb, sidebar and Editor overview, and the picks as
 // rows (TestimonialPicksField.tsx): added with Payload's picker, which leaves
 // out what's picked, reordered by the drag handle (mouse at 1440, press-and-
-// hold touch on a phone), removed per row, and no picker once 4 are picked.
+// hold touch on a phone), removed per row, and no picker once 4 are picked;
+// and its Quote font dropdown.
 // There are no real testimonials yet, so every testimonials lookup is
 // answered with made-up ones (ids 9001-9006).
 //
@@ -108,6 +109,17 @@ async function dragRow(page, from, to, cdp) {
   check("breadcrumb says Testimonials Section", crumbs.includes("Testimonials Section") && !crumbs.includes("Teaser"), crumbs);
   const nav = await page.locator(".site-nav__label").allInnerTexts();
   check("sidebar says Testimonials Section", nav.includes("Testimonials Section") && !nav.some((l) => /Teaser|Testimonials Preview/.test(l)), nav);
+
+  section("quote font");
+  // Its own font setting (globals/TestimonialsTeaser.ts quoteFont), separate
+  // from the Testimonials Page's; the dropdown lists the registry's names.
+  const fontField = page.locator(".field-type.select").filter({ hasText: "Quote font" });
+  const fontValue = await fontField.locator(".rs__single-value").innerText().catch(() => "");
+  check("Quote font shows the saved font (default Fraunces (upright))", fontValue.trim() === (saved.quoteFont === "fraunces-upright" || !saved.quoteFont ? "Fraunces (upright)" : fontValue.trim()), { fontValue, saved: saved.quoteFont });
+  await fontField.locator(".rs__control").click();
+  const fontOptions = await page.locator(".rs__option").allInnerTexts();
+  check("the dropdown lists the registry's fonts", ["Lora", "Literata", "Fraunces Soft", "Merriweather Light", "Petrona", "Fraunces (upright)"].every((o) => fontOptions.includes(o)), fontOptions);
+  await page.keyboard.press("Escape");
 
   section("adding with the picker");
   // Start from no picks, whatever's saved.

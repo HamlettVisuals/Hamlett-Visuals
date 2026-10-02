@@ -146,7 +146,7 @@ const TestimonialPicksField: RelationshipFieldClientComponent = ({ field, path: 
       <FieldLabel label={label} path={path} />
       <FieldError path={path} showError={showError} />
       {ids.length > 0 && (
-        <DndContext sensors={sensors} collisionDetection={closestCenter} modifiers={[verticalOnly]} onDragEnd={onDragEnd}>
+        <DndContext id="testimonial-picks" sensors={sensors} collisionDetection={closestCenter} modifiers={[verticalOnly]} onDragEnd={onDragEnd}>
           <SortableContext items={ids.map(String)} strategy={verticalListSortingStrategy}>
             <ol className="testimonial-picks__list">
               {ids.map((id, i) => (

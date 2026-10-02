@@ -1,19 +1,25 @@
+import type { Metadata } from "next";
+import { draftMode, headers as getHeaders } from "next/headers";
 import Link from "next/link";
-import { getPayload } from "payload";
+import { getPayload, type Where } from "payload";
 import config from "@payload-config";
 import HoverZoomImage from "@/components/HoverZoomImage";
 import { formatAlbumDate } from "@/lib/album-date";
 import { generateAltText } from "@/lib/generate-alt-text";
-import { comparePhotos } from "@/lib/manual-order";
-import { QUOTE_CLASS, quoteFontProps, type QuoteFontKey } from "@/lib/quote-fonts";
+import { comparePhotos, compareTestimonials } from "@/lib/manual-order";
+import { DEFAULT_TESTIMONIALS_PAGE_QUOTE_FONT, resolveQuoteFont } from "@/lib/quote-font-options";
+import { QUOTE_CLASS, quoteFontProps } from "@/lib/quote-fonts";
 import { trimQuoteMarks } from "@/lib/quote-marks";
+import LiveTestimonialText from "@/components/testimonials/LiveTestimonialText";
+import { PageHeader, ReviewSection } from "@/components/testimonials/LivePageText";
 import { resolvePhoto } from "@/lib/resolve-photo";
 import type { Category, Event, Photo, Testimonial } from "@/payload-types";
 import QuoteFontPreview from "./QuoteFontPreview";
 
 // Full testimonials page. The teaser (src/components/home/Testimonials.tsx)
 // stays text-only and untouched by design; this page is the whole set,
-// grouped by category (in the Categories list's drag order), each entry paired
+// grouped by category (in the Categories list's drag order), her order
+// within each (the Testimonials list's drag, `listOrder`), each entry paired
 // with a photo and a link: to the session itself when the testimonial names
 // one (/portfolio/[event's category]#[eventSlug], landing on the matching
 // EventRow — see src/components/Gallery/EventRow.tsx), otherwise to the
@@ -22,27 +28,28 @@ import QuoteFontPreview from "./QuoteFontPreview";
 // header.
 //
 // Quotes lead at text-title size so they read as the page's main content,
-// set in a font from the curated registry (lib/quote-fonts.ts) — the one
-// place the site allows a third typeface and italics. The client name,
+// set in a font from the curated registry (lib/quote-fonts.ts), chosen on
+// the Testimonials Page global — the one place the site allows a third
+// typeface and italics. The title, intro and "Worked with me?" section come
+// from that global too (components/testimonials/LivePageText.tsx). The client name,
 // context, photo and link sit under/beside each as quiet attribution in
 // Inter. Flat throughout —
 // hairline rules between entries (the same device the Offers list uses for
 // real item boundaries) and the existing .link-chip-inline pill (reused from
 // OfferActions) for the link. No cards, no shadow.
 
-// The quote font, from lib/quote-fonts.ts. Hardcoded for now; an admin
-// setting can replace this one line later.
-const TESTIMONIALS_PAGE_QUOTE_FONT: QuoteFontKey = "lora";
+// Each card is #testimonial-<id>, so Live Preview opens on the one being
+// edited (app/api/preview/testimonial). In preview mode, for a signed-in
+// admin only (checked here, on the server), the testimonial being
+// previewed shows even while hidden, marked "Hidden, preview only": how she
+// reviews a client's testimonial before publishing it. Everyone else gets
+// the cached page with published testimonials only.
 
-export const metadata = {
-  title: "Testimonials — Hamlett Visuals",
-};
-
-// TODO(backend pass): the testimonial form is only reachable from her
-// one-time emailed link (/testimonial-request/[token]), so there's nowhere
-// public for "Leave a review" to go yet. Point this at the public
-// submission page once it exists.
-const LEAVE_REVIEW_HREF = "#leave-a-review";
+export async function generateMetadata(): Promise<Metadata> {
+  const payload = await getPayload({ config });
+  const page = await payload.findGlobal({ slug: "testimonials-page", depth: 0 });
+  return { title: `${page.title?.trim() || "Testimonials"} — Hamlett Visuals` };
+}
 
 function resolveCategory(category: Testimonial["category"] | Event["category"]): Category | null {
   return typeof category === "object" && category !== null ? category : null;
@@ -54,6 +61,10 @@ function resolveEvent(event: Testimonial["event"]): Event | null {
 
 type Entry = {
   testimonial: Testimonial;
+  /** What the context line says when her Context field is empty. */
+  autoContext: string;
+  /** Hidden, shown only in an admin's preview. */
+  hidden: boolean;
   href: string;
   linkLabel: string;
   context: string;
@@ -67,17 +78,35 @@ export default async function TestimonialsPage({ searchParams }: PageProps<"/tes
   // exactly as before.
   const fontPreview =
     process.env.NODE_ENV === "development" && (await searchParams).fontPreview === "1";
-  const quoteFont = quoteFontProps(TESTIMONIALS_PAGE_QUOTE_FONT);
 
   const payload = await getPayload({ config });
+  const page = await payload.findGlobal({ slug: "testimonials-page", depth: 0 });
+  const pageFont = resolveQuoteFont(page.quoteFont, DEFAULT_TESTIMONIALS_PAGE_QUOTE_FONT);
+  const quoteFont = quoteFontProps(pageFont);
+
+  // The hidden testimonial an admin is previewing, if any. searchParams
+  // and the session are only read in preview mode, so the public page
+  // stays cached.
+  let previewId: number | null = null;
+  if ((await draftMode()).isEnabled) {
+    // lpDoc: LIVE_PREVIEW_DOC_PARAM (a client module, so not importable here).
+    const raw = (await searchParams).lpDoc;
+    const { user } = await payload.auth({ headers: await getHeaders() });
+    if (user && typeof raw === "string" && /^\d+$/.test(raw)) previewId = Number(raw);
+  }
+  const where: Where = previewId
+    ? { or: [{ published: { equals: true } }, { id: { equals: previewId } }] }
+    : { published: { equals: true } };
+
   // depth: 2 so category, event, photo, the category's cover and the
   // event's own category all come back populated in one query.
-  const { docs: testimonials } = await payload.find({
+  const { docs: unsorted } = await payload.find({
     collection: "testimonials",
-    where: { published: { equals: true } },
+    where,
     depth: 2,
     limit: 0,
   });
+  const testimonials = unsorted.toSorted(compareTestimonials);
 
   // A linked album only counts while its page shows it: the album and its
   // category both published. Otherwise the entry falls back to the
@@ -118,6 +147,7 @@ export default async function TestimonialsPage({ searchParams }: PageProps<"/tes
     if (!category) continue;
     const linked = linkedEvent(testimonial);
     const date = linked && formatAlbumDate(linked.event.date);
+    const autoContext = date ? `${category.name} · ${date}` : category.name;
 
     const photo = [
       resolvePhoto(testimonial.photo),
@@ -127,13 +157,15 @@ export default async function TestimonialsPage({ searchParams }: PageProps<"/tes
 
     const entry: Entry = {
       testimonial,
+      autoContext,
+      hidden: testimonial.published === false,
       href: linked
         ? `/portfolio/${linked.eventCategory.slug}#${linked.event.slug}`
         : `/portfolio/${category.slug}`,
       linkLabel: linked ? `View ${linked.event.title}` : `View the ${category.name} gallery`,
       // Her Context text wins; otherwise the category, plus the album's
       // month when it has a date. The album's name is on the link already.
-      context: testimonial.context?.trim() || (date ? `${category.name} · ${date}` : category.name),
+      context: testimonial.context?.trim() || autoContext,
       photo,
       eventName: linked?.event.title,
     };
@@ -148,12 +180,7 @@ export default async function TestimonialsPage({ searchParams }: PageProps<"/tes
 
   return (
     <div className="mx-auto flex w-full max-w-4xl flex-1 flex-col px-gutter py-section">
-      <header>
-        <h1 className="font-display text-page text-ink">Testimonials</h1>
-        <p className="mt-3 max-w-measure text-body text-muted">
-          A few words from people I&rsquo;ve worked with, sorted by the kind of
-          shoot they came for.
-        </p>
+      <PageHeader page={page}>
         {groups.length >= 2 && (
           <nav aria-label="Categories" className="mt-5">
             <ul className="flex flex-wrap items-center gap-x-2 gap-y-1 text-body text-ink">
@@ -172,14 +199,14 @@ export default async function TestimonialsPage({ searchParams }: PageProps<"/tes
             </ul>
           </nav>
         )}
-      </header>
+      </PageHeader>
 
       {fontPreview && groups[0] && (
         <QuoteFontPreview
           quote={trimQuoteMarks(groups[0].entries[0].testimonial.quote)}
           clientName={groups[0].entries[0].testimonial.clientName}
           context={groups[0].entries[0].context}
-          current={TESTIMONIALS_PAGE_QUOTE_FONT}
+          current={pageFont}
         />
       )}
 
@@ -198,14 +225,20 @@ export default async function TestimonialsPage({ searchParams }: PageProps<"/tes
                 </h2>
 
                 <ul className="mt-6 flex flex-col">
-                  {entries.map(({ testimonial, href, linkLabel, context, photo, eventName }) => {
+                  {entries.map(({ testimonial, href, linkLabel, autoContext, hidden, photo, eventName }) => {
                     const photoRight = photo?.url ? photoIndex++ % 2 === 1 : false;
 
                     return (
                       <li
                         key={testimonial.id}
-                        className="border-t border-hairline py-10 first:border-t-0 first:pt-0"
+                        id={`testimonial-${testimonial.id}`}
+                        className="scroll-mt-6 border-t border-hairline py-10 first:border-t-0 first:pt-0"
                       >
+                        {hidden && (
+                          <p className="mb-4 inline-block rounded-full border border-hairline px-3 py-1 text-caption text-muted">
+                            Hidden, preview only
+                          </p>
+                        )}
                         <div
                           className={
                             photo?.url
@@ -244,16 +277,15 @@ export default async function TestimonialsPage({ searchParams }: PageProps<"/tes
                           )}
 
                           <figure className="min-w-0">
-                            <blockquote
-                              className={`${quoteFont.className} ${QUOTE_CLASS}`}
-                              style={quoteFont.style}
-                            >
-                              &ldquo;{trimQuoteMarks(testimonial.quote)}&rdquo;
-                            </blockquote>
-                            <figcaption className="mt-4 text-caption">
-                              <span className="text-ink">{testimonial.clientName}</span>
-                              <span className="mt-0.5 block text-muted">{context}</span>
-                            </figcaption>
+                            <LiveTestimonialText
+                              id={testimonial.id}
+                              quote={testimonial.quote}
+                              clientName={testimonial.clientName}
+                              context={testimonial.context?.trim() || null}
+                              autoContext={autoContext}
+                              quoteClassName={`${quoteFont.className} ${QUOTE_CLASS}`}
+                              quoteStyle={quoteFont.style}
+                            />
 
                             <Link href={href} className="link-chip link-chip-inline mt-5">
                               <span className="link-chip-icon">
@@ -291,22 +323,7 @@ export default async function TestimonialsPage({ searchParams }: PageProps<"/tes
         </div>
       )}
 
-      <section
-        id="leave-a-review"
-        aria-labelledby="leave-a-review-heading"
-        className="mt-6 border-t border-hairline pt-12"
-      >
-        <h2 id="leave-a-review-heading" className="font-display text-heading text-ink">
-          Worked with me?
-        </h2>
-        <p className="mt-3 max-w-measure text-body text-muted">
-          I&rsquo;d love to hear how it went. Share your experience, and it
-          might end up on this page.
-        </p>
-        <Link href={LEAVE_REVIEW_HREF} className="btn mt-6">
-          Leave a review
-        </Link>
-      </section>
+      <ReviewSection page={page} />
     </div>
   );
 }

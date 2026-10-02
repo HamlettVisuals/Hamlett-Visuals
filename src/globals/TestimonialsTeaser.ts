@@ -3,6 +3,7 @@ import { publicReadAdminWrite } from "#src/access/isAdmin.ts";
 import { serverURL } from "#src/lib/server-url.ts";
 import { TESTIMONIAL_PICKS_MAX, testimonialPickOptions } from "#src/lib/teaser-testimonials.ts";
 import { HEADING_MAX, LINK_TEXT_MAX } from "#src/lib/testimonials-teaser-limits.ts";
+import { DEFAULT_HOMEPAGE_QUOTE_FONT, validateQuoteFont } from "#src/lib/quote-font-options.ts";
 
 // The homepage "In their words" section (src/components/home/Testimonials.tsx):
 // which testimonials it shows, in order, plus the heading and link above
@@ -85,6 +86,19 @@ export const TestimonialsTeaser: GlobalConfig = {
       maxLength: LINK_TEXT_MAX,
       admin: {
         description: `The link to your full Testimonials page. Up to ${LINK_TEXT_MAX} characters, so it stays on one line on phones.`,
+      },
+    },
+    {
+      // The quotes' typeface, one quote or a grid (the grid keeps its
+      // smaller size). Separate from the Testimonials Page's own font.
+      name: "quoteFont",
+      type: "text",
+      label: "Quote font",
+      defaultValue: DEFAULT_HOMEPAGE_QUOTE_FONT,
+      validate: validateQuoteFont,
+      admin: {
+        description: "The typeface of the quotes in this section.",
+        components: { Field: "/components/admin/QuoteFontField#default" },
       },
     },
     {

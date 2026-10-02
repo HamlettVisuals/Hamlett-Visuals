@@ -72,6 +72,7 @@ Results are:
 
 | File | What it covers |
 |---|---|
+| `testimonials-admin.test.cjs` | Testimonials: the grouped list (redirect, tabs, rows, Published pill, Add to / Remove from homepage and a refusal), Needs review, Trash tabs, the edit page (field order with preview open and closed, category set by the album, album photos, Context placeholder, the homepage limit), Live Preview landing on the card, Page settings (desktop, phone) |
 | `portfolio.test.cjs` | Categories & Albums: order, headers, open/close, the Live/Hidden pill, search, redirects, `#category-…`, sidebar and Editor overview (desktop, phone, landscape) |
 | `portfolio-reorder.test.cjs` | Dragging categories and albums by mouse and press-and-hold touch, what's saved, a failed save, reordering off while searching |
 | `portfolio-trash.test.cjs` | The Trash tab: sections, tabs, redirects, Restore / Delete permanently with sample deleted items, a refusal from the server |

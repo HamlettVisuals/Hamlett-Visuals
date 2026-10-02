@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { quoteFontProps, type QuoteFontKey } from "@/lib/quote-fonts";
+import { DEFAULT_HOMEPAGE_QUOTE_FONT, resolveQuoteFont } from "@/lib/quote-font-options";
+import { quoteFontProps } from "@/lib/quote-fonts";
 import { trimQuoteMarks } from "@/lib/quote-marks";
 import { serverURL } from "@/lib/server-url";
 import { availableTestimonials } from "@/lib/teaser-testimonials";
@@ -23,11 +24,10 @@ import type { Testimonial, TestimonialsTeaser } from "@/payload-types";
 // row stays balanced; the full text is on /testimonials, linked from the
 // heading row.
 
-// The single quote's font, from lib/quote-fonts.ts (separate from
-// /testimonials' own). Hardcoded for now; an admin setting can replace this
-// one line later. Two or more quotes stay in Inter at text-lead, sized for
-// the grid.
-const HOMEPAGE_QUOTE_FONT: QuoteFontKey = "fraunces-upright";
+// The quotes' typeface is the section's own "Quote font" setting (a key in
+// lib/quote-fonts.ts, separate from /testimonials' own; one it no longer
+// knows falls back to the default). One quote or a grid, the typeface
+// follows it; the sizes stay (text-title alone, text-lead in the grid).
 
 // Measured on the real section — see the note in lib/testimonials-teaser-limits.ts.
 const QUOTE_LINES_SINGLE = "line-clamp-5";
@@ -64,7 +64,7 @@ export default function Testimonials({
   const testimonials = availableTestimonials(data.testimonials);
   if (testimonials.length === 0) return null;
   const single = testimonials.length === 1;
-  const quoteFont = quoteFontProps(HOMEPAGE_QUOTE_FONT);
+  const quoteFont = quoteFontProps(resolveQuoteFont(data.quoteFont, DEFAULT_HOMEPAGE_QUOTE_FONT));
 
   return (
     <section id="testimonials" className="border-t border-hairline">
@@ -85,9 +85,9 @@ export default function Testimonials({
                   className={
                     single
                       ? `${quoteFont.className} text-title text-ink ${QUOTE_LINES_SINGLE}`
-                      : `max-w-measure text-lead text-ink ${QUOTE_LINES_GRID}`
+                      : `${quoteFont.className} max-w-measure text-lead text-ink ${QUOTE_LINES_GRID}`
                   }
-                  style={single ? quoteFont.style : undefined}
+                  style={quoteFont.style}
                 >
                   &ldquo;{trimQuoteMarks(testimonial.quote)}&rdquo;
                 </blockquote>

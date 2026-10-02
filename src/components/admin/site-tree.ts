@@ -96,7 +96,15 @@ export const editorTree: TreeNode[] = [
     ],
   },
   { kind: "collection", slug: "backstage", label: "Backstage" },
-  { kind: "collection", slug: "testimonials", label: "Testimonials" },
+  {
+    kind: "view",
+    path: "/testimonials",
+    slug: "testimonials",
+    label: "Testimonials",
+    // A testimonial, the Page settings tab, the Trash tab and a client's
+    // submission all count as this page.
+    alsoActiveFor: ["/collections/testimonials", "/globals/testimonials-page", "/collections/testimonial-submissions"],
+  },
   { kind: "global", slug: "booking", label: "Booking Page" },
   { disabled: true, label: "Privacy Policy", note: NOT_YET_EDITABLE },
   { disabled: true, label: "Terms & Conditions", note: NOT_YET_EDITABLE },

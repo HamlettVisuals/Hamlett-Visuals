@@ -7,8 +7,7 @@ import { isRepeatClient } from "@/hooks/repeatClient";
 // for jobs heard about outside the site's own contact form, so unlike
 // /api/inquiries/route.ts's deliberately public write path, this one is
 // admin-only: checked via payload.auth() against the real /hv-studio
-// session, the same pattern as /api/inquiries/[id]/testimonial-request and
-// /api/testimonial-submissions/[id]/publish.
+// session, the same pattern as /api/inquiries/[id]/testimonial-request.
 //
 // Looks up the Client by email before creating one, so re-adding a card for
 // someone already in the system links to their existing record instead of

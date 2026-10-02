@@ -45,6 +45,9 @@ const PORTFOLIO_REDIRECTS: Record<string, string> = {
   "/hv-studio/collections/events/trash": "/hv-studio/portfolio/trash",
   "/hv-studio/collections/photos": "/hv-studio/portfolio",
   "/hv-studio/collections/photos/trash": "/hv-studio/portfolio/trash",
+  // Not a portfolio page, but the same idea: the grouped Testimonials list
+  // (components/admin/Testimonials). Its Trash stays Payload's own.
+  "/hv-studio/collections/testimonials": "/hv-studio/testimonials",
 };
 
 function redirectToPortfolio(request: NextRequest) {
@@ -93,6 +96,7 @@ export const config = {
     "/hv-studio/collections/events/trash",
     "/hv-studio/collections/photos",
     "/hv-studio/collections/photos/trash",
+    "/hv-studio/collections/testimonials",
     "/hv-studio/collections/pricing-rows",
     "/hv-studio/collections/pricing-rows/trash",
     "/hv-studio/collections/backstage",

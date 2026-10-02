@@ -119,6 +119,7 @@ export interface Config {
     'featured-offer': FeaturedOffer;
     'booking-cta': BookingCta;
     'testimonials-teaser': TestimonialsTeaser;
+    'testimonials-page': TestimonialsPage;
     'final-cta-footer': FinalCtaFooter;
     'site-settings': SiteSetting;
     booking: Booking;
@@ -131,6 +132,7 @@ export interface Config {
     'featured-offer': FeaturedOfferSelect<false> | FeaturedOfferSelect<true>;
     'booking-cta': BookingCtaSelect<false> | BookingCtaSelect<true>;
     'testimonials-teaser': TestimonialsTeaserSelect<false> | TestimonialsTeaserSelect<true>;
+    'testimonials-page': TestimonialsPageSelect<false> | TestimonialsPageSelect<true>;
     'final-cta-footer': FinalCtaFooterSelect<false> | FinalCtaFooterSelect<true>;
     'site-settings': SiteSettingsSelect<false> | SiteSettingsSelect<true>;
     booking: BookingSelect<false> | BookingSelect<true>;
@@ -312,7 +314,7 @@ export interface Event {
   deletedAt?: string | null;
 }
 /**
- * Client quotes and reviews, shown on the Testimonials page. Pick which ones appear on your homepage in Testimonials Section.
+ * Client quotes and reviews, shown on the Testimonials page. Drag ⋮⋮ to change their order within a category.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "testimonials".
@@ -320,7 +322,7 @@ export interface Event {
 export interface Testimonial {
   id: number;
   /**
-   * The client's quote, word for word.
+   * The client's words, without quote marks: the site adds its own (any you paste in are removed when you save).
    */
   quote: string;
   /**
@@ -328,79 +330,84 @@ export interface Testimonial {
    */
   clientName: string;
   /**
-   * Which category this testimonial relates to. Required — testimonials without one won't appear on the Testimonials page.
-   */
-  category: number | Category;
-  /**
-   * Which shoot this testimonial is about, if you'd like to link to it.
+   * The shoot this is about, if it's in your portfolio. Its button on the Testimonials page links to that album, and the category follows the album.
    */
   event?: (number | null) | Event;
   /**
-   * An optional photo shown alongside this testimonial.
+   * Which section of the Testimonials page this goes in.
+   */
+  category?: (number | null) | Category;
+  /**
+   * Optional. Pick one from the album, choose another photo you've already uploaded, or upload a new one. Left empty, the album's cover is used (or the category's cover when there's no album).
    */
   photo?: (number | null) | Photo;
   /**
-   * An optional short line, e.g. "Wedding, June 2025".
+   * Optional. The small line under the name. Left empty, it's the category and the album's month (shown greyed out above), or just the category.
    */
   context?: string | null;
+  source?: string | null;
+  submission?: (number | null) | TestimonialSubmission;
+  listOrder?: string | null;
   featured?: boolean | null;
   /**
-   * Turn off to hide this testimonial from the live site.
+   * Turn off to hide this testimonial from the site. Hiding it also takes it off the homepage.
    */
   published?: boolean | null;
+  showOnHomepage?: boolean | null;
   updatedAt: string;
   createdAt: string;
   deletedAt?: string | null;
 }
 /**
- * Your packages and prices, shown in the Offers & pricing section of your homepage. Drag to set their order. To spotlight one in 'Popular right now', pick it on the Featured Offer page.
+ * What clients sent through their request link, including their email, private notes and photos. Each one also arrives in Testimonials, hidden, to review and publish there.
  *
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "pricing-rows".
+ * via the `definition` "testimonial-submissions".
  */
-export interface PricingRow {
+export interface TestimonialSubmission {
   id: number;
-  _order?: string | null;
   /**
-   * Turn off to hide this package from your site.
+   * The inquiry this testimonial request was sent for.
    */
-  published?: boolean | null;
+  inquiry: number | Inquiry;
   /**
-   * The package name, e.g. "Wedding Day Coverage". Up to 28 characters, so it fits on two lines beside the price on phones.
+   * Carried forward from the linked inquiry at submission time.
    */
-  title: string;
+  name: string;
   /**
-   * The small word above the price, e.g. "From" or "Starting at". Up to 13 characters.
+   * Carried forward from the linked inquiry at submission time.
    */
-  priceLead?: string | null;
+  email: string;
   /**
-   * Any text, e.g. "$2,800", "$450/hr" or "Custom quote". Up to 12 characters, so it leaves room for the name on phones.
+   * Carried forward from the linked event's category at submission time, if it had one. Correct it here if needed before publishing.
    */
-  priceAmount: string;
+  category?: (number | null) | Category;
   /**
-   * A sentence or two describing this package. Up to 100 characters, about three lines on a phone.
+   * Carried forward from the linked inquiry at submission time. Correct it here if needed before publishing.
    */
-  summary: string;
-  features?:
-    | {
-        text: string;
-        id?: string | null;
-      }[]
-    | null;
+  event?: (number | null) | Event;
   /**
-   * Which category this package belongs to. Its View gallery button opens that category's page.
+   * The testimonial, word for word as the client wrote it.
    */
-  category: number | Category;
+  testimonialText: string;
   /**
-   * Optional. A few photos from this album show beside the package in 'Popular right now', so only while it's the featured package. Only live albums in this package's category are listed.
+   * Photos the client attached, if any. Private until you publish one with the testimonial.
    */
-  album?: (number | null) | Event;
-  gallery?: (number | Photo)[] | null;
-  featured?: boolean | null;
-  order?: number | null;
+  photos?: (number | TestimonialPhoto)[] | null;
+  /**
+   * An Instagram/Facebook link the client shared, if any. Reference only — not part of the published testimonial.
+   */
+  socialLink?: string | null;
+  /**
+   * Anything the client wanted you to know privately. Visible only to you here — never copied into a published testimonial.
+   */
+  privateNotes?: string | null;
+  /**
+   * Whether this submission has been published as a real Testimonial yet.
+   */
+  status: 'pending' | 'published';
   updatedAt: string;
   createdAt: string;
-  deletedAt?: string | null;
 }
 /**
  * Every question and booking request submitted through the site's contact forms — your inbox for new client inquiries.
@@ -564,6 +571,88 @@ export interface Client {
   deletedAt?: string | null;
 }
 /**
+ * Photos clients attach to a testimonial submission — private until you publish one with the testimonial from the submission's review screen.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "testimonial-photos".
+ */
+export interface TestimonialPhoto {
+  id: number;
+  inquiry?: (number | null) | Inquiry;
+  prefix?: string | null;
+  updatedAt: string;
+  createdAt: string;
+  url?: string | null;
+  thumbnailURL?: string | null;
+  filename?: string | null;
+  mimeType?: string | null;
+  filesize?: number | null;
+  width?: number | null;
+  height?: number | null;
+  focalX?: number | null;
+  focalY?: number | null;
+  sizes?: {
+    thumbnail?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+  };
+}
+/**
+ * Your packages and prices, shown in the Offers & pricing section of your homepage. Drag to set their order. To spotlight one in 'Popular right now', pick it on the Featured Offer page.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "pricing-rows".
+ */
+export interface PricingRow {
+  id: number;
+  _order?: string | null;
+  /**
+   * Turn off to hide this package from your site.
+   */
+  published?: boolean | null;
+  /**
+   * The package name, e.g. "Wedding Day Coverage". Up to 28 characters, so it fits on two lines beside the price on phones.
+   */
+  title: string;
+  /**
+   * The small word above the price, e.g. "From" or "Starting at". Up to 13 characters.
+   */
+  priceLead?: string | null;
+  /**
+   * Any text, e.g. "$2,800", "$450/hr" or "Custom quote". Up to 12 characters, so it leaves room for the name on phones.
+   */
+  priceAmount: string;
+  /**
+   * A sentence or two describing this package. Up to 100 characters, about three lines on a phone.
+   */
+  summary: string;
+  features?:
+    | {
+        text: string;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Which category this package belongs to. Its View gallery button opens that category's page.
+   */
+  category: number | Category;
+  /**
+   * Optional. A few photos from this album show beside the package in 'Popular right now', so only while it's the featured package. Only live albums in this package's category are listed.
+   */
+  album?: (number | null) | Event;
+  gallery?: (number | Photo)[] | null;
+  featured?: boolean | null;
+  order?: number | null;
+  updatedAt: string;
+  createdAt: string;
+  deletedAt?: string | null;
+}
+/**
  * Item lists reused across Prep and Post-Production checklists — one Standard template per type, plus optional per-category overrides.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -658,89 +747,6 @@ export interface BackstageThumbnail {
    */
   generated?: boolean | null;
   item?: (number | null) | Backstage;
-  prefix?: string | null;
-  updatedAt: string;
-  createdAt: string;
-  url?: string | null;
-  thumbnailURL?: string | null;
-  filename?: string | null;
-  mimeType?: string | null;
-  filesize?: number | null;
-  width?: number | null;
-  height?: number | null;
-  focalX?: number | null;
-  focalY?: number | null;
-  sizes?: {
-    thumbnail?: {
-      url?: string | null;
-      width?: number | null;
-      height?: number | null;
-      mimeType?: string | null;
-      filesize?: number | null;
-      filename?: string | null;
-    };
-  };
-}
-/**
- * Testimonials clients have submitted through their request link — review, correct, and publish the ones you'd like to show on the site.
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "testimonial-submissions".
- */
-export interface TestimonialSubmission {
-  id: number;
-  /**
-   * The inquiry this testimonial request was sent for.
-   */
-  inquiry: number | Inquiry;
-  /**
-   * Carried forward from the linked inquiry at submission time.
-   */
-  name: string;
-  /**
-   * Carried forward from the linked inquiry at submission time.
-   */
-  email: string;
-  /**
-   * Carried forward from the linked event's category at submission time, if it had one. Correct it here if needed before publishing.
-   */
-  category?: (number | null) | Category;
-  /**
-   * Carried forward from the linked inquiry at submission time. Correct it here if needed before publishing.
-   */
-  event?: (number | null) | Event;
-  /**
-   * The testimonial, word for word as the client wrote it.
-   */
-  testimonialText: string;
-  /**
-   * Photos the client attached, if any. Private until you publish one with the testimonial.
-   */
-  photos?: (number | TestimonialPhoto)[] | null;
-  /**
-   * An Instagram/Facebook link the client shared, if any. Reference only — not part of the published testimonial.
-   */
-  socialLink?: string | null;
-  /**
-   * Anything the client wanted you to know privately. Visible only to you here — never copied into a published testimonial.
-   */
-  privateNotes?: string | null;
-  /**
-   * Whether this submission has been published as a real Testimonial yet.
-   */
-  status: 'pending' | 'published';
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * Photos clients attach to a testimonial submission — private until you publish one with the testimonial from the submission's review screen.
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "testimonial-photos".
- */
-export interface TestimonialPhoto {
-  id: number;
-  inquiry?: (number | null) | Inquiry;
   prefix?: string | null;
   updatedAt: string;
   createdAt: string;
@@ -1020,12 +1026,16 @@ export interface PhotosSelect<T extends boolean = true> {
 export interface TestimonialsSelect<T extends boolean = true> {
   quote?: T;
   clientName?: T;
-  category?: T;
   event?: T;
+  category?: T;
   photo?: T;
   context?: T;
+  source?: T;
+  submission?: T;
+  listOrder?: T;
   featured?: T;
   published?: T;
+  showOnHomepage?: T;
   updatedAt?: T;
   createdAt?: T;
   deletedAt?: T;
@@ -1584,9 +1594,42 @@ export interface TestimonialsTeaser {
    */
   linkLabel?: string | null;
   /**
+   * The typeface of the quotes in this section.
+   */
+  quoteFont?: string | null;
+  /**
    * Where that link goes. Locked to the testimonials page.
    */
   linkHref?: string | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * The title, intro and font of your Testimonials page, and the review section at the bottom.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "testimonials-page".
+ */
+export interface TestimonialsPage {
+  id: number;
+  /**
+   * The page's heading, also used for the browser tab.
+   */
+  title: string;
+  /**
+   * A line or two under the heading. Leave empty for none.
+   */
+  intro?: string | null;
+  /**
+   * The typeface of the quotes on this page.
+   */
+  quoteFont?: string | null;
+  /**
+   * The section at the bottom inviting past clients to leave a review. Its button doesn't lead anywhere yet, so keep this off for now.
+   */
+  showReviewSection?: boolean | null;
+  reviewHeading?: string | null;
+  reviewText?: string | null;
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -1845,7 +1888,23 @@ export interface TestimonialsTeaserSelect<T extends boolean = true> {
   testimonials?: T;
   heading?: T;
   linkLabel?: T;
+  quoteFont?: T;
   linkHref?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "testimonials-page_select".
+ */
+export interface TestimonialsPageSelect<T extends boolean = true> {
+  title?: T;
+  intro?: T;
+  quoteFont?: T;
+  showReviewSection?: T;
+  reviewHeading?: T;
+  reviewText?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

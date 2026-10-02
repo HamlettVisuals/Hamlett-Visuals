@@ -57,10 +57,21 @@ export default function LivePreviewHighlight() {
     // same-origin preview iframe, scrollIntoView also scrolls every
     // scrollable ancestor in the admin page around it — it was pushing the
     // admin's Live Preview toolbar and the whole edit screen out of view.
-    window.scrollTo({
-      top: target.getBoundingClientRect().top + window.scrollY - headerOffset(target),
-      behavior: prefersReducedMotion ? "auto" : "smooth",
-    });
+    const scrollToTarget = () =>
+      window.scrollTo({
+        top: target.getBoundingClientRect().top + window.scrollY - headerOffset(target),
+        behavior: prefersReducedMotion ? "auto" : "smooth",
+      });
+    // Payload keeps the preview iframe hidden until it has loaded, so on a
+    // first open this can run while the frame has no height and the scroll
+    // would do nothing. Then it waits for the frame to be shown.
+    const onResize = () => {
+      if (window.innerHeight === 0) return;
+      window.removeEventListener("resize", onResize);
+      scrollToTarget();
+    };
+    if (window.innerHeight > 0) scrollToTarget();
+    else window.addEventListener("resize", onResize);
     target.classList.add(HIGHLIGHT_CLASS);
 
     // Clears the marker so it can't re-trigger on back/forward navigation
@@ -97,6 +108,7 @@ export default function LivePreviewHighlight() {
     // window.location, same as the first) instead of leaving a class with
     // no timer left to remove it.
     return () => {
+      window.removeEventListener("resize", onResize);
       window.clearTimeout(clearHashTimeout);
       window.clearTimeout(removeTimeout);
       target.classList.remove(HIGHLIGHT_CLASS);

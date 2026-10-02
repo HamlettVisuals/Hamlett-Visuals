@@ -5,7 +5,8 @@ import { revalidateSite } from "#src/lib/revalidate-site.ts";
 // Saves a drag on the Categories & Albums page: categories (Categories'
 // /reorder-categories endpoint), albums within a category (Events'
 // /reorder-albums), and photos within an album (Photos' /reorder-photos,
-// from the album page's photo grid). The client sends the
+// from the album page's photo grid), and testimonials within a category
+// (Testimonials' /reorder, from its grouped list). The client sends the
 // group's ids in their new order plus the one that moved.
 //
 // A reorder isn't an edit, so it writes only the order key, straight to the
@@ -14,7 +15,7 @@ import { revalidateSite } from "#src/lib/revalidate-site.ts";
 // History. The site is refreshed afterwards, as a save would.
 //
 // Keys:
-//   - albums and photos: normally only the moved item gets a new key,
+//   - albums, photos and testimonials: normally only the moved item gets a new key,
 //     between its new neighbours. If any item in the group has no key yet
 //     (saved by older code) or the keys aren't in order, the whole group
 //     is renumbered in the order she just set. They're always sorted in
@@ -31,7 +32,8 @@ import { revalidateSite } from "#src/lib/revalidate-site.ts";
 type Target =
   | { collection: "categories"; field: "_order"; scope: null }
   | { collection: "events"; field: "albumOrder"; scope: { field: "category"; id: number } }
-  | { collection: "photos"; field: "albumOrder"; scope: { field: "event"; id: number } };
+  | { collection: "photos"; field: "albumOrder"; scope: { field: "event"; id: number } }
+  | { collection: "testimonials"; field: "listOrder"; scope: { field: "category"; id: number } };
 
 const compare = (a: string, b: string) => (a < b ? -1 : a > b ? 1 : 0);
 

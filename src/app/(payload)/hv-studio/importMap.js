@@ -18,6 +18,13 @@ import { AlbumsListDescription as AlbumsListDescription_271eec196f6613c6ae3ecc54
 import { default as default_3217d5da994dedfd8949de6baed57944 } from '../../../components/admin/CropPreview'
 import { PhotoStepNav as PhotoStepNav_90c8c21c9d2d6b9765f53be2921a1014 } from '../../../components/admin/PhotoNav'
 import { PhotoCloseButton as PhotoCloseButton_90c8c21c9d2d6b9765f53be2921a1014 } from '../../../components/admin/PhotoNav'
+import { default as default_1ecd00a4770387e92c1cb1bd90bd51c2 } from '../../../components/admin/Testimonials/SourceNote'
+import { default as default_afd277031b0dac704c8f2cec4967e9b4 } from '../../../components/admin/Testimonials/CategoryField'
+import { default as default_d9b0c681134c2672ed89260100de5eed } from '../../../components/admin/Testimonials/PhotoField'
+import { default as default_ef48d432b2d249f870737917bda25a07 } from '../../../components/admin/Testimonials/ContextField'
+import { PublishedCell as PublishedCell_a23a6c88e18c372d6b14c99026b3ecdd } from '../../../components/admin/Testimonials/Cells'
+import { default as default_c7c656265409eb73b417420e40d8495f } from '../../../components/admin/Testimonials/HomepageField'
+import { TrashTabs as TrashTabs_bd1f1a10fb821c4e2d8168b11002cb4e } from '../../../components/admin/Testimonials/Tabs'
 import { default as default_f21c27ddc71a218bc5a17d940513ff86 } from '../../../components/admin/PackageThumbnailCell'
 import { default as default_917c38b2a2bb055129e101848646cc97 } from '../../../components/admin/PackageFeaturedNote'
 import { PackageTitleCell as PackageTitleCell_24f49b6f3fd3d212d674670488897cc5 } from '../../../components/admin/PackageCells'
@@ -35,7 +42,7 @@ import { default as default_4d37a70e641ec184dcdc17bda0739dd6 } from '../../../co
 import { BackstageEmptyState as BackstageEmptyState_a35edf2bebff5c9765c6a701ac6beb14 } from '../../../components/admin/BackstageCells'
 import { BackstageListDescription as BackstageListDescription_a35edf2bebff5c9765c6a701ac6beb14 } from '../../../components/admin/BackstageCells'
 import { BackstageUploadHint as BackstageUploadHint_a35edf2bebff5c9765c6a701ac6beb14 } from '../../../components/admin/BackstageCells'
-import { default as default_1b650ef99724fbd75de054d026e34ba4 } from '../../../components/admin/TestimonialPublishPanel'
+import { default as default_a0f9d5301b055c679bd3c9bbfef4f8e7 } from '../../../components/admin/Testimonials/SubmissionLink'
 import { default as default_3ff6a48a77222379c05feba297b20132 } from '../../../components/admin/NavLinksField'
 import { default as default_45f306dc284acabb8024fc7078f1d047 } from '../../../components/admin/NavLinksDiff'
 import { default as default_85c066c9e85977a669a8719b5844b2d5 } from '../../../components/admin/PublishButton'
@@ -57,6 +64,8 @@ import { default as default_656bea43dbcc31aeaa2c7e2919cc66cf } from '../../../co
 import { default as default_e4abcc230cd3442cf8a4ebea33949c00 } from '../../../components/admin/ContactLineAloneNote'
 import { default as default_4ac57353bd76e239b598c98824a21755 } from '../../../components/admin/TestimonialPicksField'
 import { default as default_9717a31d15966f2422bf6c61264ebc6d } from '../../../components/admin/TestimonialPicksNote'
+import { default as default_8cb9fe875f24926b84f541affdd05ff1 } from '../../../components/admin/QuoteFontField'
+import { PageSettingsTabs as PageSettingsTabs_bd1f1a10fb821c4e2d8168b11002cb4e } from '../../../components/admin/Testimonials/Tabs'
 import { default as default_77367a543f762dbbf1879e23275ea1dd } from '../../../components/admin/FooterLinksField'
 import { default as default_f374578049e4e5ccb6fe72e599427a6f } from '../../../components/admin/LogoSizeField'
 import { default as default_beebdd1cde60416cd3f6a700617bab88 } from '../../../components/admin/SiteNav'
@@ -65,6 +74,7 @@ import { S3ClientUploadHandler as S3ClientUploadHandler_f97aa6c64367fa259c5bc056
 import { default as default_417d8d667e84e4656bf87771dc7c88df } from '../../../components/admin/KanbanBoard'
 import { default as default_d497c752e6aa0ef2ce3452cd1f73ca34 } from '../../../components/admin/EditorOverview'
 import { default as default_fc2c3601ead4127e86340d30ffe8a352 } from '../../../components/admin/Portfolio'
+import { default as default_c8cb75f747c4585e3a3cd1ce8101ee50 } from '../../../components/admin/Testimonials'
 import { default as default_049c80a619990eb26596514fbc6cee26 } from '../../../components/admin/Portfolio/Trash'
 import { CollectionCards as CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1 } from '@payloadcms/next/rsc'
 
@@ -90,6 +100,13 @@ export const importMap = {
   "/components/admin/CropPreview#default": default_3217d5da994dedfd8949de6baed57944,
   "/components/admin/PhotoNav#PhotoStepNav": PhotoStepNav_90c8c21c9d2d6b9765f53be2921a1014,
   "/components/admin/PhotoNav#PhotoCloseButton": PhotoCloseButton_90c8c21c9d2d6b9765f53be2921a1014,
+  "/components/admin/Testimonials/SourceNote#default": default_1ecd00a4770387e92c1cb1bd90bd51c2,
+  "/components/admin/Testimonials/CategoryField#default": default_afd277031b0dac704c8f2cec4967e9b4,
+  "/components/admin/Testimonials/PhotoField#default": default_d9b0c681134c2672ed89260100de5eed,
+  "/components/admin/Testimonials/ContextField#default": default_ef48d432b2d249f870737917bda25a07,
+  "/components/admin/Testimonials/Cells#PublishedCell": PublishedCell_a23a6c88e18c372d6b14c99026b3ecdd,
+  "/components/admin/Testimonials/HomepageField#default": default_c7c656265409eb73b417420e40d8495f,
+  "/components/admin/Testimonials/Tabs#TrashTabs": TrashTabs_bd1f1a10fb821c4e2d8168b11002cb4e,
   "/components/admin/PackageThumbnailCell#default": default_f21c27ddc71a218bc5a17d940513ff86,
   "/components/admin/PackageFeaturedNote#default": default_917c38b2a2bb055129e101848646cc97,
   "/components/admin/PackageCells#PackageTitleCell": PackageTitleCell_24f49b6f3fd3d212d674670488897cc5,
@@ -107,7 +124,7 @@ export const importMap = {
   "/components/admin/BackstageCells#BackstageEmptyState": BackstageEmptyState_a35edf2bebff5c9765c6a701ac6beb14,
   "/components/admin/BackstageCells#BackstageListDescription": BackstageListDescription_a35edf2bebff5c9765c6a701ac6beb14,
   "/components/admin/BackstageCells#BackstageUploadHint": BackstageUploadHint_a35edf2bebff5c9765c6a701ac6beb14,
-  "/components/admin/TestimonialPublishPanel#default": default_1b650ef99724fbd75de054d026e34ba4,
+  "/components/admin/Testimonials/SubmissionLink#default": default_a0f9d5301b055c679bd3c9bbfef4f8e7,
   "/components/admin/NavLinksField#default": default_3ff6a48a77222379c05feba297b20132,
   "/components/admin/NavLinksDiff#default": default_45f306dc284acabb8024fc7078f1d047,
   "/components/admin/PublishButton#default": default_85c066c9e85977a669a8719b5844b2d5,
@@ -129,6 +146,8 @@ export const importMap = {
   "/components/admin/ContactLineAloneNote#default": default_e4abcc230cd3442cf8a4ebea33949c00,
   "/components/admin/TestimonialPicksField#default": default_4ac57353bd76e239b598c98824a21755,
   "/components/admin/TestimonialPicksNote#default": default_9717a31d15966f2422bf6c61264ebc6d,
+  "/components/admin/QuoteFontField#default": default_8cb9fe875f24926b84f541affdd05ff1,
+  "/components/admin/Testimonials/Tabs#PageSettingsTabs": PageSettingsTabs_bd1f1a10fb821c4e2d8168b11002cb4e,
   "/components/admin/FooterLinksField#default": default_77367a543f762dbbf1879e23275ea1dd,
   "/components/admin/LogoSizeField#default": default_f374578049e4e5ccb6fe72e599427a6f,
   "/components/admin/SiteNav#default": default_beebdd1cde60416cd3f6a700617bab88,
@@ -137,6 +156,7 @@ export const importMap = {
   "/components/admin/KanbanBoard#default": default_417d8d667e84e4656bf87771dc7c88df,
   "/components/admin/EditorOverview#default": default_d497c752e6aa0ef2ce3452cd1f73ca34,
   "/components/admin/Portfolio#default": default_fc2c3601ead4127e86340d30ffe8a352,
+  "/components/admin/Testimonials#default": default_c8cb75f747c4585e3a3cd1ce8101ee50,
   "/components/admin/Portfolio/Trash#default": default_049c80a619990eb26596514fbc6cee26,
   "@payloadcms/next/rsc#CollectionCards": CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1
 }

@@ -1,4 +1,9 @@
-import type { CollectionBeforeChangeHook, CollectionBeforeDeleteHook, CollectionConfig } from "payload";
+import type {
+  CollectionAfterChangeHook,
+  CollectionBeforeChangeHook,
+  CollectionBeforeDeleteHook,
+  CollectionConfig,
+} from "payload";
 import { isAdmin } from "#src/access/isAdmin.ts";
 import { formatSlug } from "#src/hooks/formatSlug.ts";
 import { DESCRIPTION_MAX } from "#src/lib/album-limits.ts";
@@ -55,6 +60,25 @@ const setAlbumOrder: CollectionBeforeChangeHook = async ({ context, data, operat
   });
   data.albumOrder = keyAtStart(docs.map((doc) => doc.albumOrder));
   return data;
+};
+
+// An album moved to another category takes its testimonials with it, so a
+// testimonial's category always matches its album's (Testimonials.ts
+// refuses a mismatch on save). Straight in the database like a drag: no
+// History version on each testimonial. Their order keys are cleared, so
+// they go to the top of the new category (lib/manual-order.ts).
+const moveTestimonials: CollectionAfterChangeHook = async ({ doc, operation, previousDoc, req }) => {
+  if (operation !== "update") return doc;
+  const category = idOf(doc.category);
+  if (category == null || String(category) === String(idOf(previousDoc?.category) ?? "")) return doc;
+  await req.payload.db.updateMany({
+    collection: "testimonials",
+    where: { event: { equals: doc.id } },
+    data: { category, listOrder: null },
+    returning: false,
+    req,
+  });
+  return doc;
 };
 
 // When an album is deleted permanently, the database takes its photos out
@@ -155,6 +179,7 @@ export const Events: CollectionConfig = {
   },
   hooks: {
     beforeChange: [setSortDate, setAlbumOrder],
+    afterChange: [moveTestimonials],
     beforeDelete: [releasePhotos],
   },
   endpoints: [

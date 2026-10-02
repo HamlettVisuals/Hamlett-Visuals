@@ -24,7 +24,7 @@ export const TestimonialSubmissions: CollectionConfig = {
     useAsTitle: "name",
     defaultColumns: ["name", "category", "status", "createdAt"],
     description:
-      "Testimonials clients have submitted through their request link — review, correct, and publish the ones you'd like to show on the site.",
+      "What clients sent through their request link, including their email, private notes and photos. Each one also arrives in Testimonials, hidden, to review and publish there.",
   },
   access: {
     create: isAdmin,
@@ -99,18 +99,14 @@ export const TestimonialSubmissions: CollectionConfig = {
       },
     },
     {
-      // Renders the "Publish this testimonial" panel (photo picker, a pointer
-      // to the homepage picker in Testimonials Teaser, and the Publish
-      // button) once status is Pending — see
-      // TestimonialPublishPanel.tsx and its route,
-      // /api/testimonial-submissions/[id]/publish/route.ts. Same `ui` field +
-      // `admin.condition` mechanism as Inquiries.testimonialRequestBanner.
-      name: "publishPanel",
+      // A link to the testimonial made from this submission (it lands in
+      // Testimonials, hidden, to review and publish there; see
+      // app/api/testimonial-submissions/route.ts).
+      name: "testimonialLink",
       type: "ui",
       admin: {
-        condition: (data) => data?.status === "pending",
         components: {
-          Field: "/components/admin/TestimonialPublishPanel#default",
+          Field: "/components/admin/Testimonials/SubmissionLink#default",
         },
       },
     },
