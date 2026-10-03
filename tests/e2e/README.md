@@ -68,6 +68,19 @@ Results are:
   run: Payload's own side menu makes studio pages scroll ~15px sideways on
   phones (docs/build-2-plan.md, Mobile follow-ups).
 
+## Known failures
+
+- `hero-seconds.test.cjs`, "preview at 2: the bar fills over 2000ms, straight
+  away": fails on committed code (seen 2026-10-03, before and after that
+  day's work). The Live Preview keeps the 4.5s default instead of the
+  unsaved 2s. Not fixed yet; to look at in a later session.
+- `drawer-touch-scroll.test.cjs` (WebKit, iPhone profile): on 2026-10-03 it
+  failed 5 checks in a full run (timeouts opening drawers, a close button not
+  found) and, run on its own, didn't finish within 10 minutes. Not yet
+  compared against the code from before that day's commits (6e34606,
+  b6aa0af), so it's unknown whether they caused it. To look at in a later
+  session, with hero-seconds.
+
 ## The tests
 
 | File | What it covers |
