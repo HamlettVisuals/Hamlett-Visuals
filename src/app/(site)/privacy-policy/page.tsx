@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { getPayload } from "payload";
+import config from "@payload-config";
 import { getSiteSettings } from "@/lib/site-settings";
 
 // Privacy Policy — standalone page. Placeholder content only; real policy
@@ -25,6 +27,11 @@ const PRIVACY_LAST_UPDATED = "September 15, 2026";
 
 export default async function PrivacyPolicyPage() {
   const { contact } = await getSiteSettings();
+  // The email always shows here (a policy needs a way to reach you); the
+  // phone follows the Footer's "Show phone number" switch (lib/phone-shown.ts).
+  const payload = await getPayload({ config });
+  const footer = await payload.findGlobal({ slug: "final-cta-footer", depth: 0 });
+  const phone = footer.showPhone !== false ? contact.phone : null;
 
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col px-gutter py-section">
@@ -99,16 +106,16 @@ export default async function PrivacyPolicyPage() {
             Questions about this policy or how your information is handled
             are welcome any time.
           </p>
-          {(contact.email || contact.phone) && (
+          {(contact.email || phone) && (
             <div className="mt-4 flex flex-col gap-1.5 text-caption text-muted">
               {contact.email && (
                 <a href={`mailto:${contact.email}`} className="link text-ink">
                   {contact.email}
                 </a>
               )}
-              {contact.phone && (
-                <a href={contact.phone.href} className="link text-ink">
-                  {contact.phone.display}
+              {phone && (
+                <a href={phone.href} className="link text-ink">
+                  {phone.display}
                 </a>
               )}
             </div>

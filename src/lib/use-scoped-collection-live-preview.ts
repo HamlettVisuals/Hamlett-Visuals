@@ -31,8 +31,11 @@ export function useScopedCollectionLivePreview<T extends Record<string, any> & {
   collectionSlug: string;
   apiRoute?: string;
   depth?: number;
-}): { data: T } {
+}): { data: T; live: boolean } {
   const [data, setData] = useState<T>(initialData);
+  // Set once an unsaved update from the studio has been applied; never on
+  // the public site (no Live Preview messages arrive there).
+  const [live, setLive] = useState(false);
   const mergeBasis = useRef<T>(initialData);
   // mergeData is async (it may fetch relationships), so two quick edits can
   // finish out of order; only the newest message's result is kept, or an
@@ -61,6 +64,7 @@ export function useScopedCollectionLivePreview<T extends Record<string, any> & {
       if (messageId !== latestMessage.current) return;
       mergeBasis.current = merged;
       setData(merged);
+      setLive(true);
     };
 
     window.addEventListener("message", onMessage);
@@ -68,5 +72,10 @@ export function useScopedCollectionLivePreview<T extends Record<string, any> & {
     return () => window.removeEventListener("message", onMessage);
   }, [id, serverURL, collectionSlug, apiRoute, depth]);
 
-  return { data };
+  // `live`: unsaved form data has arrived (we're in the studio's Live
+  // Preview). Photos drawn from it skip the image optimizer, which fetches
+  // without a session: a photo picked but not yet shown on the site isn't
+  // public (lib/public-photos.ts), so the browser fetches it directly with
+  // the admin's own session, and the optimizer caches nothing.
+  return { data, live };
 }

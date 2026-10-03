@@ -28,8 +28,8 @@ type LiveFields = {
 // lib/use-scoped-collection-live-preview.ts). The file itself always comes
 // from the server. A cleared title shows the saved one: the server fills a
 // blank title in from the file name on save.
-function useLiveItem(item: BackstageItem): BackstageItem {
-  const { data } = useScopedCollectionLivePreview<LiveFields>({
+function useLiveItem(item: BackstageItem): BackstageItem & { live: boolean } {
+  const { data, live } = useScopedCollectionLivePreview<LiveFields>({
     initialData: { id: item.id, title: item.title, caption: item.caption },
     serverURL,
     collectionSlug: "backstage",
@@ -38,6 +38,7 @@ function useLiveItem(item: BackstageItem): BackstageItem {
   });
   const posterChanged = "poster" in data;
   return {
+    live,
     ...item,
     title: data.title?.trim() || item.title,
     caption: data.caption,
@@ -46,7 +47,7 @@ function useLiveItem(item: BackstageItem): BackstageItem {
   };
 }
 
-function Tile({ item }: { item: BackstageItem }) {
+function Tile({ item, live = false }: { item: BackstageItem; live?: boolean }) {
   return (
     <div className="relative">
       {item.imageUrl ? (
@@ -56,6 +57,7 @@ function Tile({ item }: { item: BackstageItem }) {
           sizes="(min-width: 640px) 31vw, 46vw"
           className="aspect-[3/4] w-full"
           focal={item.imageFocal ?? undefined}
+          unoptimized={live}
         />
       ) : (
         // A video without a thumbnail: a plain tile rather than a broken image.
@@ -108,7 +110,7 @@ function GridItem({
       onClick={(event) => onItemClick(savedItem, event.currentTarget)}
       className="cursor-pointer text-left"
     >
-      <Tile item={item} />
+      <Tile item={item} live={item.live} />
       <Caption item={item} />
     </button>
   );

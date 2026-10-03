@@ -25,7 +25,7 @@ import { SAMPLE_PHOTOS } from "#src/lib/package-limits.ts";
 // Part of payload.config.ts's module graph (Photos.ts imports it), so no
 // "@/…" imports.
 
-type PhotoField = { path: string[]; kind: "ref" | "richText"; label: string };
+type PhotoField = { path: string[]; kind: "ref" | "richText"; label: string; hidden: boolean };
 type Entity = { kind: "collection" | "global"; slug: string; label: string; titleField?: string; trash: boolean; fields: PhotoField[] };
 type Doc = Record<string, unknown> & { id?: number | string; deletedAt?: string | null };
 
@@ -38,18 +38,22 @@ const pointsAtPhotos = (field: FlattenedField) =>
   (field.type === "upload" || field.type === "relationship") &&
   (Array.isArray(field.relationTo) ? field.relationTo.includes(PHOTOS) : field.relationTo === PHOTOS);
 
-function photoFields(fields: FlattenedField[], path: string[] = [], labels: string[] = []): PhotoField[] {
+// `hidden`: the field, or a group/array it's in, is hidden in the editor
+// (a retired field still holding a photo). Counts as a use, but the site
+// doesn't show it.
+function photoFields(fields: FlattenedField[], path: string[] = [], labels: string[] = [], inHidden = false): PhotoField[] {
   const found: PhotoField[] = [];
   for (const field of fields) {
     if (!("name" in field) || !field.name) continue;
     const here = [...path, field.name];
     const label = [...labels, labelOf("label" in field ? field.label : undefined, field.name)];
-    if (pointsAtPhotos(field)) found.push({ path: here, kind: "ref", label: label.join(" › ") });
-    else if (field.type === "richText") found.push({ path: here, kind: "richText", label: label.join(" › ") });
+    const hidden = inHidden || Boolean((field.admin as { hidden?: boolean } | undefined)?.hidden);
+    if (pointsAtPhotos(field)) found.push({ path: here, kind: "ref", label: label.join(" › "), hidden });
+    else if (field.type === "richText") found.push({ path: here, kind: "richText", label: label.join(" › "), hidden });
     else if (field.type === "array" || field.type === "group" || field.type === "tab") {
-      found.push(...photoFields(field.flattenedFields, here, label));
+      found.push(...photoFields(field.flattenedFields, here, label, hidden));
     } else if (field.type === "blocks") {
-      for (const block of field.blocks) found.push(...photoFields(block.flattenedFields, here, label));
+      for (const block of field.blocks) found.push(...photoFields(block.flattenedFields, here, label, hidden));
     }
   }
   return found;
@@ -174,6 +178,54 @@ export async function collectPhotoUses(req: PayloadRequest): Promise<Map<number,
 // The raw value at a path (for rich text, whose content is walked separately).
 function idsAtRaw(doc: Doc, path: string[]): unknown {
   return path.reduce<unknown>((value, key) => (value && typeof value === "object" ? (value as Record<string, unknown>)[key] : undefined), doc);
+}
+
+/**
+ * Every photo the site shows somewhere other than its own album: a use in
+ * a document the site shows (published, not in the Trash, and for an album
+ * or a package, in a category that's shown too) or in a global, through a
+ * field that isn't retired. What signed-out visitors may read besides album
+ * photos (lib/public-photos.ts). Same walk as collectPhotoUses, one query
+ * per collection or global that can point at a photo.
+ */
+export async function collectShownPhotoIds(req: PayloadRequest): Promise<Set<number>> {
+  const shown = new Set<number>();
+  const categories = await req.payload.find({
+    collection: "categories",
+    depth: 0,
+    pagination: false,
+    select: { published: true },
+    req,
+  });
+  const categoryShown = new Set(categories.docs.filter((c) => c.published !== false).map((c) => c.id));
+  const docShown = (entity: Entity, doc: Doc) => {
+    if (entity.kind === "global") return true;
+    if (doc.deletedAt || doc.published === false) return false;
+    if ((entity.slug === "events" || entity.slug === "pricing-rows") && "category" in doc) {
+      const category = doc.category && typeof doc.category === "object" ? (doc.category as { id: number }).id : doc.category;
+      return categoryShown.has(category as number);
+    }
+    return true;
+  };
+
+  await Promise.all(
+    entities(req).map(async (entity) => {
+      const fields = entity.fields.filter((field) => !field.hidden);
+      if (!fields.length) return;
+      const docs: Doc[] =
+        entity.kind === "global"
+          ? [(await req.payload.findGlobal({ slug: entity.slug as never, depth: 0, req })) as Doc]
+          : ((await req.payload.find({ collection: entity.slug as never, depth: 0, pagination: false, req })).docs as Doc[]);
+      for (const doc of docs) {
+        if (!docShown(entity, doc)) continue;
+        for (const field of fields) {
+          const ids = field.kind === "richText" ? idsInRichText(idsAtRaw(doc, field.path)) : idsAt(doc, field.path);
+          for (const id of ids) shown.add(id);
+        }
+      }
+    }),
+  );
+  return shown;
 }
 
 /** Where one photo is used, including as a package's sample photo. */

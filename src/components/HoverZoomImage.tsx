@@ -23,6 +23,11 @@ type HoverZoomImageProps = {
    * centre, same as leaving this off.
    */
   focal?: FocalPhoto;
+  /**
+   * Skip the image optimizer and load the file itself. For Live Preview's
+   * unsaved photos only (see lib/use-scoped-live-preview.ts `live`).
+   */
+  unoptimized?: boolean;
 };
 
 /**
@@ -50,6 +55,7 @@ export default function HoverZoomImage({
   priority = false,
   quality = 90,
   focal,
+  unoptimized = false,
 }: HoverZoomImageProps) {
   return (
     // A size container, so the focal position's cqw/cqh are this frame's.
@@ -61,6 +67,7 @@ export default function HoverZoomImage({
         sizes={sizes}
         priority={priority}
         quality={quality}
+        unoptimized={unoptimized}
         className="object-cover"
         style={focal ? { objectPosition: focalPosition(focal) } : undefined}
       />

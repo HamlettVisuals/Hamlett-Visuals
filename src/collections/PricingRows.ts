@@ -1,5 +1,6 @@
 import type { CollectionBeforeChangeHook, CollectionConfig, Validate } from "payload";
 import { isAdmin } from "#src/access/isAdmin.ts";
+import { readPublishedInShownCategory } from "#src/access/publicRead.ts";
 import { CLOSE_EDITOR_BUTTON } from "#src/lib/admin-components.ts";
 import { OTHER_SESSION_TYPE } from "#src/lib/booking-session-type.ts";
 import {
@@ -120,7 +121,8 @@ export const PricingRows: CollectionConfig = {
       "Your packages and prices, shown in the Offers & pricing section of your homepage. Drag to set their order. To spotlight one in 'Popular right now', pick it on the Featured Offer page.",
   },
   access: {
-    read: () => true,
+    // Signed out: only packages the site shows (src/access/publicRead.ts).
+    read: readPublishedInShownCategory,
     create: isAdmin,
     update: isAdmin,
     delete: isAdmin,

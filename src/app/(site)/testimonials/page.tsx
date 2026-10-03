@@ -272,6 +272,10 @@ export default async function TestimonialsPage({ searchParams }: PageProps<"/tes
                                 sizes="(min-width: 640px) 200px, 100vw"
                                 className="aspect-[3/2] w-full sm:aspect-[4/5]"
                                 focal={photo}
+                                // An admin's preview of a hidden testimonial:
+                                // its photo may not be public yet, so it skips
+                                // the optimizer (lib/public-photos.ts).
+                                unoptimized={previewId !== null}
                               />
                             </Link>
                           )}

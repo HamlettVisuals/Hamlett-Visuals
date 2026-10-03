@@ -5,6 +5,7 @@ import type {
   CollectionConfig,
 } from "payload";
 import { isAdmin } from "#src/access/isAdmin.ts";
+import { readPublishedInShownCategory } from "#src/access/publicRead.ts";
 import { formatSlug } from "#src/hooks/formatSlug.ts";
 import { DESCRIPTION_MAX } from "#src/lib/album-limits.ts";
 import { OTHER_SESSION_TYPE } from "#src/lib/booking-session-type.ts";
@@ -172,7 +173,8 @@ export const Events: CollectionConfig = {
       "Each album is one shoot (a wedding, a portrait session) and holds its photos. Albums show on their category's page in your order; new ones go to the top.",
   },
   access: {
-    read: () => true,
+    // Signed out: only albums the site shows (src/access/publicRead.ts).
+    read: readPublishedInShownCategory,
     create: isAdmin,
     update: isAdmin,
     delete: isAdmin,

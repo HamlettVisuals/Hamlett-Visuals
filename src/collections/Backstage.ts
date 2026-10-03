@@ -9,6 +9,7 @@ import type {
 import { APIError, isolateObjectProperty } from "payload";
 import { generateKeyBetween } from "payload/shared";
 import { isAdmin } from "#src/access/isAdmin.ts";
+import { readPublished } from "#src/access/publicRead.ts";
 import { CLOSE_EDITOR_BUTTON } from "#src/lib/admin-components.ts";
 import {
   CAPTION_MAX,
@@ -343,7 +344,8 @@ export const Backstage: CollectionConfig = {
       "The photos and video clips on your Backstage page. Drag to set their order; new ones go to the top.",
   },
   access: {
-    read: () => true,
+    // Signed out: only shown items (src/access/publicRead.ts).
+    read: readPublished,
     create: isAdmin,
     update: isAdmin,
     delete: isAdmin,

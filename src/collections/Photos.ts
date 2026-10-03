@@ -1,5 +1,6 @@
 import type { CollectionBeforeChangeHook, CollectionConfig } from "payload";
 import { isAdmin } from "#src/access/isAdmin.ts";
+import { publicPhotoWhere } from "#src/lib/public-photos.ts";
 import { RASTER_IMAGE_MIME_TYPES } from "#src/lib/raster-image-types.ts";
 import { removeRefusedUpload } from "#src/lib/upload-limits.ts";
 import { resizeLargePhotos } from "#src/lib/photo-resize.ts";
@@ -83,7 +84,10 @@ export const Photos: CollectionConfig = {
       "A photo on your site: in an album, or used as a cover, hero slide, portrait or elsewhere.",
   },
   access: {
-    read: () => true,
+    // Signed out (the site's visitors, and the image optimizer, which never
+    // has a session): only photos the site can show, records and files
+    // alike. See lib/public-photos.ts.
+    read: async ({ req }) => (req.user ? true : publicPhotoWhere(req)),
     create: isAdmin,
     update: isAdmin,
     delete: isAdmin,

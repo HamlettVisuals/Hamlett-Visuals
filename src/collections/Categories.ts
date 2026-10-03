@@ -8,6 +8,7 @@ import type {
 import { APIError } from "payload";
 import { generateKeyBetween } from "payload/shared";
 import { isAdmin } from "#src/access/isAdmin.ts";
+import { readPublished } from "#src/access/publicRead.ts";
 import { formatSlug } from "#src/hooks/formatSlug.ts";
 import { OTHER_SESSION_TYPE } from "#src/lib/booking-session-type.ts";
 import { BLURB_MAX } from "#src/lib/category-limits.ts";
@@ -239,7 +240,8 @@ export const Categories: CollectionConfig = {
       "The types of photography you offer (Weddings, Portraits, Pets, etc.) — these show up as the tiles on the homepage and each one gets its own portfolio page.",
   },
   access: {
-    read: () => true,
+    // Signed out: only shown categories (src/access/publicRead.ts).
+    read: readPublished,
     create: isAdmin,
     update: isAdmin,
     delete: isAdmin,

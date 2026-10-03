@@ -7,6 +7,7 @@ import type {
   Validate,
 } from "payload";
 import { isAdmin } from "#src/access/isAdmin.ts";
+import { readPublished, studioOnlyField } from "#src/access/publicRead.ts";
 import { CLOSE_EDITOR_BUTTON } from "#src/lib/admin-components.ts";
 import { OTHER_SESSION_TYPE } from "#src/lib/booking-session-type.ts";
 import { keyAtStart } from "#src/lib/manual-order.ts";
@@ -198,11 +199,10 @@ export const Testimonials: CollectionConfig = {
     },
   },
   access: {
-    // Signed out, only published ones: a hidden testimonial (a client's
-    // still waiting for review, say) never leaves through the public API.
-    // The site's own pages read on the server (Local API) and aren't
-    // limited by this.
-    read: ({ req: { user } }) => (user ? true : { published: { equals: true } }),
+    // Signed out, only published ones not in the Trash: a hidden testimonial
+    // (a client's still waiting for review, say) never leaves through the
+    // public API. See src/access/publicRead.ts.
+    read: readPublished,
     create: isAdmin,
     update: isAdmin,
     delete: isAdmin,
@@ -374,12 +374,15 @@ export const Testimonials: CollectionConfig = {
       name: "source",
       type: "text",
       defaultValue: "admin" satisfies TestimonialSource,
+      // Where it came from is the studio's business, not the public API's.
+      access: { read: studioOnlyField },
       admin: { hidden: true, disableListColumn: true, disableListFilter: true },
     },
     {
       name: "submission",
       type: "relationship",
       relationTo: "testimonial-submissions",
+      access: { read: studioOnlyField },
       admin: { hidden: true, disableListColumn: true, disableListFilter: true },
     },
     {

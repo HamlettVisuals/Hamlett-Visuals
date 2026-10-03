@@ -1,4 +1,4 @@
-import type { GlobalConfig } from "payload";
+import type { FieldAccess, GlobalConfig } from "payload";
 import { publicReadAdminWrite } from "#src/access/isAdmin.ts";
 import {
   instagramUsername,
@@ -6,12 +6,20 @@ import {
   validatePhone,
 } from "#src/lib/contact-details.ts";
 import { FOOTER_LOGO, HEADER_LOGO } from "#src/lib/logo-size.ts";
+import { phoneShownAnywhere } from "#src/lib/phone-shown.ts";
 import { serverURL } from "#src/lib/server-url.ts";
 
 // Single source of truth for cross-section branding/contact details —
 // mirrors src/lib/site-settings.ts (favicon/OG image). Email, phone and
 // Instagram are shown by the Footer, the Booking CTA, the homepage Instagram
 // section and the privacy policy, all through lib/contact-details.ts.
+// The phone number reaches signed-out API readers only while the site
+// shows it somewhere (lib/phone-shown.ts). The site's own pages read on the
+// server, which skips this, and decide for themselves from the switches.
+const readPhone: FieldAccess = async ({ req }) => Boolean(req.user) || (await phoneShownAnywhere(req));
+// The retired phone fields are the studio's only.
+const studioOnly: FieldAccess = ({ req }) => Boolean(req.user);
+
 export const SiteSettings: GlobalConfig = {
   slug: "site-settings",
   label: "Site Settings",
@@ -159,6 +167,7 @@ export const SiteSettings: GlobalConfig = {
           name: "phone",
           type: "text",
           label: "Phone number (optional)",
+          access: { read: readPhone },
           validate: (value: string | null | undefined) => validatePhone(value),
           admin: {
             description:
@@ -171,11 +180,13 @@ export const SiteSettings: GlobalConfig = {
           // reads them any more.
           name: "phoneDisplay",
           type: "text",
+          access: { read: studioOnly },
           admin: { hidden: true },
         },
         {
           name: "phoneHref",
           type: "text",
+          access: { read: studioOnly },
           admin: { hidden: true },
         },
       ],

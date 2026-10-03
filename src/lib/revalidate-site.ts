@@ -1,4 +1,5 @@
 import type { CollectionConfig, GlobalConfig, PayloadRequest } from "payload";
+import { forgetShownPhotos } from "#src/lib/public-photos.ts";
 
 // The public pages are pre-rendered: built once, then served from Next's
 // cache. So a save in the Studio has to tell Next to rebuild them, or the
@@ -36,6 +37,8 @@ const NOT_ON_SITE = new Set([
 
 // Also called directly by lib/reorder-within.ts, whose writes skip hooks.
 export async function revalidateSite(req: PayloadRequest) {
+  // Which photos signed-out visitors may read depends on what the site shows.
+  forgetShownPhotos();
   try {
     const { revalidatePath } = await import("next/cache");
     revalidatePath("/", "layout");

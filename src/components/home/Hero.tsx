@@ -48,8 +48,9 @@ type HeroSlide = {
 // below 1024px and the main image only above it. Each has its own focal
 // point, applied per breakpoint through the --focal-* variables. With no
 // mobile image there's no <source>, and the main image is used everywhere.
-function HeroImage({ slide, eager }: { slide: HeroSlide; eager: boolean }) {
-  const common = { alt: slide.alt, fill: true, sizes: "100vw", quality: 90 };
+// `unoptimized`: an unsaved slide in Live Preview (useScopedLivePreview `live`).
+function HeroImage({ slide, eager, unoptimized = false }: { slide: HeroSlide; eager: boolean; unoptimized?: boolean }) {
+  const common = { alt: slide.alt, fill: true, sizes: "100vw", quality: 90, unoptimized };
   const { props } = getImageProps({
     ...common,
     src: slide.photo.url!,
@@ -95,7 +96,7 @@ export default function Hero({
   // `data` just stays equal to the server-fetched `hero` prop. Scoped to
   // the "hero" global specifically — see use-scoped-live-preview.ts for why
   // the stock useLivePreview hook isn't used here.
-  const { data } = useScopedLivePreview<HeroGlobal>({
+  const { data, live } = useScopedLivePreview<HeroGlobal>({
     initialData: hero,
     serverURL,
     globalSlug: "hero",
@@ -259,7 +260,7 @@ export default function Hero({
               transition: "opacity var(--hero-fade-duration) var(--ease-standard)",
             }}
           >
-            <HeroImage slide={slide} eager={i === 0} />
+            <HeroImage slide={slide} eager={i === 0} unoptimized={live} />
           </div>
         ))}
       </div>

@@ -25,13 +25,24 @@ const shots = outDir("testimonials-admin");
   const { ctx, guard } = await newContext(browser, { viewport: { width: 1440, height: 950 } });
   const page = await ctx.newPage();
   page.on("pageerror", (e) => errors.push(e.message));
+  // Console errors too (the dev overlay reports them with a request the
+  // guard logs), with the section they happened in.
+  let currentSection = "";
+  const consoleErrors = [];
+  page.on("console", (m) => {
+    if (m.type() === "error" && !/Failed to load resource/.test(m.text())) consoleErrors.push(`${currentSection}: ${m.text().slice(0, 300)}`);
+  });
+  const sectionAt = (title) => {
+    currentSection = title;
+    section(title);
+  };
 
   const list = await (await page.request.get(`${API}/testimonials?depth=0&limit=100`)).json();
   const teaser = await (await page.request.get(`${API}/globals/testimonials-teaser?depth=0`)).json();
   const first = list.docs[0];
   r.lines.push(`(testimonials: ${list.docs.map((d) => `${d.id} ${d.clientName}`).join(", ")}; homepage picks: ${JSON.stringify(teaser.testimonials)})`);
 
-  section("the list");
+  sectionAt("the list");
   await page.goto(`${ADMIN}/collections/testimonials`, { timeout: 120000 });
   await page.locator(".testimonials").waitFor({ timeout: 60000 });
   check("the collection's list opens the grouped list", new URL(page.url()).pathname === "/hv-studio/testimonials", page.url());
@@ -51,7 +62,7 @@ const shots = outDir("testimonials-admin");
   check("On homepage matches the section's picks", (await row.locator(".testimonials__on-homepage").count()) === (onHome ? 1 : 0));
   await page.screenshot({ path: `${shots}/1-list.png`, fullPage: true });
 
-  section("homepage from the list");
+  sectionAt("homepage from the list");
   // The action the row offers, and what it sends. The guard fakes the save,
   // so after the list reloads it shows the saved state again (asExpected).
   const actionName = onHome ? "Remove from homepage" : "Add to homepage";
@@ -77,7 +88,7 @@ const shots = outDir("testimonials-admin");
   }
   await page.unroute(`**/api/testimonials/${first.id}/homepage`);
 
-  section("Needs review");
+  sectionAt("Needs review");
   await page.goto(`${ADMIN}/testimonials?view=review`, { timeout: 120000 });
   await page.locator(".testimonials").waitFor();
   check("Needs review is the current tab", (await page.locator('.testimonials__tabs a[aria-current="page"]').innerText()).startsWith("Needs review"));
@@ -85,12 +96,12 @@ const shots = outDir("testimonials-admin");
   const expected = list.docs.filter((d) => d.source === "client" && d.published === false).length;
   check("it lists only hidden client submissions", reviewRows === expected, { reviewRows, expected });
 
-  section("Trash");
+  sectionAt("Trash");
   await page.goto(`${ADMIN}/collections/testimonials/trash`, { timeout: 120000 });
   await page.locator(".testimonials__tabs").waitFor({ timeout: 60000 });
   check("Payload's Trash list has the tabs", (await page.locator('.testimonials__tabs a[aria-current="page"]').innerText()) === "Trash");
 
-  section("the edit page");
+  sectionAt("the edit page");
   await page.goto(`${ADMIN}/collections/testimonials/${first.id}`, { timeout: 120000 });
   await page.locator("#field-quote").waitFor({ timeout: 60000 });
   await page.waitForTimeout(1500);
@@ -124,7 +135,7 @@ const shots = outDir("testimonials-admin");
   check("the photo's help says the album's cover is used", /album's cover is used/.test(photoHelp), photoHelp);
   await page.screenshot({ path: `${shots}/2-edit.png`, fullPage: true });
 
-  section("Show on homepage: the limit");
+  sectionAt("Show on homepage: the limit");
   await page.route("**/api/globals/testimonials-teaser?depth=0", (route) =>
     route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ testimonials: [9001, 9002, 9003, 9004] }) }),
   );
@@ -140,7 +151,7 @@ const shots = outDir("testimonials-admin");
   }
   await page.unroute("**/api/globals/testimonials-teaser?depth=0");
 
-  section("Live Preview");
+  sectionAt("Live Preview");
   // A click before the page has finished starting up can be lost, so it
   // tries again until the preview pane is showing.
   const toggler = page.locator("#live-preview-toggler");
@@ -173,7 +184,7 @@ const shots = outDir("testimonials-admin");
   check("with preview open, Published and Show on homepage stay last", mainWithPreview.filter(Boolean).slice(-2).join("|") === "Published|Show on homepage", mainWithPreview);
   await page.screenshot({ path: `${shots}/3-preview.png` });
 
-  section("Page settings");
+  sectionAt("Page settings");
   await page.goto(`${ADMIN}/globals/testimonials-page`, { timeout: 120000 });
   await page.locator("#field-title").waitFor({ timeout: 60000 });
   check("Page settings is the current tab", (await page.locator('.testimonials__tabs a[aria-current="page"]').innerText()) === "Page settings");
@@ -188,9 +199,12 @@ const shots = outDir("testimonials-admin");
   check("the dropdown lists the registry's fonts", ["Lora", "Literata", "Fraunces Soft", "Merriweather Light", "Petrona", "Fraunces (upright)"].every((o) => options.includes(o)), options);
   await page.keyboard.press("Escape");
 
-  section("phone");
+  sectionAt("phone");
   const phone = await newContext(browser, { viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
   const p2 = await phone.ctx.newPage();
+  p2.on("console", (m) => {
+    if (m.type() === "error" && !/Failed to load resource/.test(m.text())) consoleErrors.push(`phone: ${m.text().slice(0, 1500)}`);
+  });
   await p2.goto(`${ADMIN}/testimonials`, { timeout: 120000 });
   await p2.locator(".testimonials").waitFor({ timeout: 60000 });
   await checkNoSidewaysScroll(p2, r, "list on a phone");
@@ -198,10 +212,11 @@ const shots = outDir("testimonials-admin");
   check("the pill stays on screen", pillBox && pillBox.x + pillBox.width <= 390, pillBox);
   await p2.screenshot({ path: `${shots}/4-phone.png`, fullPage: true });
 
-  section("nothing saved");
+  sectionAt("nothing saved");
   const unexpected = [...guard.writes(), ...phone.guard.writes()].filter((w) => !/\/testimonials\/\d+\/homepage/.test(w.url));
   check("no write left the browser except the faked homepage change", unexpected.length === 0, unexpected.map((w) => w.url));
   check("no page errors", errors.length === 0, errors);
+  check("no console errors", consoleErrors.length === 0, consoleErrors);
 
   await browser.close();
 })().then(() => r.finish(), (err) => r.finish(err));

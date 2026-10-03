@@ -72,6 +72,7 @@ Results are:
 
 | File | What it covers |
 |---|---|
+| `public-api-access.test.cjs` | What a signed-out visitor can read through the API: private collections, client photo files and History refused; only shown, untrashed categories, albums, packages, Backstage and testimonials; no testimonial source or submission; and that the signed-in studio still reads everything (read-only) |
 | `testimonials-admin.test.cjs` | Testimonials: the grouped list (redirect, tabs, rows, Published pill, Add to / Remove from homepage and a refusal), Needs review, Trash tabs, the edit page (field order with preview open and closed, category set by the album, album photos, Context placeholder, the homepage limit), Live Preview landing on the card, Page settings (desktop, phone) |
 | `portfolio.test.cjs` | Categories & Albums: order, headers, open/close, the Live/Hidden pill, search, redirects, `#category-…`, sidebar and Editor overview (desktop, phone, landscape) |
 | `portfolio-reorder.test.cjs` | Dragging categories and albums by mouse and press-and-hold touch, what's saved, a failed save, reordering off while searching |

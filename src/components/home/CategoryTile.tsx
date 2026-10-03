@@ -31,7 +31,7 @@ const TILE_WIDTHS: FrameWidth[] = [
 // checked here, after the live data, so picking a cover photo in the editor
 // brings the tile into the preview before saving.
 export default function CategoryTile({ category }: { category: Category }) {
-  const { data } = useScopedCollectionLivePreview<Category>({
+  const { data, live } = useScopedCollectionLivePreview<Category>({
     initialData: category,
     serverURL,
     collectionSlug: "categories",
@@ -56,6 +56,7 @@ export default function CategoryTile({ category }: { category: Category }) {
           })}
           className="aspect-[9/16] w-full"
           focal={coverPhoto}
+          unoptimized={live}
         />
 
         <div className="mt-3 text-center">

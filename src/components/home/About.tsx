@@ -34,7 +34,7 @@ export default function About({
   // `about` via postMessage — same mechanism as Hero.tsx. `apiRoute` matters
   // more here than it did for Hero: `portrait` is an upload relation, and
   // depth-populating it while editing goes through this route.
-  const { data } = useScopedLivePreview<AboutGlobal>({
+  const { data, live } = useScopedLivePreview<AboutGlobal>({
     initialData: about,
     serverURL,
     globalSlug: "about",
@@ -68,6 +68,7 @@ export default function About({
             height={1000}
             sizes="(min-width: 768px) 40vw, 100vw"
             className="w-full self-start"
+            unoptimized={live}
           />
 
           {/* Only when there's something in it: an empty column would still
