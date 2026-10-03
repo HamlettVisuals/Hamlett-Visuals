@@ -40,7 +40,16 @@ async function open(page) {
   await page.goto(`${ADMIN}/globals/hero`, { timeout: 120000 });
   await page.locator(ROWS).first().waitFor({ timeout: 60000 });
   await page.waitForFunction(() => ![...document.querySelectorAll(".hero-slide-label__name")].some((n) => n.textContent === "Loading…"), null, { timeout: 30000 });
-  await page.waitForTimeout(800);
+  // Then every row's thumbnail finished loading (or failed), rather than a
+  // fixed pause: the files come from storage and can take a second or two.
+  // A thumbnail that fails still fails the "loaded" checks below.
+  await page
+    .waitForFunction(
+      () => [...document.querySelectorAll("img.hero-slide-label__thumb")].every((img) => img.complete),
+      null,
+      { timeout: 30000 },
+    )
+    .catch(() => {});
 }
 
 (async () => {

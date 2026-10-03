@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useEffect, useSyncExternalStore } from "react";
+import React, { useEffect, useState, useSyncExternalStore } from "react";
+import { createPortal } from "react-dom";
 import { usePathname } from "next/navigation";
-import { ChevronIcon, Link, Logout, useConfig } from "@payloadcms/ui";
+import { ChevronIcon, Link, Logout, useConfig, useNav } from "@payloadcms/ui";
 import { NavHamburger, NavWrapper } from "@payloadcms/next/client";
 import {
   isActive,
@@ -139,6 +140,89 @@ function NavRow({ node, depth, parentId, adminRoute, pathname, open, onToggle }:
   );
 }
 
+// Phones and tablets (Payload's mid-break and below): the sidebar is an
+// overlay drawer (styles: "the sidebar as an overlay drawer" in
+// admin-overrides.css). This adds what Payload's own modal nav lacks there:
+// the dimmed backdrop (tap to close), Escape to close, closing when a link
+// is tapped (Payload only does that under 768px, and not for the page
+// you're already on), and the page behind locked from scrolling. Payload's
+// open/close button keeps working; desktop is untouched.
+const DRAWER_QUERY = "(max-width: 1024px)";
+
+// Whether we're at drawer widths, and where the backdrop goes: Payload's
+// layout container, the sidebar's own parent, so the two share a stacking
+// context and the sidebar's z-index puts it above the backdrop (on <body>
+// the backdrop would cover the sidebar too).
+function useDrawerHost() {
+  const [state, setState] = useState<{ drawer: boolean; host: Element | null }>({ drawer: false, host: null });
+  useEffect(() => {
+    const query = window.matchMedia(DRAWER_QUERY);
+    const update = () =>
+      setState({ drawer: query.matches, host: document.querySelector(".template-default") ?? document.body });
+    update();
+    query.addEventListener("change", update);
+    return () => query.removeEventListener("change", update);
+  }, []);
+  return state;
+}
+
+function DrawerBehaviour() {
+  const { navOpen, navRef, setNavOpen } = useNav();
+  const { drawer, host } = useDrawerHost();
+
+  // A tapped link closes the drawer, including one to the page you're on.
+  // Listened for on the sidebar element itself, so the rest of the nav
+  // doesn't re-render with Payload's nav state.
+  useEffect(() => {
+    const nav = navRef?.current;
+    if (!drawer || !nav) return;
+    const onClick = (event: MouseEvent) => {
+      if ((event.target as HTMLElement | null)?.closest("a[href]")) setNavOpen(false);
+    };
+    nav.addEventListener("click", onClick, true);
+    return () => nav.removeEventListener("click", onClick, true);
+  }, [drawer, navRef, setNavOpen]);
+  // Payload starts the nav as open (her saved preference) and only closes it
+  // for small screens a moment after loading; locking the page in that
+  // moment swallowed a #hash jump. So it only counts as open once it's
+  // been seen closed, i.e. when she opens it.
+  const [armed, setArmed] = useState(false);
+  if (!navOpen && !armed) setArmed(true);
+  const open = drawer && navOpen && armed;
+
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setNavOpen(false);
+    };
+    // The page behind stays put; the drawer scrolls on its own.
+    const { documentElement: html, body } = document;
+    const before = [html.style.overflow, body.style.overflow];
+    html.style.overflow = "hidden";
+    body.style.overflow = "hidden";
+    window.addEventListener("keydown", onKey);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      [html.style.overflow, body.style.overflow] = before;
+    };
+  }, [open, setNavOpen]);
+
+  if (!drawer || !host) return null;
+  // Not inside the sliding drawer (its transform would trap a fixed
+  // backdrop inside it). Always there, so the fade can run both ways.
+  return createPortal(
+    <button
+      type="button"
+      className={`studio-nav-backdrop${open ? " studio-nav-backdrop--open" : ""}`}
+      aria-label="Close menu"
+      tabIndex={open ? 0 : -1}
+      aria-hidden={!open}
+      onClick={() => setNavOpen(false)}
+    />,
+    host,
+  );
+}
+
 export default function SiteNav() {
   const { config } = useConfig();
   const adminRoute = config.routes.admin;
@@ -168,6 +252,7 @@ export default function SiteNav() {
 
   return (
     <NavWrapper baseClass={baseClass}>
+      <DrawerBehaviour />
       <nav className={`${baseClass}__wrap`}>
         <ul className="site-nav site-nav__list">
           {siteTree.map((node, i) => (
