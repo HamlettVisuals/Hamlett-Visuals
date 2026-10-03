@@ -8,7 +8,15 @@ import { isAdmin } from "#src/access/isAdmin.ts";
 // prevents anonymous self-registration.
 export const Users: CollectionConfig = {
   slug: "users",
-  auth: true,
+  // One admin, on her own devices: a login lasts 7 days (Payload's default
+  // is 2 hours) and renews while the studio is open (admin.autoRefresh in
+  // payload.config.ts). Logins are kept as server-side sessions (Payload's
+  // default), so logging out really ends one. The cookie is HTTPS-only on
+  // the live site; local dev runs over http.
+  auth: {
+    tokenExpiration: 60 * 60 * 24 * 7,
+    cookies: { secure: process.env.NODE_ENV === "production" },
+  },
   admin: {
     hideAPIURL: true,
     useAsTitle: "email",

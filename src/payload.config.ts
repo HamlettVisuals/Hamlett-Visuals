@@ -74,6 +74,10 @@ export default buildConfig({
   },
   admin: {
     user: Users.slug,
+    // Renew the login quietly while a studio tab is open, instead of a
+    // "Stay logged in?" prompt a minute before it runs out (missed while
+    // she's typing, it logged her out mid-edit). See Users.ts auth.
+    autoRefresh: true,
     meta: {
       title: "Hamlett Visuals — Studio",
       titleSuffix: "",
