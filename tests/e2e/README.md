@@ -74,18 +74,21 @@ Results are:
   away": fails on committed code (seen 2026-10-03, before and after that
   day's work). The Live Preview keeps the 4.5s default instead of the
   unsaved 2s. Not fixed yet; to look at in a later session.
-- `drawer-touch-scroll.test.cjs` (WebKit, iPhone profile): on 2026-10-03 it
-  failed 5 checks in a full run (timeouts opening drawers, a close button not
-  found) and, run on its own, didn't finish within 10 minutes. Not yet
-  compared against the code from before that day's commits (6e34606,
-  b6aa0af), so it's unknown whether they caused it. To look at in a later
-  session, with hero-seconds.
+- `drawer-touch-scroll.test.cjs` (WebKit, iPhone profile): slow (about 11
+  minutes) and has failed the same 5 checks in every run since 2026-10-03
+  (not yet run against the code from before that day). Four are the hero slide "Choose from existing" drawer
+  never opening in the test: a test-side issue, not an app bug (confirmed
+  working on a real iPhone, 2026-10-05). The fifth is an "Edit photo
+  details" drawer's close button not found in landscape (which drawer it
+  hits varies between runs). To look at in a later session, with
+  hero-seconds.
 
 ## The tests
 
 | File | What it covers |
 |---|---|
 | `public-api-access.test.cjs` | What a signed-out visitor can read through the API: private collections, client photo files and History refused; only shown, untrashed categories, albums, packages, Backstage and testimonials; no testimonial source or submission; and that the signed-in studio still reads everything (read-only) |
+| `account-sign-out.test.cjs` | The account page's Sign out everywhere: asks first, Cancel backs out, confirming signs out every session (faked) and goes to the login page (desktop, phone) |
 | `testimonials-admin.test.cjs` | Testimonials: the grouped list (redirect, tabs, rows, Published pill, Add to / Remove from homepage and a refusal), Needs review, Trash tabs, the edit page (field order with preview open and closed, category set by the album, album photos, Context placeholder, the homepage limit), Live Preview landing on the card, Page settings (desktop, phone) |
 | `portfolio.test.cjs` | Categories & Albums: order, headers, open/close, the Live/Hidden pill, search, redirects, `#category-…`, sidebar and Editor overview (desktop, phone, landscape) |
 | `portfolio-reorder.test.cjs` | Dragging categories and albums by mouse and press-and-hold touch, what's saved, a failed save, reordering off while searching |

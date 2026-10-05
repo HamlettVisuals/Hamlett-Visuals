@@ -1,3 +1,4 @@
+import { default as default_dd48eeb1df23984e70510073b62edfdc } from '../../../components/admin/SignOutEverywhere'
 import { CategoryNameCell as CategoryNameCell_34f53f145c1dd1973f992a6af63ac90d } from '../../../components/admin/CategoryCells'
 import { CategoryStatusCell as CategoryStatusCell_34f53f145c1dd1973f992a6af63ac90d } from '../../../components/admin/CategoryCells'
 import { default as default_4318ce57f942bf59d91183db3cbd0fbb } from '../../../components/admin/ShowOnWebsiteField'
@@ -80,6 +81,7 @@ import { CollectionCards as CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1 } f
 
 /** @type import('payload').ImportMap */
 export const importMap = {
+  "/components/admin/SignOutEverywhere#default": default_dd48eeb1df23984e70510073b62edfdc,
   "/components/admin/CategoryCells#CategoryNameCell": CategoryNameCell_34f53f145c1dd1973f992a6af63ac90d,
   "/components/admin/CategoryCells#CategoryStatusCell": CategoryStatusCell_34f53f145c1dd1973f992a6af63ac90d,
   "/components/admin/ShowOnWebsiteField#default": default_4318ce57f942bf59d91183db3cbd0fbb,

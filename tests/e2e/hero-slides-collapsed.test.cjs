@@ -5,8 +5,13 @@
 // one. Checked against the saved slides and their photos; opening a row
 // still shows its fields; a new slide reads "No image yet".
 //
-// Every write is faked by the shared guard (lib/guard.cjs), including the
-// collapsed/open preference Payload saves; nothing is saved.
+// Rows are collapsed unless the signed-in user's saved preference says
+// otherwise: Payload remembers which rows were left open (payload-
+// preferences, read on the server), so the start is checked against that,
+// and any open rows are then collapsed in the page before the rest of the
+// test. Every write is faked by the shared guard (lib/guard.cjs), including
+// the collapsed/open preference Payload saves, so the saved preference is
+// never changed (checked at the end).
 // Run with `npm run test:e2e hero-slides-collapsed` (see README.md).
 const { launchBrowser, newContext, report, outDir, checkNoSidewaysScroll, ADMIN, API } = require("./lib/harness.cjs");
 
@@ -35,6 +40,26 @@ const rowState = (page) =>
       };
     }),
   );
+
+// The signed-in user's saved preference for the Hero editor, as Payload
+// stores it, and which rows it keeps collapsed (null: none saved, so all).
+async function savedPreference(page) {
+  const res = await page.request.get(`${API}/payload-preferences?where[key][equals]=global-hero&depth=0&limit=1`);
+  const doc = (await res.json()).docs?.[0] ?? null;
+  return { raw: JSON.stringify(doc?.value ?? null), collapsed: doc?.value?.fields?.slides?.collapsed ?? null };
+}
+
+// Collapses any open row in the page (the preference write this makes is
+// faked by the guard).
+async function collapseAll(page) {
+  for (let i = 0; i < (await page.locator(ROWS).count()); i++) {
+    const toggle = page.locator(`${ROWS} .collapsible__toggle`).nth(i);
+    if (!(await toggle.evaluate((el) => el.classList.contains("collapsible__toggle--collapsed")))) {
+      await toggle.click();
+      await page.waitForTimeout(400);
+    }
+  }
+}
 
 async function open(page) {
   await page.goto(`${ADMIN}/globals/hero`, { timeout: 120000 });
@@ -68,12 +93,22 @@ async function open(page) {
     mobile: !!slide.mobilePhoto,
   }));
   r.lines.push(`(saved: ${expected.length} slides: ${expected.map((e) => `${e.name}${e.mobile ? " +m" : ""}`).join(", ")})`);
+  const pref = await savedPreference(page);
+  const startCollapsed = (hero.slides || []).map((slide) => (pref.collapsed ? pref.collapsed.includes(slide.id) : true));
+  r.lines.push(`(saved preference: ${pref.collapsed ? `${startCollapsed.filter((c) => !c).length} row(s) left open` : "none, so all collapsed"})`);
 
   section("on opening, 1440x950");
   await open(page);
   let rows = await rowState(page);
   check(`${expected.length} rows`, rows.length === expected.length && expected.length > 0, rows.length);
-  check("every row starts collapsed", rows.every((row) => row.collapsed && !row.fieldsVisible), rows.map((row) => [row.collapsed, row.fieldsVisible]));
+  check(
+    pref.collapsed ? "rows start as the saved preference left them" : "every row starts collapsed",
+    rows.every((row, i) => row.collapsed === startCollapsed[i] && row.fieldsVisible === !startCollapsed[i]),
+    rows.map((row) => [row.collapsed, row.fieldsVisible]),
+  );
+  await collapseAll(page);
+  rows = await rowState(page);
+  check("all rows collapsed for the rest of the test", rows.every((row) => row.collapsed && !row.fieldsVisible), rows.map((row) => row.collapsed));
   rows.forEach((row, i) => {
     const want = expected[i];
     if (!want) return;
@@ -122,7 +157,12 @@ async function open(page) {
   page.on("pageerror", (e) => errors.push(e.message));
   await open(page);
   rows = await rowState(page);
-  check("collapsed on the phone too, with names", rows.length === expected.length && rows.every((row, i) => row.collapsed && row.name === expected[i].name), rows);
+  check(
+    "on the phone too: rows start as saved, with names",
+    rows.length === expected.length && rows.every((row, i) => row.collapsed === startCollapsed[i] && row.name === expected[i].name),
+    rows,
+  );
+  await collapseAll(page);
   const fit = await page.locator(ROWS).evaluateAll((els) => els.every((row) => {
     const label = row.querySelector(".hero-slide-label").getBoundingClientRect();
     const header = row.querySelector(".array-field__row-header, .collapsible__toggle-wrap").getBoundingClientRect();
@@ -135,6 +175,8 @@ async function open(page) {
   await page.close();
 
   check("no page errors", errors.length === 0, errors.slice(0, 3));
+  const prefAfter = await savedPreference(phone.ctx.pages()[0] ?? (await phone.ctx.newPage()));
+  check("your saved preference is unchanged", prefAfter.raw === pref.raw, { before: pref.raw.slice(0, 200), after: prefAfter.raw.slice(0, 200) });
   const stray = [...guard.log, ...phone.guard.log].filter((e) => e.kind !== "pass" && !/payload-preferences|\/access\//.test(e.url));
   check("nothing else tried to write", stray.length === 0, JSON.stringify(stray).slice(0, 300));
   await browser.close();

@@ -3656,3 +3656,32 @@ a.editor-overview__tile:focus-visible,
     transition: none;
   }
 }
+
+/* "Sign out everywhere" on the account page (components/admin/SignOutEverywhere.tsx). */
+.sign-out-everywhere {
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid var(--theme-elevation-100);
+}
+
+.sign-out-everywhere__title {
+  margin: 0 0 6px;
+  font-size: 16px;
+}
+
+.sign-out-everywhere__text {
+  max-width: 60ch;
+  margin: 0 0 14px;
+  color: var(--theme-elevation-700);
+}
+
+.sign-out-everywhere__question {
+  margin: 0 0 10px;
+  font-weight: 600;
+}
+
+.sign-out-everywhere__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
