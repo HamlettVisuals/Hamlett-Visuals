@@ -17,7 +17,7 @@ const anon = async (path) => {
 
 (async () => {
   section("private collections are closed signed out");
-  for (const slug of ["users", "inquiries", "clients", "checklist-templates", "testimonial-submissions", "testimonial-photos", "payload-preferences", "payload-locked-documents"]) {
+  for (const slug of ["users", "inquiries", "clients", "checklist-templates", "testimonial-submissions", "testimonial-photos", "instagram-connections", "instagram-tokens", "payload-preferences", "payload-locked-documents"]) {
     const { status } = await anon(`/${slug}?limit=1`);
     check(`${slug}: refused`, status === 403, status);
   }
@@ -27,7 +27,7 @@ const anon = async (path) => {
   for (const slug of ["categories", "events", "photos", "testimonials", "pricing-rows", "backstage"]) {
     check(`${slug} versions: refused`, (await anon(`/${slug}/versions?limit=1`)).status === 403);
   }
-  for (const slug of ["site-settings", "testimonials-teaser", "testimonials-page", "hero"]) {
+  for (const slug of ["site-settings", "testimonials-teaser", "testimonials-page", "hero", "instagram-section"]) {
     check(`${slug} versions: refused`, (await anon(`/globals/${slug}/versions?limit=1`)).status === 403);
   }
 
@@ -43,6 +43,8 @@ const anon = async (path) => {
     const outside = body.docs.filter((d) => !(d.category && typeof d.category === "object" && d.category.published && !d.category.deletedAt));
     check(`${slug}: all in a shown category`, outside.length === 0, outside.map((d) => d.id));
   }
+  const mockPosts = await anon("/instagram-posts?limit=1&depth=0&where[isMock][equals]=true");
+  check("instagram-posts: no mock posts", mockPosts.status === 200 && mockPosts.body.totalDocs === 0, mockPosts.body?.totalDocs);
   const categories = await anon("/categories?limit=100&depth=0");
   check("the CRM-only Other category isn't listed", !categories.body.docs.some((c) => c.slug === "other"), categories.body.docs.map((c) => c.slug));
   const testimonials = await anon("/testimonials?limit=100&depth=0");

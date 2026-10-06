@@ -8,6 +8,7 @@ import * as migration_20261002_164620_hero_seconds_per_photo from './20261002_16
 import * as migration_20261002_185706_testimonials_admin from './20261002_185706_testimonials_admin';
 import * as migration_20261005_233216_booking_page_copy from './20261005_233216_booking_page_copy';
 import * as migration_20261005_234930_inquiry_time_and_instagram from './20261005_234930_inquiry_time_and_instagram';
+import * as migration_20261006_223744_instagram_section from './20261006_223744_instagram_section';
 
 export const migrations = [
   {
@@ -58,6 +59,11 @@ export const migrations = [
   {
     up: migration_20261005_234930_inquiry_time_and_instagram.up,
     down: migration_20261005_234930_inquiry_time_and_instagram.down,
-    name: '20261005_234930_inquiry_time_and_instagram'
+    name: '20261005_234930_inquiry_time_and_instagram',
+  },
+  {
+    up: migration_20261006_223744_instagram_section.up,
+    down: migration_20261006_223744_instagram_section.down,
+    name: '20261006_223744_instagram_section'
   },
 ];

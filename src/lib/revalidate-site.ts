@@ -33,6 +33,7 @@ const NOT_ON_SITE = new Set([
   "clients",
   "checklist-templates",
   "testimonial-submissions",
+  "instagram-tokens",
 ]);
 
 // Also called directly by lib/reorder-within.ts, whose writes skip hooks.

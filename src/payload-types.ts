@@ -81,6 +81,9 @@ export interface Config {
     'testimonial-submissions': TestimonialSubmission;
     'testimonial-photos': TestimonialPhoto;
     logos: Logo;
+    'instagram-connections': InstagramConnection;
+    'instagram-tokens': InstagramToken;
+    'instagram-posts': InstagramPost;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -102,6 +105,9 @@ export interface Config {
     'testimonial-submissions': TestimonialSubmissionsSelect<false> | TestimonialSubmissionsSelect<true>;
     'testimonial-photos': TestimonialPhotosSelect<false> | TestimonialPhotosSelect<true>;
     logos: LogosSelect<false> | LogosSelect<true>;
+    'instagram-connections': InstagramConnectionsSelect<false> | InstagramConnectionsSelect<true>;
+    'instagram-tokens': InstagramTokensSelect<false> | InstagramTokensSelect<true>;
+    'instagram-posts': InstagramPostsSelect<false> | InstagramPostsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -118,6 +124,7 @@ export interface Config {
     about: About;
     'featured-offer': FeaturedOffer;
     'booking-cta': BookingCta;
+    'instagram-section': InstagramSection;
     'testimonials-teaser': TestimonialsTeaser;
     'testimonials-page': TestimonialsPage;
     'final-cta-footer': FinalCtaFooter;
@@ -131,6 +138,7 @@ export interface Config {
     about: AboutSelect<false> | AboutSelect<true>;
     'featured-offer': FeaturedOfferSelect<false> | FeaturedOfferSelect<true>;
     'booking-cta': BookingCtaSelect<false> | BookingCtaSelect<true>;
+    'instagram-section': InstagramSectionSelect<false> | InstagramSectionSelect<true>;
     'testimonials-teaser': TestimonialsTeaserSelect<false> | TestimonialsTeaserSelect<true>;
     'testimonials-page': TestimonialsPageSelect<false> | TestimonialsPageSelect<true>;
     'final-cta-footer': FinalCtaFooterSelect<false> | FinalCtaFooterSelect<true>;
@@ -811,6 +819,70 @@ export interface Logo {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "instagram-connections".
+ */
+export interface InstagramConnection {
+  id: number;
+  slot: number;
+  status: 'not_connected' | 'connected' | 'needs_reconnect';
+  username?: string | null;
+  igUserId?: string | null;
+  isMock?: boolean | null;
+  lastSyncedAt?: string | null;
+  lastError?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "instagram-tokens".
+ */
+export interface InstagramToken {
+  id: number;
+  connection: number | InstagramConnection;
+  accessToken: string;
+  expiresAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "instagram-posts".
+ */
+export interface InstagramPost {
+  id: number;
+  igId: string;
+  connection: number | InstagramConnection;
+  mediaType: 'image' | 'video' | 'carousel';
+  permalink?: string | null;
+  caption?: string | null;
+  postedAt: string;
+  isMock?: boolean | null;
+  prefix?: string | null;
+  updatedAt: string;
+  createdAt: string;
+  url?: string | null;
+  thumbnailURL?: string | null;
+  filename?: string | null;
+  mimeType?: string | null;
+  filesize?: number | null;
+  width?: number | null;
+  height?: number | null;
+  focalX?: number | null;
+  focalY?: number | null;
+  sizes?: {
+    thumbnail?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+  };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -888,6 +960,18 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'logos';
         value: number | Logo;
+      } | null)
+    | ({
+        relationTo: 'instagram-connections';
+        value: number | InstagramConnection;
+      } | null)
+    | ({
+        relationTo: 'instagram-tokens';
+        value: number | InstagramToken;
+      } | null)
+    | ({
+        relationTo: 'instagram-posts';
+        value: number | InstagramPost;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -1324,6 +1408,71 @@ export interface LogosSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "instagram-connections_select".
+ */
+export interface InstagramConnectionsSelect<T extends boolean = true> {
+  slot?: T;
+  status?: T;
+  username?: T;
+  igUserId?: T;
+  isMock?: T;
+  lastSyncedAt?: T;
+  lastError?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "instagram-tokens_select".
+ */
+export interface InstagramTokensSelect<T extends boolean = true> {
+  connection?: T;
+  accessToken?: T;
+  expiresAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "instagram-posts_select".
+ */
+export interface InstagramPostsSelect<T extends boolean = true> {
+  igId?: T;
+  connection?: T;
+  mediaType?: T;
+  permalink?: T;
+  caption?: T;
+  postedAt?: T;
+  isMock?: T;
+  prefix?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  url?: T;
+  thumbnailURL?: T;
+  filename?: T;
+  mimeType?: T;
+  filesize?: T;
+  width?: T;
+  height?: T;
+  focalX?: T;
+  focalY?: T;
+  sizes?:
+    | T
+    | {
+        thumbnail?:
+          | T
+          | {
+              url?: T;
+              width?: T;
+              height?: T;
+              mimeType?: T;
+              filesize?: T;
+              filename?: T;
+            };
+      };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv_select".
  */
 export interface PayloadKvSelect<T extends boolean = true> {
@@ -1580,6 +1729,50 @@ export interface BookingCta {
   showEmail?: boolean | null;
   showPhone?: boolean | null;
   showInstagram?: boolean | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * The 'Recent on Instagram' section on your homepage. Pick which accounts to show and the posts you want first.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "instagram-section".
+ */
+export interface InstagramSection {
+  id: number;
+  /**
+   * Turn off to hide this section from your homepage. Your accounts and picks are kept.
+   */
+  showOnHomepage?: boolean | null;
+  /**
+   * The title of this section. Up to 20 characters, so it stays on one line on phones.
+   */
+  heading: string;
+  /**
+   * Up to two Instagram accounts. With one shown, the section is a 3×3 grid; with both, each gets its own labelled 3×2 grid.
+   */
+  accounts?:
+    | {
+        slot: number;
+        /**
+         * With or without the @. Used for the 'Follow' link under this account's posts.
+         */
+        handle?: string | null;
+        /**
+         * Shown above this account's posts when both accounts are on your homepage, e.g. "Weddings". Up to 20 characters.
+         */
+        label?: string | null;
+        /**
+         * Only takes effect once this account is connected.
+         */
+        visible?: boolean | null;
+        /**
+         * Up to 9 posts to show first, in this order. The rest of the grid fills with your most recent posts.
+         */
+        featured?: (number | InstagramPost)[] | null;
+        id?: string | null;
+      }[]
+    | null;
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -1906,6 +2099,27 @@ export interface BookingCtaSelect<T extends boolean = true> {
   showEmail?: T;
   showPhone?: T;
   showInstagram?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "instagram-section_select".
+ */
+export interface InstagramSectionSelect<T extends boolean = true> {
+  showOnHomepage?: T;
+  heading?: T;
+  accounts?:
+    | T
+    | {
+        slot?: T;
+        handle?: T;
+        label?: T;
+        visible?: T;
+        featured?: T;
+        id?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

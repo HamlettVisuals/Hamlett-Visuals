@@ -43,6 +43,9 @@ import { BackstageThumbnails } from "#src/collections/BackstageThumbnails.ts";
 import { TestimonialSubmissions } from "#src/collections/TestimonialSubmissions.ts";
 import { TestimonialPhotos } from "#src/collections/TestimonialPhotos.ts";
 import { Logos } from "#src/collections/Logos.ts";
+import { InstagramConnections } from "#src/collections/InstagramConnections.ts";
+import { InstagramTokens } from "#src/collections/InstagramTokens.ts";
+import { InstagramPosts } from "#src/collections/InstagramPosts.ts";
 
 import { HeaderNav } from "#src/globals/HeaderNav.ts";
 import { Hero } from "#src/globals/Hero.ts";
@@ -50,6 +53,7 @@ import { CategoriesIntro } from "#src/globals/CategoriesIntro.ts";
 import { About } from "#src/globals/About.ts";
 import { FeaturedOffer } from "#src/globals/FeaturedOffer.ts";
 import { BookingCta } from "#src/globals/BookingCta.ts";
+import { InstagramSection } from "#src/globals/InstagramSection.ts";
 import { TestimonialsTeaser } from "#src/globals/TestimonialsTeaser.ts";
 import { TestimonialsPage } from "#src/globals/TestimonialsPage.ts";
 import { FinalCtaFooter } from "#src/globals/FinalCtaFooter.ts";
@@ -237,6 +241,9 @@ export default buildConfig({
     TestimonialSubmissions,
     TestimonialPhotos,
     Logos,
+    InstagramConnections,
+    InstagramTokens,
+    InstagramPosts,
   ]))),
   globals: revalidateGlobalsOnChange(hideInternalFieldsFromHistory(addCharacterCounters([
     HeaderNav,
@@ -245,6 +252,7 @@ export default buildConfig({
     About,
     FeaturedOffer,
     BookingCta,
+    InstagramSection,
     TestimonialsTeaser,
     TestimonialsPage,
     FinalCtaFooter,
@@ -345,6 +353,9 @@ export default buildConfig({
         // Video thumbnails (BackstageThumbnails.ts): the automatic ones are
         // made on the server, the ones she uploads come from the browser.
         "backstage-thumbnails": { prefix: UPLOAD_FOLDERS["backstage-thumbnails"] },
+        // Synced Instagram images (InstagramPosts.ts), copied in by the
+        // server, never uploaded from the browser.
+        "instagram-posts": { prefix: UPLOAD_FOLDERS["instagram-posts"] },
       },
       clientUploads: {
         access: ({ req }) => Boolean(req.user),

@@ -12,4 +12,5 @@ export const UPLOAD_FOLDERS = {
   "testimonial-photos": "testimonial-photos",
   backstage: "backstage",
   "backstage-thumbnails": "backstage-thumbnails",
+  "instagram-posts": "instagram",
 } as const;

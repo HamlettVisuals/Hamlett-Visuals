@@ -34,5 +34,8 @@ export const readPublished: Access = signedOutOnly({ and: [published, notTrashed
 /** Published, not in the Trash, and in a category that's shown too. */
 export const readPublishedInShownCategory: Access = signedOutOnly({ and: [published, notTrashed, categoryShown] });
 
+/** Instagram posts: never the mock ones (lib/instagram-connection.ts) signed out. */
+export const readRealInstagramPosts: Access = signedOutOnly({ isMock: { not_equals: true } });
+
 /** A field only the studio reads (left out of signed-out API reads). */
 export const studioOnlyField: FieldAccess = ({ req: { user } }) => Boolean(user);
