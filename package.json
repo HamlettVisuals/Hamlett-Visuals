@@ -19,7 +19,8 @@
     "payload": "payload --disable-transpile",
     "test:e2e": "node tests/e2e/run.cjs",
     "test:e2e:login": "node tests/e2e/login.cjs",
-    "test:unit": "node --experimental-strip-types --no-warnings --test \"tests/unit/*.test.mts\""
+    "test:unit": "node --experimental-strip-types --no-warnings --test \"tests/unit/*.test.mts\"",
+    "instagram:clear-mock": "payload --disable-transpile run scripts/instagram-clear-mock.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1141.0",

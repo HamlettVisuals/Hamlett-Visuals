@@ -63,6 +63,10 @@ import { default as default_ec7d0821a0034acc48d37adac94c8805 } from '../../../co
 import { default as default_fc623a9f5bba3245f394e25f9cc96ad7 } from '../../../components/admin/ContactLineIntro'
 import { default as default_656bea43dbcc31aeaa2c7e2919cc66cf } from '../../../components/admin/ContactSwitchField'
 import { default as default_e4abcc230cd3442cf8a4ebea33949c00 } from '../../../components/admin/ContactLineAloneNote'
+import { default as default_4b1fe434767edb015ab39ae3bf03b7ff } from '../../../components/admin/Instagram/AccountHeader'
+import { default as default_36a6be875383b2a5bdd59fd0ffae118d } from '../../../components/admin/Instagram/VisibleField'
+import { default as default_7c293607ed1def296aa33c8ec41597f6 } from '../../../components/admin/Instagram/FeaturedField'
+import { default as default_abea205e1d35cdba10b7cf38ed15a5d3 } from '../../../components/admin/Instagram/AccountRowLabel'
 import { default as default_4ac57353bd76e239b598c98824a21755 } from '../../../components/admin/TestimonialPicksField'
 import { default as default_9717a31d15966f2422bf6c61264ebc6d } from '../../../components/admin/TestimonialPicksNote'
 import { default as default_8cb9fe875f24926b84f541affdd05ff1 } from '../../../components/admin/QuoteFontField'
@@ -147,6 +151,10 @@ export const importMap = {
   "/components/admin/ContactLineIntro#default": default_fc623a9f5bba3245f394e25f9cc96ad7,
   "/components/admin/ContactSwitchField#default": default_656bea43dbcc31aeaa2c7e2919cc66cf,
   "/components/admin/ContactLineAloneNote#default": default_e4abcc230cd3442cf8a4ebea33949c00,
+  "/components/admin/Instagram/AccountHeader#default": default_4b1fe434767edb015ab39ae3bf03b7ff,
+  "/components/admin/Instagram/VisibleField#default": default_36a6be875383b2a5bdd59fd0ffae118d,
+  "/components/admin/Instagram/FeaturedField#default": default_7c293607ed1def296aa33c8ec41597f6,
+  "/components/admin/Instagram/AccountRowLabel#default": default_abea205e1d35cdba10b7cf38ed15a5d3,
   "/components/admin/TestimonialPicksField#default": default_4ac57353bd76e239b598c98824a21755,
   "/components/admin/TestimonialPicksNote#default": default_9717a31d15966f2422bf6c61264ebc6d,
   "/components/admin/QuoteFontField#default": default_8cb9fe875f24926b84f541affdd05ff1,

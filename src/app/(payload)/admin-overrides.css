@@ -3695,3 +3695,276 @@ a.editor-overview__tile:focus-visible,
   font-weight: 600;
   overflow-wrap: anywhere;
 }
+
+/* Instagram Section: two fixed account cards (globals/InstagramSection.ts,
+   components/admin/Instagram/*). Payload's array controls are hidden:
+   rows are never added, removed, copied, pasted or reordered here. */
+.ig-accounts .array-field__header-actions,
+.ig-accounts .array-actions,
+.ig-accounts .array-field__add-row {
+  display: none;
+}
+
+.ig-accounts .array-field__draggable-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.ig-account__label {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px;
+  font-weight: 600;
+}
+
+.ig-account__handle {
+  color: var(--theme-elevation-600);
+  font-weight: 400;
+  overflow-wrap: anywhere;
+}
+
+.ig-account__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 16px;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--theme-elevation-100);
+}
+
+.ig-account__title {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.ig-account__status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--theme-elevation-700);
+}
+
+.ig-account__status::before {
+  content: "";
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--theme-elevation-300);
+}
+
+.ig-account__status--connected::before {
+  background: var(--theme-success-500);
+}
+
+.ig-account__status--needs_reconnect {
+  color: var(--theme-warning-750, #92400e);
+}
+
+.ig-account__status--needs_reconnect::before {
+  background: var(--theme-warning-500, #d97706);
+}
+
+.ig-account__mock {
+  align-self: flex-start;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--theme-elevation-100);
+  color: var(--theme-elevation-700);
+  font-size: 12px;
+}
+
+.ig-account__error {
+  color: var(--theme-elevation-650);
+  font-size: 13px;
+}
+
+.ig-account__button {
+  min-height: 44px;
+  padding: 0 16px;
+  border: 1px solid var(--theme-elevation-250);
+  border-radius: var(--style-radius-s, 4px);
+  background: var(--theme-elevation-0);
+  color: var(--theme-elevation-900);
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.ig-account__button:hover:not(:disabled) {
+  background: var(--theme-elevation-100);
+}
+
+.ig-account__button:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+
+.ig-account__message {
+  flex-basis: 100%;
+  margin: 0;
+  font-size: 13px;
+}
+
+.ig-account__message--ok {
+  color: var(--theme-success-750);
+}
+
+.ig-account__message--error {
+  color: var(--theme-error-650, #b42318);
+}
+
+/* Featured posts: picks in homepage order with the Categories & Albums
+   drag handle (.portfolio__handle), and the posts to add below. 4:5 like
+   the homepage tiles. */
+.ig-featured__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: 10px;
+  margin: 0 0 12px;
+  padding: 0;
+  list-style: none;
+}
+
+.ig-featured__tile {
+  position: relative;
+  border-radius: var(--style-radius-m, 6px);
+  background: var(--theme-elevation-50);
+}
+
+.ig-featured__tile--dragging {
+  z-index: 2;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.18), 0 0 0 2px var(--theme-elevation-800);
+}
+
+.ig-featured__tile--muted .ig-featured__thumb {
+  opacity: 0.45;
+}
+
+.ig-featured__thumb {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  aspect-ratio: 4 / 5;
+  border-radius: var(--style-radius-m, 6px);
+  background: var(--theme-elevation-100);
+}
+
+.ig-featured__thumb img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.ig-featured__type {
+  position: absolute;
+  right: 6px;
+  bottom: 6px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  font-size: 11px;
+}
+
+.ig-featured__position {
+  position: absolute;
+  bottom: 6px;
+  left: 6px;
+  min-width: 22px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.9);
+  color: #111;
+  font-size: 12px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.ig-featured__tile button.ig-featured__handle {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  min-height: 40px;
+  width: 32px;
+  background: rgba(255, 255, 255, 0.9);
+  color: #333;
+}
+
+.ig-featured__remove {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  min-height: 32px;
+  padding: 0 8px;
+  border: none;
+  border-radius: var(--style-radius-s, 4px);
+  background: rgba(255, 255, 255, 0.9);
+  color: #111;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.ig-featured__missing {
+  position: absolute;
+  inset: 44px 6px auto;
+  color: var(--theme-error-650, #b42318);
+  font-size: 12px;
+}
+
+.ig-featured__choice {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 2px solid transparent;
+  border-radius: var(--style-radius-m, 6px);
+  background: none;
+  cursor: pointer;
+}
+
+.ig-featured__choice:hover,
+.ig-featured__choice:focus-visible {
+  border-color: var(--theme-elevation-800);
+}
+
+.ig-featured__controls {
+  margin: 0 0 8px;
+}
+
+.ig-featured__choices {
+  margin: 4px 0 12px;
+  padding: 12px;
+  border: 1px solid var(--theme-elevation-150);
+  border-radius: var(--style-radius-m, 6px);
+}
+
+.ig-featured__hint {
+  margin: 0 0 10px;
+  color: var(--theme-elevation-650);
+  font-size: 13px;
+}
+
+.ig-featured__note {
+  margin: 0 0 10px;
+  color: var(--theme-warning-750, #92400e);
+  font-size: 13px;
+}
+
+@media (max-width: 768px) {
+  .ig-featured__grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .ig-account__actions,
+  .ig-account__button {
+    width: 100%;
+  }
+}

@@ -1,5 +1,5 @@
 import type { CollectionConfig } from "payload";
-import { readRealInstagramPosts } from "#src/access/publicRead.ts";
+import { readInstagramPosts } from "#src/access/publicRead.ts";
 
 // Her Instagram posts as last synced: one upload per post, its image copied
 // into R2 (in its own `instagram` folder, not the Photos library) because
@@ -7,9 +7,9 @@ import { readRealInstagramPosts } from "#src/access/publicRead.ts";
 // Instagram itself. Made, updated and pruned only by the sync (Phase 2)
 // through the Local API, so nothing can be changed through the API.
 //
-// Mock posts (`isMock`, lib/instagram-connection.ts) are never readable
-// signed out, and the homepage leaves them out unless mock posts are
-// allowed.
+// Mock posts (`isMock`, lib/instagram-connection.ts) are readable signed
+// out, and shown on the homepage, only where mock posts are allowed: never
+// on production.
 //
 // Not in the studio's side menu (SiteNav.tsx); picked from the Instagram
 // Section's account cards.
@@ -23,7 +23,7 @@ export const InstagramPosts: CollectionConfig = {
   },
   defaultSort: "-postedAt",
   access: {
-    read: readRealInstagramPosts,
+    read: readInstagramPosts,
     create: () => false,
     update: () => false,
     delete: () => false,

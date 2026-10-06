@@ -1,4 +1,5 @@
 import type { Access, FieldAccess, Where } from "payload";
+import { mockInstagramAllowed } from "#src/lib/instagram-connection.ts";
 
 // What a signed-out visitor can read through the API (/hv-studio/api): only
 // what the site itself shows. Signed in (the studio), everything.
@@ -34,8 +35,14 @@ export const readPublished: Access = signedOutOnly({ and: [published, notTrashed
 /** Published, not in the Trash, and in a category that's shown too. */
 export const readPublishedInShownCategory: Access = signedOutOnly({ and: [published, notTrashed, categoryShown] });
 
-/** Instagram posts: never the mock ones (lib/instagram-connection.ts) signed out. */
-export const readRealInstagramPosts: Access = signedOutOnly({ isMock: { not_equals: true } });
+/**
+ * Instagram posts: signed out, the mock ones (lib/instagram-connection.ts)
+ * only where mock posts are allowed (local dev; never production). The
+ * homepage's image optimizer fetches tile images signed out, so locally it
+ * needs them; everywhere else they stay closed.
+ */
+export const readInstagramPosts: Access = ({ req: { user } }) =>
+  user || mockInstagramAllowed() ? true : { isMock: { not_equals: true } };
 
 /** A field only the studio reads (left out of signed-out API reads). */
 export const studioOnlyField: FieldAccess = ({ req: { user } }) => Boolean(user);

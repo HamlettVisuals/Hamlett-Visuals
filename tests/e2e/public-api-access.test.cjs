@@ -3,7 +3,21 @@
 // collection's access). Read-only: GET requests only (plus one GraphQL POST,
 // which is a read), against the real data; nothing is written.
 // Run with `npm run test:e2e public-api` (see README.md).
-const { launchBrowser, newContext, report, API } = require("./lib/harness.cjs");
+const fs = require("node:fs");
+const path = require("node:path");
+const { launchBrowser, newContext, report, API, BASE, ROOT } = require("./lib/harness.cjs");
+
+// Mock Instagram posts are readable signed out only where the server allows
+// mock posts (lib/instagram-connection.ts): a local dev server with
+// INSTAGRAM_MOCK=1 in .env.local. Anywhere else (production), never.
+const mockInstagramAllowed = (() => {
+  if (!/^http:\/\/(localhost|127\.0\.0\.1)(:|\/|$)/.test(BASE)) return false;
+  try {
+    return /^INSTAGRAM_MOCK=1\s*$/m.test(fs.readFileSync(path.join(ROOT, ".env.local"), "utf8"));
+  } catch {
+    return false;
+  }
+})();
 
 const r = report("public-api-access");
 const { check, section } = r;
@@ -44,7 +58,11 @@ const anon = async (path) => {
     check(`${slug}: all in a shown category`, outside.length === 0, outside.map((d) => d.id));
   }
   const mockPosts = await anon("/instagram-posts?limit=1&depth=0&where[isMock][equals]=true");
-  check("instagram-posts: no mock posts", mockPosts.status === 200 && mockPosts.body.totalDocs === 0, mockPosts.body?.totalDocs);
+  if (mockInstagramAllowed) {
+    check("instagram-posts: mock posts read (mock allowed here)", mockPosts.status === 200 && mockPosts.body.totalDocs > 0, mockPosts.body?.totalDocs);
+  } else {
+    check("instagram-posts: no mock posts", mockPosts.status === 200 && mockPosts.body.totalDocs === 0, mockPosts.body?.totalDocs);
+  }
   const categories = await anon("/categories?limit=100&depth=0");
   check("the CRM-only Other category isn't listed", !categories.body.docs.some((c) => c.slug === "other"), categories.body.docs.map((c) => c.slug));
   const testimonials = await anon("/testimonials?limit=100&depth=0");

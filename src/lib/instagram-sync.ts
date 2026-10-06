@@ -88,6 +88,9 @@ export async function syncSlot(
   payload: Payload,
   slot: number,
   provider: InstagramProvider = instagramProvider(payload),
+  // Mock only: connect this slot if it isn't yet (the studio's stubbed
+  // "Connect" button where mock posts are allowed).
+  { connectMock = false }: { connectMock?: boolean } = {},
 ): Promise<SyncResult> {
   const result: SyncResult = { slot, outcome: "skipped", created: 0, updated: 0, pruned: 0, failedPosts: 0 };
   let connection = await connectionFor(payload, slot);
@@ -97,8 +100,9 @@ export async function syncSlot(
   }
   if (!connection) {
     // A real account only exists once she's connected it. The mock one
-    // stands in for @hamlettvisuals in slot 1; slot 2 stays empty.
-    if (!provider.isMock || slot !== 1) return { ...result, message: `Slot ${slot} isn't connected.` };
+    // stands in for @hamlettvisuals in slot 1; slot 2 stays empty until
+    // it's "connected" from the studio.
+    if (!provider.isMock || (slot !== 1 && !connectMock)) return { ...result, message: `Slot ${slot} isn't connected.` };
     connection = await payload.create({
       collection: "instagram-connections",
       data: { slot, status: "not_connected", isMock: true },

@@ -2,7 +2,7 @@ import type { FilterOptions, GlobalBeforeChangeHook, GlobalConfig, Where } from 
 import { publicReadAdminWrite } from "#src/access/isAdmin.ts";
 import { instagramUsername, validateInstagramHandle } from "#src/lib/contact-details.ts";
 import { DEFAULT_ACCOUNTS, normalizeAccounts, type AccountRow } from "#src/lib/instagram-accounts.ts";
-import { connectionIsLive, mockInstagramAllowed } from "#src/lib/instagram-connection.ts";
+import { mockInstagramAllowed } from "#src/lib/instagram-connection.ts";
 import { FEATURED_MAX, HEADING_MAX, LABEL_MAX } from "#src/lib/instagram-limits.ts";
 import { serverURL } from "#src/lib/server-url.ts";
 
@@ -15,8 +15,10 @@ import { serverURL } from "#src/lib/server-url.ts";
 //
 // `accounts` is always two rows, slot 1 then slot 2 (lib/instagram-accounts.ts
 // puts it back into that shape on every save). An account's Visible switch
-// only counts while that account is connected: saving turns it off for an
-// account that isn't.
+// only counts while that account is connected: the studio locks it until
+// then (components/admin/Instagram/VisibleField.tsx) and the homepage
+// ignores it, but her choice is kept, so connecting the account later shows
+// it (or not) as she left it.
 
 // Featured picks come from that account's own synced posts, and never mock
 // ones where mock posts aren't allowed. Also checked on save.
@@ -27,18 +29,8 @@ const featuredOptions: FilterOptions = ({ siblingData }) => {
   return { and };
 };
 
-const keepAccountsInShape: GlobalBeforeChangeHook = async ({ data, req }) => {
-  const { docs: connections } = await req.payload.find({
-    collection: "instagram-connections",
-    select: { slot: true, status: true, isMock: true },
-    limit: 2,
-    depth: 0,
-    req,
-  });
-  data.accounts = normalizeAccounts(data.accounts as AccountRow[] | undefined).map((row) => {
-    const connected = connectionIsLive(connections.find((c) => c.slot === row.slot));
-    return { ...row, visible: connected ? Boolean(row.visible) : false };
-  });
+const keepAccountsInShape: GlobalBeforeChangeHook = ({ data }) => {
+  data.accounts = normalizeAccounts(data.accounts as AccountRow[] | undefined);
   return data;
 };
 
@@ -79,6 +71,8 @@ export const InstagramSection: GlobalConfig = {
       defaultValue: true,
       admin: {
         description: "Turn off to hide this section from your homepage. Your accounts and picks are kept.",
+        // The same switch and Live / Hidden pill as "Show on website".
+        components: { Field: "/components/admin/ShowOnWebsiteField#default" },
       },
     },
     {
@@ -99,7 +93,13 @@ export const InstagramSection: GlobalConfig = {
       maxRows: 2,
       defaultValue: DEFAULT_ACCOUNTS,
       admin: {
+        // Two fixed cards (components/admin/Instagram): no adding, removing
+        // or reordering rows (hidden by .ig-accounts in admin-overrides.css,
+        // and put back by keepAccountsInShape if sent anyway).
+        className: "ig-accounts",
         isSortable: false,
+        initCollapsed: false,
+        components: { RowLabel: "/components/admin/Instagram/AccountRowLabel#default" },
         description:
           "Up to two Instagram accounts. With one shown, the section is a 3×3 grid; with both, each gets its own labelled 3×2 grid.",
       },
@@ -110,6 +110,12 @@ export const InstagramSection: GlobalConfig = {
           type: "number",
           required: true,
           admin: { hidden: true, readOnly: true },
+        },
+        {
+          // Status, last sync, Sync now / Connect.
+          name: "accountHeader",
+          type: "ui",
+          admin: { components: { Field: "/components/admin/Instagram/AccountHeader#default" } },
         },
         {
           // Saved as "@username" whichever way she typed it, like Site
@@ -144,7 +150,7 @@ export const InstagramSection: GlobalConfig = {
           label: "Show on homepage",
           defaultValue: false,
           admin: {
-            description: "Only takes effect once this account is connected.",
+            components: { Field: "/components/admin/Instagram/VisibleField#default" },
           },
         },
         {
@@ -159,6 +165,7 @@ export const InstagramSection: GlobalConfig = {
             isSortable: true,
             allowCreate: false,
             allowEdit: false,
+            components: { Field: "/components/admin/Instagram/FeaturedField#default" },
             description: `Up to ${FEATURED_MAX} posts to show first, in this order. The rest of the grid fills with your most recent posts.`,
           },
         },
