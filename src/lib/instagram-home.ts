@@ -1,14 +1,17 @@
 import type { Payload } from "payload";
-import { connectionIsLive, mockInstagramAllowed } from "@/lib/instagram-connection";
-import { INSTAGRAM_SLOTS } from "@/lib/instagram-limits";
-import { SINGLE_ACCOUNT_POSTS } from "@/lib/instagram-layout";
-import type { InstagramPost, InstagramSection } from "@/payload-types";
+import { connectionIsLive, mockInstagramAllowed } from "#src/lib/instagram-connection.ts";
+import { INSTAGRAM_SLOTS } from "#src/lib/instagram-limits.ts";
+import { SINGLE_ACCOUNT_POSTS } from "#src/lib/instagram-layout.ts";
+import type { InstagramPost, InstagramSection } from "#src/payload-types.ts";
 
 // What the homepage Instagram section (components/home/Instagram.tsx) needs
 // from the server: the section itself (featured picks populated), which
 // account slots are connected, and each connected account's most recent
 // synced posts. Only ever the saved copies — never Instagram itself.
 // Mock posts only where they're allowed (lib/instagram-connection.ts).
+//
+// "#src/" imports rather than "@/" so unit tests can load it with plain
+// Node (tests/unit/instagram-production.test.mts).
 
 export type TilePost = {
   id: number;

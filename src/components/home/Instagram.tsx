@@ -2,10 +2,9 @@
 
 import HoverZoomImage from "@/components/HoverZoomImage";
 import PlayIcon from "@/components/Backstage/PlayIcon";
-import { instagramLink, type InstagramLink } from "@/lib/contact-details";
-import { normalizeAccounts } from "@/lib/instagram-accounts";
-import { toTilePost, type InstagramHome, type TilePost } from "@/lib/instagram-home";
-import { layoutFor, type LayoutBlock } from "@/lib/instagram-layout";
+import type { InstagramLink } from "@/lib/contact-details";
+import type { InstagramHome } from "@/lib/instagram-home";
+import { instagramView, type ViewBlock } from "@/lib/instagram-view";
 import { serverURL } from "@/lib/server-url";
 import { useScopedLivePreview } from "@/lib/use-scoped-live-preview";
 import type { InstagramSection, SiteSetting } from "@/payload-types";
@@ -17,7 +16,8 @@ import type { InstagramSection, SiteSetting } from "@/payload-types";
 //
 //   - One account shown: a 3×3 grid. Both: two labelled 3×2 blocks, side
 //     by side from `lg`, stacked below that, each with its own Follow link.
-//     Which posts and which layout: lib/instagram-layout.ts.
+//     Which posts and which layout: lib/instagram-layout.ts; what to
+//     render: lib/instagram-view.ts.
 //   - Nothing to show (no account connected, switched on and synced): the
 //     heading and a "Follow @handle" link made from Site Settings'
 //     Instagram username, so the section and Live Preview never go blank.
@@ -49,53 +49,37 @@ export default function Instagram({ home, siteSettings }: { home: InstagramHome;
     apiRoute: "/hv-studio/api",
   });
 
-  if (section.showOnHomepage === false) return null;
+  const view = instagramView(section, home, settings.instagram?.handle);
+  if (view.kind === "hidden") return null;
 
-  const layout = layoutFor<TilePost>(
-    normalizeAccounts(section.accounts).map((account) => ({
-      slot: account.slot,
-      handle: account.handle ?? null,
-      label: account.label ?? null,
-      connected: home.connectedSlots.includes(account.slot),
-      visible: account.visible === true,
-      featured: (account.featured ?? []).map((post) => toTilePost(post, home.mockAllowed)).filter((post) => post !== null),
-      recent: home.recentBySlot[account.slot] ?? [],
-    })),
-  );
-  const fallback = instagramLink(settings.instagram?.handle);
-  const heading = section.heading || "Recent on Instagram";
-
-  if (layout.kind === "none") {
-    if (!fallback) return null;
+  if (view.kind === "follow") {
     return (
-      <Shell heading={heading} follow={fallback}>
+      <Shell heading={view.heading} follow={view.follow}>
         {null}
       </Shell>
     );
   }
 
-  if (layout.kind === "single") {
-    const link = instagramLink(layout.block.handle) ?? fallback;
+  if (view.kind === "single") {
     return (
-      <Shell heading={heading} follow={link}>
-        <Grid block={layout.block} link={link} className="mt-8" sizes="(min-width: 1280px) 405px, 31vw" />
+      <Shell heading={view.heading} follow={view.block.link}>
+        <Grid block={view.block} className="mt-8" sizes="(min-width: 1280px) 405px, 31vw" />
       </Shell>
     );
   }
 
   return (
-    <Shell heading={heading} follow={null}>
+    <Shell heading={view.heading} follow={null}>
       <div className="mt-8 grid gap-x-10 gap-y-12 lg:grid-cols-2">
-        {layout.blocks.map((block) => {
-          const link = instagramLink(block.handle) ?? fallback;
-          const title = block.label || link?.handle || "Instagram";
+        {view.blocks.map((block) => {
+          const title = block.label || block.link?.handle || "Instagram";
           return (
             <section key={block.slot} aria-label={title} data-instagram-account={block.slot}>
               <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
                 <h3 className="text-body font-medium text-ink">{title}</h3>
-                {link && <FollowLink link={link} />}
+                {block.link && <FollowLink link={block.link} />}
               </div>
-              <Grid block={block} link={link} className="mt-4" sizes="(min-width: 1280px) 195px, (min-width: 1024px) 15vw, 31vw" />
+              <Grid block={block} className="mt-4" sizes="(min-width: 1280px) 195px, (min-width: 1024px) 15vw, 31vw" />
             </section>
           );
         })}
@@ -132,17 +116,8 @@ function FollowLink({ link }: { link: InstagramLink }) {
   );
 }
 
-function Grid({
-  block,
-  link,
-  className,
-  sizes,
-}: {
-  block: LayoutBlock<TilePost>;
-  link: InstagramLink | null;
-  className: string;
-  sizes: string;
-}) {
+function Grid({ block, className, sizes }: { block: ViewBlock; className: string; sizes: string }) {
+  const link = block.link;
   return (
     <ul className={`${GRID_CLASS} ${className}`}>
       {block.posts.map((post) => (
