@@ -44,8 +44,21 @@ export function toTilePost(post: unknown, mockAllowed: boolean): TilePost | null
 
 export async function getInstagramHome(payload: Payload): Promise<InstagramHome> {
   const mockAllowed = mockInstagramAllowed();
-  // depth 1: each account's featured picks as posts.
-  const section = await payload.findGlobal({ slug: "instagram-section", depth: 1 });
+  // depth 1: each account's featured picks as posts. The section goes to
+  // the browser (the component's props are in the page), so each pick is
+  // cut down to a tile's fields here, and a mock one is dropped where mock
+  // posts aren't allowed — otherwise its caption and file link would ride
+  // along in the production page even though no tile shows it.
+  const saved = await payload.findGlobal({ slug: "instagram-section", depth: 1 });
+  const section: InstagramSection = {
+    ...saved,
+    accounts: (saved.accounts ?? []).map((account) => ({
+      ...account,
+      featured: (account.featured ?? [])
+        .map((post) => toTilePost(post, mockAllowed))
+        .filter((post) => post !== null) as unknown as InstagramPost[],
+    })),
+  };
   const { docs: connections } = await payload.find({
     collection: "instagram-connections",
     select: { slot: true, status: true, isMock: true },

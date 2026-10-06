@@ -150,6 +150,10 @@ test("production with only mock data: no posts, and the section falls back to he
     assert.equal(home.mockAllowed, false);
     assert.deepEqual(home.connectedSlots, []);
     assert.deepEqual(home.recentBySlot, {});
+    // The section itself goes to the browser: no mock pick may ride along.
+    const sent = JSON.stringify(home.section);
+    assert.ok(!/mock post|"isMock":true/.test(sent), `mock data in the section sent to the page: ${sent.slice(0, 200)}`);
+    assert.deepEqual(home.section.accounts[0].featured, []);
     const view = instagramView(home.section, home, "@hamlettvisuals");
     assert.deepEqual(view, {
       kind: "follow",
@@ -166,6 +170,7 @@ test("production with real posts beside leftover mock ones: only real posts, a f
     assert.deepEqual(home.connectedSlots, [1]);
     assert.ok(home.recentBySlot[1].length > 0);
     assert.ok(home.recentBySlot[1].every((p: { id: number }) => !isMockId(p.id)), "no mock post among the recent ones");
+    assert.deepEqual(home.section.accounts[0].featured.map((p: { id: number }) => p.id), [203], "only the real pick is sent to the page");
     const view = instagramView(home.section, home, "@hamlettvisuals");
     assert.equal(view.kind, "single");
     const ids = tileIds(view);
