@@ -1,7 +1,19 @@
 import type { GlobalConfig } from "payload";
 import { publicReadAdminWrite } from "#src/access/isAdmin.ts";
 import { serverURL } from "#src/lib/server-url.ts";
+import {
+  BOOKING_CONFIRMATION_HEADING,
+  BOOKING_CONFIRMATION_MESSAGE,
+  BOOKING_DATE_HELP,
+  BOOKING_HOW_IT_WORKS,
+  BOOKING_SUBMIT_LABEL,
+} from "#src/lib/booking-copy.ts";
 
+// The Booking page's own words (/booking): heading, intro, the "How it works"
+// box and its steps, the form's button and date help text, and what the
+// thank-you says after sending. The defaults are the text the page had
+// before these were editable (lib/booking-copy.ts).
+//
 // The intro copy and "How it works" steps on the standalone /booking page —
 // same pattern as About (heading + short copy + a repeating list), just on
 // its own route instead of a homepage section. See src/app/(site)/booking/
@@ -9,7 +21,8 @@ import { serverURL } from "#src/lib/server-url.ts";
 // paragraph.
 export const Booking: GlobalConfig = {
   slug: "booking",
-  label: "Booking",
+  // The same name in the editor title, breadcrumb and sidebar.
+  label: "Booking Page",
   admin: {
     hideAPIURL: true,
     components: {
@@ -23,7 +36,7 @@ export const Booking: GlobalConfig = {
     },
     group: "Booking",
     description:
-      "The heading, intro paragraph, and \"How it works\" steps on the Book a session page.",
+      "The words on your Book a session page: heading, intro, the \"How it works\" steps, the form's button, and the thank-you after someone sends a request.",
     // Same Live Preview treatment as About/Hero (see globals/About.ts), but
     // pointed at /booking instead of the homepage — this is the first
     // wired global that isn't a homepage section. There's no single
@@ -62,6 +75,14 @@ export const Booking: GlobalConfig = {
       },
     },
     {
+      name: "howItWorksHeading",
+      type: "text",
+      label: "\"How it works\" heading",
+      required: true,
+      defaultValue: BOOKING_HOW_IT_WORKS,
+      admin: { description: "The title of the steps box." },
+    },
+    {
       name: "steps",
       type: "array",
       minRows: 1,
@@ -82,9 +103,12 @@ export const Booking: GlobalConfig = {
             "She follows up within a day or two to confirm availability and lock it in.",
         },
       ],
+      labels: { singular: "Step", plural: "Steps" },
       admin: {
         description:
-          "The numbered \"How it works\" steps shown above the booking form.",
+          "The numbered \"How it works\" steps shown above the booking form. Add as many as you like; drag to reorder.",
+        // Each row's header shows its number and title (StepRowLabel.tsx).
+        components: { RowLabel: "/components/admin/StepRowLabel#default" },
       },
       fields: [
         {
@@ -105,6 +129,42 @@ export const Booking: GlobalConfig = {
           },
         },
       ],
+    },
+    {
+      name: "dateHelpText",
+      type: "textarea",
+      label: "Date help text",
+      required: true,
+      defaultValue: BOOKING_DATE_HELP,
+      admin: { rows: 2, description: "The line under the preferred date and time." },
+    },
+    {
+      name: "submitLabel",
+      type: "text",
+      label: "Button text",
+      required: true,
+      defaultValue: BOOKING_SUBMIT_LABEL,
+      maxLength: 40,
+      admin: { description: "The button that sends the request." },
+    },
+    {
+      name: "confirmationHeading",
+      type: "text",
+      label: "Thank-you heading",
+      required: true,
+      defaultValue: BOOKING_CONFIRMATION_HEADING,
+      admin: {
+        description:
+          "Shown after someone sends a request. {name} becomes their first name (or \"there\" if they gave none).",
+      },
+    },
+    {
+      name: "confirmationMessage",
+      type: "textarea",
+      label: "Thank-you message",
+      required: true,
+      defaultValue: BOOKING_CONFIRMATION_MESSAGE,
+      admin: { rows: 3, description: "The text under the thank-you heading." },
     },
   ],
 };

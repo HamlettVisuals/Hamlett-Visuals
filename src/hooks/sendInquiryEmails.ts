@@ -2,6 +2,8 @@ import type { CollectionAfterChangeHook } from "payload";
 import { Resend } from "resend";
 import type { Inquiry } from "#src/payload-types.ts";
 import { emailFrom } from "#src/lib/email-from.ts";
+import { preferredTimeLabel } from "#src/lib/booking-time.ts";
+import { OTHER_SESSION_TYPE } from "#src/lib/booking-session-type.ts";
 
 // Fires once per newly-created Inquiry (from either AskQuestionPanel or
 // BookingForm, via /api/inquiries) — notifies the studio owner and
@@ -67,14 +69,28 @@ export const sendInquiryEmails: CollectionAfterChangeHook<Inquiry> = async ({
     }
   };
 
+  // A booking's session type is its category (no longer a line in the
+  // message), so it's named here, with the time and handle.
+  const categoryId = doc.category && typeof doc.category === "object" ? doc.category.id : doc.category;
+  const sessionType =
+    isBooking && categoryId != null
+      ? await req.payload
+          .findByID({ collection: "categories", id: categoryId, depth: 0, req, overrideAccess: true })
+          .then((category) => (category.slug === OTHER_SESSION_TYPE ? "Something else" : category.name))
+          .catch(() => null)
+      : null;
+  const time = preferredTimeLabel(doc.preferredTime);
   const detailLines = [
     `Name: ${doc.name}`,
     `Email: ${doc.email}`,
     doc.phone ? `Phone: ${doc.phone}` : null,
+    doc.instagramHandle ? `Instagram: ${doc.instagramHandle}` : null,
+    sessionType ? `Session type: ${sessionType}` : null,
     doc.preferredDate ? `Preferred date: ${doc.preferredDate}` : null,
+    time ? `Preferred time: ${time}` : null,
     `From page: ${doc.sourcePage}`,
     "",
-    doc.message,
+    doc.message || "(No message.)",
   ].filter((line): line is string => line !== null);
 
   await send("owner notification", {

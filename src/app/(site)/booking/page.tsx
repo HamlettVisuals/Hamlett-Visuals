@@ -1,16 +1,12 @@
-import Link from "next/link";
 import { getPayload } from "payload";
 import config from "@payload-config";
 import BookingPageContent from "@/components/booking/BookingPageContent";
 import { OTHER_SESSION_TYPE } from "@/lib/booking-session-type";
 
-// Booking page. Intro/steps come from the Booking global (see
-// globals/Booking.ts); BookingFlow itself is unchanged — a client component
-// wrapping the 3-step "how it works" card and the booking form together,
-// since the card turns into a progress tracker once the form is submitted
-// and needs to share that state with it (see
-// src/components/booking/BookingFlow.tsx). UI only: submitting shows the
-// success state locally: no Supabase, no email delivery, no API route yet.
+// Booking page. Its words come from the Booking Page global
+// (globals/Booking.ts); BookingFlow (src/components/booking/BookingFlow.tsx)
+// holds the "How it works" box and the form, and swaps both for the
+// thank-you once a request is sent (a real Inquiry, POST /api/inquiries).
 
 export const metadata = {
   title: "Book a session — Hamlett Visuals",
@@ -45,6 +41,26 @@ export default async function BookingPage() {
   });
   const fallbackCategoryId = fallbackCategoryDocs[0]?.id;
 
+  // Categories with at least one album on show, for the thank-you's "browse
+  // the … gallery" link (left out for a category with nothing to browse).
+  const { docs: albums } = categories.length
+    ? await payload.find({
+        collection: "events",
+        where: { and: [{ published: { equals: true } }, { category: { in: categories.map((c) => c.id) } }] },
+        depth: 0,
+        limit: 0,
+        select: { category: true },
+      })
+    : { docs: [] };
+  const browsableSlugs = [
+    ...new Set(
+      albums
+        .map((album) => (typeof album.category === "object" ? album.category?.id : album.category))
+        .map((id) => categories.find((c) => c.id === id)?.slug)
+        .filter((slug): slug is string => Boolean(slug)),
+    ),
+  ];
+
   return (
     <div
       id="booking"
@@ -54,13 +70,8 @@ export default async function BookingPage() {
         booking={booking}
         categories={categories}
         fallbackCategoryId={fallbackCategoryId}
+        browsableSlugs={browsableSlugs}
       />
-
-      <p className="mt-16">
-        <Link href="/" className="link text-ink">
-          Back to home
-        </Link>
-      </p>
     </div>
   );
 }

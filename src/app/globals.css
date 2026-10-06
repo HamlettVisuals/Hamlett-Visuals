@@ -24,7 +24,7 @@
      all the colour; the UI never competes with it. */
   --color-canvas: #faf9f6;    /* warm off-white page ground */
   --color-canvas-tint: color-mix(in srgb, var(--color-accent) 9%, var(--color-canvas)); /* canvas with a 9% wash of --color-accent — derived, never a standalone hex. The faint warm ground behind About, the Hot offer section and the footer. */
-  --color-canvas-raised: color-mix(in srgb, var(--color-ink) 4%, var(--color-canvas)); /* canvas with a 4% wash of --color-ink — derived, never a standalone hex. A neutral, slightly-deeper flat surface (no border, no shadow) distinct from --color-canvas-tint's accent wash. Used only for the booking form's field block. */
+  --color-canvas-raised: color-mix(in srgb, var(--color-ink) 4%, var(--color-canvas)); /* canvas with a 4% wash of --color-ink — derived, never a standalone hex. A neutral, slightly-deeper flat surface distinct from --color-canvas-tint's accent wash. Used only for the booking form's box, inside its .accent-frame (the same frame as the "How it works" box above it). */
   --color-ink: #171614;       /* warm near-black — cast matched to the canvas, not #000 */
   --color-muted: #5f5b52;     /* secondary / caption text — 6.3:1 on canvas */
   --color-accent: #8a8378;    /* taupe — decoration & large type ONLY, never small text (3.5:1) */
@@ -913,26 +913,12 @@
     }
   }
 
-  /* "How it works" progress-tracker reveal (BookingFlow.tsx) — once the form
-     is submitted, each step's status change is staggered via an inline
-     animation-delay/transition-delay BookingFlow computes per step, rather
-     than having all three change at once. This class only supplies the
-     checkmark's small pop-in; step 3's accent highlight reuses the plain
-     color transition below instead of a keyframe, per the "nothing
-     elaborate" rule in DESIGN.md → Motion. */
-  @keyframes progress-check-in {
-    from { opacity: 0; transform: scale(0.6); }
-    to { opacity: 1; transform: scale(1); }
-  }
-  .progress-check-in {
-    animation: progress-check-in 200ms var(--ease-standard) both;
-  }
-  .progress-step-heading {
-    transition: color 200ms var(--ease-standard);
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .progress-check-in {
-      animation: none;
+  /* "How it works" steps (BookingFlow.tsx): stacked on phones; from `sm`, as
+     many columns as BookingFlow sets in --booking-step-columns (up to three,
+     two for four steps), however many steps she adds. */
+  @media (min-width: 40rem) {
+    .booking-steps {
+      grid-template-columns: repeat(var(--booking-step-columns, 3), minmax(0, 1fr));
     }
   }
 

@@ -443,11 +443,19 @@ export interface Inquiry {
   /**
    * What the client wrote.
    */
-  message: string;
+  message?: string | null;
   /**
    * The date they asked about, if any.
    */
   preferredDate?: string | null;
+  /**
+   * The time of day they asked about, if any.
+   */
+  preferredTime?: ('morning' | 'afternoon' | 'evening') | null;
+  /**
+   * Their Instagram handle, if they'd rather talk by DM.
+   */
+  instagramHandle?: string | null;
   /**
    * Where this inquiry stands in the booking pipeline.
    */
@@ -1081,6 +1089,8 @@ export interface InquiriesSelect<T extends boolean = true> {
   client?: T;
   message?: T;
   preferredDate?: T;
+  preferredTime?: T;
+  instagramHandle?: T;
   stage?: T;
   postProductionStatus?: T;
   testimonialReceived?: T;
@@ -1746,7 +1756,7 @@ export interface SiteSetting {
   createdAt?: string | null;
 }
 /**
- * The heading, intro paragraph, and "How it works" steps on the Book a session page.
+ * The words on your Book a session page: heading, intro, the "How it works" steps, the form's button, and the thank-you after someone sends a request.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "booking".
@@ -1762,7 +1772,11 @@ export interface Booking {
    */
   intro: string;
   /**
-   * The numbered "How it works" steps shown above the booking form.
+   * The title of the steps box.
+   */
+  howItWorksHeading: string;
+  /**
+   * The numbered "How it works" steps shown above the booking form. Add as many as you like; drag to reorder.
    */
   steps?:
     | {
@@ -1777,6 +1791,22 @@ export interface Booking {
         id?: string | null;
       }[]
     | null;
+  /**
+   * The line under the preferred date and time.
+   */
+  dateHelpText: string;
+  /**
+   * The button that sends the request.
+   */
+  submitLabel: string;
+  /**
+   * Shown after someone sends a request. {name} becomes their first name (or "there" if they gave none).
+   */
+  confirmationHeading: string;
+  /**
+   * The text under the thank-you heading.
+   */
+  confirmationMessage: string;
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -1970,6 +2000,7 @@ export interface SiteSettingsSelect<T extends boolean = true> {
 export interface BookingSelect<T extends boolean = true> {
   heading?: T;
   intro?: T;
+  howItWorksHeading?: T;
   steps?:
     | T
     | {
@@ -1977,6 +2008,10 @@ export interface BookingSelect<T extends boolean = true> {
         description?: T;
         id?: T;
       };
+  dateHelpText?: T;
+  submitLabel?: T;
+  confirmationHeading?: T;
+  confirmationMessage?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

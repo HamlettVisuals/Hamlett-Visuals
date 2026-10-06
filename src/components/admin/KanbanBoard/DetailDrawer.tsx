@@ -4,7 +4,8 @@ import { useCallback, useState, type ChangeEvent, type KeyboardEvent, type React
 import { Drawer, Link } from "@payloadcms/ui";
 import { formatAdminURL } from "payload/shared";
 import styles from "./KanbanBoard.module.css";
-import { PAYMENT_STATUS_LABELS, POST_PRODUCTION_LABELS, SOURCE_LABELS, toDateInputValue } from "./format";
+import { formatShortDate, PAYMENT_STATUS_LABELS, POST_PRODUCTION_LABELS, SOURCE_LABELS, toDateInputValue } from "./format";
+import { instagramProfileUrl, preferredTimeLabel } from "@/lib/booking-time";
 import { inquiryClient, STAGES, type BoardInquiry, type StageValue, type TemplateWithCategory } from "./types";
 
 export const DETAIL_DRAWER_SLUG = "kanban-inquiry-detail";
@@ -147,6 +148,8 @@ export default function DetailDrawer({
               />
             )}
           </div>
+
+          <AskedFor inquiry={inquiry} />
 
           {inquiry.message && <ClientMessage message={inquiry.message} />}
 
@@ -359,6 +362,39 @@ export default function DetailDrawer({
         </div>
       )}
     </Drawer>
+  );
+}
+
+// What the client asked for on the booking form, read-only: their
+// preferred date and time and their Instagram handle (the session type is
+// the tag above). Left out when they gave none of these.
+function AskedFor({ inquiry }: { inquiry: BoardInquiry }) {
+  const date = formatShortDate(inquiry.preferredDate);
+  const time = preferredTimeLabel(inquiry.preferredTime);
+  const handle = inquiry.instagramHandle?.trim();
+  if (!date && !time && !handle) return null;
+  return (
+    <section>
+      <h3 className={styles.drawerSectionTitle}>What they asked for</h3>
+      <dl className={styles.askedFor}>
+        {(date || time) && (
+          <div>
+            <dt className={styles.detailLabel}>Preferred</dt>
+            <dd>{[date, time].filter(Boolean).join(" · ")}</dd>
+          </div>
+        )}
+        {handle && (
+          <div>
+            <dt className={styles.detailLabel}>Instagram</dt>
+            <dd>
+              <a className={styles.drawerTextLink} href={instagramProfileUrl(handle)} target="_blank" rel="noreferrer">
+                {handle}
+              </a>
+            </dd>
+          </div>
+        )}
+      </dl>
+    </section>
   );
 }
 

@@ -17,8 +17,12 @@ export type InquiryInput = {
   name: string;
   email: string;
   phone?: string;
+  /** Required for a question; optional (may be empty) for a booking request. */
   message: string;
   preferredDate?: string;
+  /** "morning" | "afternoon" | "evening" (lib/booking-time.ts). */
+  preferredTime?: string;
+  instagramHandle?: string;
   category?: number;
   location?: {
     street?: string;

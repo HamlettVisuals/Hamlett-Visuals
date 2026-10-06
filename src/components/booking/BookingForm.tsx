@@ -7,10 +7,18 @@ import {
   useState,
   type FormEvent,
 } from "react";
+import Link from "next/link";
 import { useSearchParams, usePathname } from "next/navigation";
 import type { Category } from "@/payload-types";
+import {
+  BOOKING_CONFIRMATION_MESSAGE,
+  BOOKING_DATE_HELP,
+  BOOKING_SUBMIT_LABEL,
+  confirmationHeading,
+} from "@/lib/booking-copy";
 import { submitInquiry } from "@/lib/inquiries";
 import { OTHER_SESSION_TYPE } from "@/lib/booking-session-type";
+import { PREFERRED_TIMES, isPreferredTime } from "@/lib/booking-time";
 import { usePrefersReducedMotion } from "@/lib/use-prefers-reduced-motion";
 import DatePicker from "./DatePicker";
 
@@ -20,15 +28,19 @@ import DatePicker from "./DatePicker";
 // src/components/home/OfferActions.tsx).
 //
 // `submitted` / `firstName` are owned by the parent (BookingFlow), not this
-// component — the "How it works" card above needs the same flag to turn
-// into a progress tracker, so it lives one level up instead of being local
-// state here. This component just calls `onSubmitted` once a submission is
-// valid.
+// component — the "How it works" box above goes away once it's set, so it
+// lives one level up instead of being local state here. This component
+// just calls `onSubmitted` once a submission is valid.
+//
+// The thank-you's heading, message, the button and the date help text are
+// the Booking Page global's (`copy`, globals/Booking.ts). After sending, the
+// page moves to the thank-you and focuses its heading, so it's in view on a
+// phone, where the button sat far down the page.
 //
 // A valid submit posts a real Inquiry (type: "booking") via submitInquiry
-// (src/lib/inquiries.ts) — session type, preferred time, and the Instagram
-// handle all get folded into the Inquiry's one `message` field (composeMessage
-// below) since the collection doesn't have dedicated columns for them. The
+// (src/lib/inquiries.ts): the session type as its category, the preferred
+// date and time and the Instagram handle as their own fields, and the
+// message as typed (it may be empty). The
 // dev-only ?bookingResult=error query param (devForceError below) still
 // forces the error path without needing the backend itself to fail, for
 // exercising that UI state on demand. The honeypot field skips the
@@ -75,12 +87,15 @@ const SWAP_TOTAL_MS = SWAP_DURATION_MS + SWAP_OVERLAP_MS;
 
 type SwapPhase = "form" | "swapping" | "success";
 
-const TIME_OPTIONS = [
-  { value: "morning", label: "Morning" },
-  { value: "afternoon", label: "Afternoon" },
-  { value: "evening", label: "Evening" },
-  { value: "", label: "No preference" },
-];
+/** The Booking Page global's words for the form and the thank-you. */
+export type BookingCopy = {
+  dateHelp?: string | null;
+  submitLabel?: string | null;
+  confirmationHeading?: string | null;
+  confirmationMessage?: string | null;
+};
+
+const TIME_OPTIONS = [...PREFERRED_TIMES, { value: "", label: "No preference" }];
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -125,27 +140,6 @@ function toPreferredDateISO(iso: string): string | undefined {
   return `${iso}T12:00:00.000Z`;
 }
 
-// The Inquiries collection has one free-text `message` field — no dedicated
-// columns for session type, preferred time, or Instagram handle — so those
-// get folded into it here, ahead of whatever the client actually typed, so
-// none of it is lost for the person reading the inbox.
-function composeMessage(fields: {
-  sessionType: string;
-  time: string;
-  handle: string;
-  message: string;
-  categories: Category[];
-}): string {
-  const lines = [
-    `Session type: ${sessionTypeLabel(fields.sessionType, fields.categories)}`,
-  ];
-  const time = timeLabel(fields.time);
-  if (time) lines.push(`Preferred time: ${time}`);
-  if (fields.handle.trim()) lines.push(`Instagram: ${fields.handle.trim()}`);
-  if (fields.message.trim()) lines.push("", fields.message.trim());
-  return lines.join("\n");
-}
-
 type FormErrors = {
   sessionType?: string;
   name?: string;
@@ -171,10 +165,15 @@ function validate(fields: {
 export default function BookingForm({
   categories,
   fallbackCategoryId,
+  browsableSlugs,
+  copy,
   submitted,
   firstName,
   onSubmitted,
 }: {
+  /** Categories with an album on show: the thank-you links to that gallery. */
+  browsableSlugs: string[];
+  copy: BookingCopy;
   categories: Category[];
   // The unpublished "Other" Category's id (booking/page.tsx looks it up by
   // slug, unfiltered by `published`) — `categories` itself only ever holds
@@ -224,6 +223,7 @@ export default function BookingForm({
 
   const formSectionRef = useRef<HTMLDivElement>(null);
   const successPanelRef = useRef<HTMLElement>(null);
+  const successHeadingRef = useRef<HTMLHeadingElement>(null);
   const sessionTypeRef = useRef<HTMLSelectElement>(null);
   const nameRef = useRef<HTMLInputElement>(null);
   const emailRef = useRef<HTMLInputElement>(null);
@@ -290,6 +290,30 @@ export default function BookingForm({
     };
   }, [swapPhase]);
 
+  // Once the thank-you is showing, bring it into view and focus its heading
+  // (for screen readers, and so a phone isn't left at the bottom where the
+  // button was). Re-applied a few times: the form collapsing and the "How it
+  // works" box going away reflow the page, and the browser can keep nudging
+  // the scroll position for a moment afterwards. "instant", not the site's
+  // smooth scrolling, so it lands at once.
+  useEffect(() => {
+    if (swapPhase === "form") return;
+    // With "How it works" gone the thank-you sits right under the page
+    // heading, so usually the top of the page shows both: scroll there. Only
+    // if the thank-you wouldn't fit from the top, scroll to it instead.
+    const reveal = () => {
+      successHeadingRef.current?.focus({ preventScroll: true });
+      const panel = successPanelRef.current ?? formSectionRef.current;
+      if (!panel) return;
+      const bottomFromTop = panel.getBoundingClientRect().bottom + window.scrollY;
+      if (bottomFromTop <= window.innerHeight) window.scrollTo({ top: 0, behavior: "instant" });
+      else formSectionRef.current?.scrollIntoView({ block: "start", behavior: "instant" });
+    };
+    reveal();
+    const timers = [60, 200, 400].map((ms) => window.setTimeout(reveal, ms));
+    return () => timers.forEach((timer) => window.clearTimeout(timer));
+  }, [swapPhase]);
+
   const clearPrefill = () => {
     setSessionType("");
     setPrefilled(false);
@@ -344,8 +368,10 @@ export default function BookingForm({
         name: name.trim(),
         email: email.trim(),
         phone: phone.trim() || undefined,
-        message: composeMessage({ sessionType, time, handle, message, categories }),
+        message: message.trim(),
         preferredDate: toPreferredDateISO(date),
+        preferredTime: isPreferredTime(time) ? time : undefined,
+        instagramHandle: handle.trim() || undefined,
         // The session-type select's value is a real Category slug, except
         // OTHER_SESSION_TYPE ("Something else"), which isn't one — `categories`
         // only holds published categories, so it can't resolve that case
@@ -384,7 +410,7 @@ export default function BookingForm({
         <form
           onSubmit={handleSubmit}
           noValidate
-          className={`flex flex-col gap-8 bg-canvas-raised p-6 sm:p-8 ${
+          className={`accent-frame flex flex-col gap-8 bg-canvas-raised ${
             swapPhase === "swapping" ? "booking-swap-leaving" : ""
           }`}
         >
@@ -464,10 +490,7 @@ export default function BookingForm({
                 </select>
               </div>
             </div>
-            <p className="mt-2 text-caption text-muted">
-              Just a starting point — she&rsquo;ll confirm actual
-              availability when she follows up.
-            </p>
+            <p className="mt-2 text-caption text-muted">{copy.dateHelp?.trim() || BOOKING_DATE_HELP}</p>
           </div>
 
           <div className="grid gap-6 sm:grid-cols-2">
@@ -637,7 +660,7 @@ export default function BookingForm({
               ) : submitError ? (
                 "Try again"
               ) : (
-                "Send your request"
+                copy.submitLabel?.trim() || BOOKING_SUBMIT_LABEL
               )}
             </button>
           </div>
@@ -648,12 +671,11 @@ export default function BookingForm({
           ref={successPanelRef}
           className={swapPhase === "swapping" ? "booking-swap-entering" : undefined}
         >
-          <h2 className="font-display text-heading text-ink">
-            Thanks, {firstName || "there"}.
+          <h2 ref={successHeadingRef} tabIndex={-1} className="font-display text-heading text-ink outline-none">
+            {confirmationHeading(copy.confirmationHeading, firstName)}
           </h2>
           <p className="mt-3 max-w-measure text-body text-muted">
-            Your request has been sent. She reads every one herself and
-            usually replies within a day or two.
+            {copy.confirmationMessage?.trim() || BOOKING_CONFIRMATION_MESSAGE}
           </p>
           {summary && (
             <p className="mt-1 text-caption text-muted">
@@ -665,6 +687,16 @@ export default function BookingForm({
               ]
                 .filter(Boolean)
                 .join(" — ")}
+            </p>
+          )}
+          {/* The gallery for the session type they picked, while they wait;
+              left out for "Something else" and for a category with no
+              album on show (or hidden: `categories` only has shown ones). */}
+          {summary && browsableSlugs.includes(summary.sessionType) && (
+            <p className="mt-8 text-body">
+              <Link href={`/portfolio/${summary.sessionType}`} className="link text-ink">
+                While you wait, browse the {sessionTypeLabel(summary.sessionType, categories)} gallery
+              </Link>
             </p>
           )}
         </section>

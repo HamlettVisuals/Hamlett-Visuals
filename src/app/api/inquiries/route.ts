@@ -1,5 +1,6 @@
 import { getPayload } from "payload";
 import config from "@payload-config";
+import { isPreferredTime, normalizeHandle } from "@/lib/booking-time";
 
 // Public write path for the site's two contact forms (AskQuestionPanel,
 // BookingForm — see src/lib/inquiries.ts's submitInquiry). The Inquiries
@@ -19,6 +20,8 @@ type InquiryBody = {
   phone?: unknown;
   message?: unknown;
   preferredDate?: unknown;
+  preferredTime?: unknown;
+  instagramHandle?: unknown;
   category?: unknown;
   location?: unknown;
   sourcePage?: unknown;
@@ -68,7 +71,11 @@ export async function POST(request: Request) {
     (body.inquiryType !== "question" && body.inquiryType !== "booking") ||
     !isNonEmptyString(body.name) ||
     !isNonEmptyString(body.email) ||
-    !isNonEmptyString(body.message) ||
+    // A question needs its message; a booking request's is optional.
+    (body.inquiryType !== "booking" && !isNonEmptyString(body.message)) ||
+    (body.message !== undefined && typeof body.message !== "string") ||
+    (body.preferredTime !== undefined && body.preferredTime !== "" && !isPreferredTime(body.preferredTime)) ||
+    (body.instagramHandle !== undefined && typeof body.instagramHandle !== "string") ||
     typeof body.sourcePage !== "string" ||
     (body.inquiryType === "booking" && typeof body.category !== "number") ||
     !isValidLocation(body.location)
@@ -89,10 +96,12 @@ export async function POST(request: Request) {
         name: body.name.trim(),
         email: body.email.trim(),
         phone: isNonEmptyString(body.phone) ? body.phone.trim() : undefined,
-        message: body.message.trim(),
+        message: typeof body.message === "string" ? body.message.trim() : "",
         preferredDate: isNonEmptyString(body.preferredDate)
           ? body.preferredDate
           : undefined,
+        preferredTime: isPreferredTime(body.preferredTime) ? body.preferredTime : undefined,
+        instagramHandle: normalizeHandle(body.instagramHandle) ?? undefined,
         category: typeof body.category === "number" ? body.category : undefined,
         location: sanitizeLocation(
           body.location as { street?: string; city?: string; state?: string } | undefined,

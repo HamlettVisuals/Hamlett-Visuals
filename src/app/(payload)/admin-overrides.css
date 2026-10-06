@@ -2412,7 +2412,11 @@ a.editor-overview__tile:focus-visible,
   }
 
   .collection-list--inquiries #heading-type,
-  .collection-list--inquiries .cell-type {
+  .collection-list--inquiries .cell-type,
+  .collection-list--inquiries #heading-preferredTime,
+  .collection-list--inquiries .cell-preferredTime,
+  .collection-list--inquiries #heading-instagramHandle,
+  .collection-list--inquiries .cell-instagramHandle {
     display: none;
   }
 
@@ -3684,4 +3688,10 @@ a.editor-overview__tile:focus-visible,
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
+}
+
+/* Booking Page "How it works" step headers (components/admin/StepRowLabel.tsx). */
+.step-row-label {
+  font-weight: 600;
+  overflow-wrap: anywhere;
 }

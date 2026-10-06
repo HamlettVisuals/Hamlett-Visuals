@@ -16,10 +16,13 @@ export default function BookingPageContent({
   booking,
   categories,
   fallbackCategoryId,
+  browsableSlugs,
 }: {
   booking: BookingGlobal;
   categories: Category[];
   fallbackCategoryId: number | undefined;
+  /** Categories with an album on show (the thank-you's gallery link). */
+  browsableSlugs: string[];
 }) {
   const { data } = useScopedLivePreview<BookingGlobal>({
     initialData: booking,
@@ -44,7 +47,15 @@ export default function BookingPageContent({
         <BookingFlow
           categories={categories}
           fallbackCategoryId={fallbackCategoryId}
+          browsableSlugs={browsableSlugs}
           steps={steps}
+          copy={{
+            howItWorks: data.howItWorksHeading,
+            dateHelp: data.dateHelpText,
+            submitLabel: data.submitLabel,
+            confirmationHeading: data.confirmationHeading,
+            confirmationMessage: data.confirmationMessage,
+          }}
         />
       </Suspense>
     </>

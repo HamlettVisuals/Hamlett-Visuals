@@ -119,14 +119,15 @@ so iOS doesn't zoom on focus. Don't set real content below 14px.
   interactive layer.** `.accent-frame` is the pure visual look — a 1px
   `--color-accent-text` border (the same darker accent that fills the solid
   Book pill), a barely-there 3px radius, and a faint accent glow at rest — no
-  hover behaviour. It's used two places: the featured row in the Offers &
+  hover behaviour. It's used in two places: the featured row in the Offers &
   pricing list, layered with `.offer-row-featured` (next bullet) for the
-  hover-lift, since that row is clickable; and, alone, as the wrapper for the
-  `/booking` page's "How it works" section (`src/app/booking/page.tsx`) — that
-  page's one deliberate accent moment, deliberately *without* the hover-lift
-  since it isn't interactive. Do not generalise `.accent-frame` beyond these
-  two uses, and don't add `.offer-row-featured`'s hover motion to a
-  non-interactive surface.
+  hover-lift, since that row is clickable; and, alone, on the `/booking`
+  page (`src/components/booking/BookingFlow.tsx`, `BookingForm.tsx`), where
+  the "How it works" box and the form box both wear it so the two match
+  (the form keeps its `--color-canvas-raised` fill inside the frame),
+  deliberately *without* the hover-lift since neither is interactive. Do not
+  generalise `.accent-frame` beyond these, and don't add
+  `.offer-row-featured`'s hover motion to a non-interactive surface.
 - **The Hot offer card — a scoped static shadow.** The standalone `#hot-offer`
   section holds one `.hot-offer-card`, kept deliberately compact: badge, title,
   price, a one-line summary and the two action pills in a narrow left column,

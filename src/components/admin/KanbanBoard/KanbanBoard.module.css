@@ -1636,3 +1636,27 @@
     padding: 1px 4px;
   }
 }
+
+/* "What they asked for" in the detail drawer (DetailDrawer.tsx AskedFor):
+   label above value, side by side when there's room. */
+.askedFor {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 32px;
+  margin: 0;
+}
+
+/* As tall as the Instagram link's tap target (.drawerTextLink), with its
+   text centred the same way, so the two values line up. */
+.askedFor dd {
+  display: flex;
+  align-items: center;
+  min-height: 32px;
+  margin: 0;
+}
+
+@media (pointer: coarse) {
+  .askedFor dd {
+    min-height: 44px;
+  }
+}

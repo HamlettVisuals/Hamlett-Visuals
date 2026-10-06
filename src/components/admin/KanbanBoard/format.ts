@@ -1,3 +1,5 @@
+import { preferredTimeLabel } from "@/lib/booking-time";
+
 // Payload's date-only fields (shootDate, preferredDate, deliveryDeadline)
 // round-trip as a full ISO datetime at UTC midnight for
 // whatever calendar day was picked — e.g. picking "Oct 15" produces
@@ -45,6 +47,8 @@ export type StageDateSource = {
   stage: string;
   createdAt?: string | null;
   preferredDate?: string | null;
+  /** Shown after a Planning card's preferred date ("Preferred Oct 15 · Afternoon"). */
+  preferredTime?: string | null;
   shootDate?: string | null;
   deliveryDeadline?: string | null;
 };
@@ -83,7 +87,8 @@ export function stageDateLabel(inquiry: StageDateSource): string | null {
     }
     case "planning": {
       const date = formatShortDate(value);
-      return date ? `Preferred ${date}` : null;
+      const time = preferredTimeLabel(inquiry.preferredTime);
+      return date ? `Preferred ${date}${time ? ` · ${time}` : ""}` : null;
     }
     case "prep": {
       const date = formatShortDate(value);

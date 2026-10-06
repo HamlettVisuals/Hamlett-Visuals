@@ -45,6 +45,7 @@ function stubReq() {
       payload: {
         logger: { info: log("info"), warn: log("warn"), error: log("error") },
         findGlobal: async () => ({ contact: { email: "owner@example.test" } }),
+        findByID: async ({ id }: { id: number }) => ({ id, name: "Weddings", slug: "weddings" }),
       },
     },
   };
@@ -86,6 +87,20 @@ test("hook: both sends succeed — no errors logged", async () => {
   assert.equal(calls[0].body.from, "Hamlett Visuals <onboarding@resend.dev>");
   assert.equal(calls[1].body.to, "client@example.test");
   assert.deepEqual(logs.filter((l) => l.level === "error"), []);
+});
+
+test("hook: a booking's session type, time and Instagram are on their own lines; an empty message says so", async () => {
+  const { sendInquiryEmails } = await import(src("hooks/sendInquiryEmails.ts"));
+  reset({ RESEND_API_KEY: "re_fake_for_tests" });
+  replies = [OK("a"), OK("b")];
+  const { req } = stubReq();
+  const booking = { ...doc, category: 11, preferredTime: "afternoon", instagramHandle: "@testclient", message: "" };
+  await sendInquiryEmails({ doc: booking, operation: "create", req } as any);
+  const text: string = calls[0].body.text;
+  assert.match(text, /^Session type: Weddings$/m);
+  assert.match(text, /^Preferred time: Afternoon$/m);
+  assert.match(text, /^Instagram: @testclient$/m);
+  assert.match(text, /\(No message\.\)/);
 });
 
 test("hook: owner email rejected — logged clearly, auto-reply still sent", async () => {

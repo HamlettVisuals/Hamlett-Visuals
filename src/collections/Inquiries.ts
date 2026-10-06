@@ -2,6 +2,7 @@ import type { CollectionBeforeChangeHook, CollectionConfig } from "payload";
 import { isAdmin } from "#src/access/isAdmin.ts";
 import { sendInquiryEmails } from "#src/hooks/sendInquiryEmails.ts";
 import { logRepeatClient } from "#src/hooks/repeatClient.ts";
+import { PREFERRED_TIMES, normalizeHandle } from "#src/lib/booking-time.ts";
 
 // Auto-archives an inquiry once its wrap-up checklist is complete, so the
 // kanban board (a later phase) can filter it out and the default admin list
@@ -41,10 +42,10 @@ export const Inquiries: CollectionConfig = {
   admin: {
     hideAPIURL: true,
     useAsTitle: "name",
-    // Name first, so it's the column Payload links to the record. Type
-    // is hidden on phones (admin-overrides.css) so Name, Stage and the
-    // date fit without scrolling sideways.
-    defaultColumns: ["name", "stage", "createdAt", "type"],
+    // Name first, so it's the column Payload links to the record. Type,
+    // preferred time and Instagram are hidden on phones (admin-overrides.css)
+    // so Name, Stage and the date fit without scrolling sideways.
+    defaultColumns: ["name", "stage", "createdAt", "type", "preferredTime", "instagramHandle"],
     description:
       "Every question and booking request submitted through the site's contact forms — your inbox for new client inquiries.",
     components: {
@@ -183,9 +184,12 @@ export const Inquiries: CollectionConfig = {
       },
     },
     {
+      // Required for a question; a booking request can leave it empty (its
+      // session type, date, time and handle have their own fields).
       name: "message",
       type: "textarea",
-      required: true,
+      validate: (value: unknown, { data }: { data: Partial<{ type: string }> }) =>
+        data?.type === "booking" || (typeof value === "string" && value.trim().length > 0) || "Enter the message.",
       admin: {
         description: "What the client wrote.",
       },
@@ -195,6 +199,26 @@ export const Inquiries: CollectionConfig = {
       type: "date",
       admin: {
         description: "The date they asked about, if any.",
+      },
+    },
+    {
+      // From the booking form's "Preferred time" (lib/booking-time.ts).
+      name: "preferredTime",
+      type: "select",
+      label: "Preferred time",
+      options: PREFERRED_TIMES.map((time) => ({ value: time.value, label: time.label })),
+      admin: {
+        description: "The time of day they asked about, if any.",
+      },
+    },
+    {
+      // From the booking form's "Prefer DMs? Add your @handle".
+      name: "instagramHandle",
+      type: "text",
+      label: "Instagram",
+      hooks: { beforeValidate: [({ value }) => (value == null ? value : normalizeHandle(value))] },
+      admin: {
+        description: "Their Instagram handle, if they'd rather talk by DM.",
       },
     },
     {
