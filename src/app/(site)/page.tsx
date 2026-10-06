@@ -9,6 +9,7 @@ import Offers from "@/components/home/Offers";
 import BookingCta from "@/components/home/BookingCta";
 import Instagram from "@/components/home/Instagram";
 import Testimonials from "@/components/home/Testimonials";
+import { getInstagramHome } from "@/lib/instagram-home";
 import { comparePhotos } from "@/lib/manual-order";
 import { SAMPLE_PHOTOS } from "@/lib/package-limits";
 import { resolveCategory, sampleAlbumId, type SamplePhotosByPackage } from "@/lib/pricing-rows";
@@ -96,6 +97,8 @@ export default async function Home() {
   });
   const bookingCta = await payload.findGlobal({ slug: "booking-cta" });
   const siteSettings = await payload.findGlobal({ slug: "site-settings" });
+  // The section, connected accounts and their synced posts (lib/instagram-home.ts).
+  const instagram = await getInstagramHome(payload);
 
   return (
     <>
@@ -118,7 +121,7 @@ export default async function Home() {
       <BookingCta bookingCta={bookingCta} siteSettings={siteSettings} />
 
       {/* 7. Recent Instagram */}
-      <Instagram siteSettings={siteSettings} />
+      <Instagram home={instagram} siteSettings={siteSettings} />
 
       {/* 8. Testimonials teaser */}
       <Testimonials testimonialsTeaser={testimonialsTeaser} />

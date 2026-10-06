@@ -21,9 +21,12 @@ as it's done.
       of the shared Supabase database before launch.
 - [ ] **Replace the placeholder Privacy Policy and Terms text.** Visitors can
       see it now.
-- [ ] **Instagram: build the real connection, or hide the section until it's
-      connected.** Placeholder posts are visible now
-      (`src/lib/instagram-posts.ts`).
+- [ ] **Instagram: connect the real account.** The Instagram Section, sync
+      and homepage grid are built against a mock provider; the real one is
+      stubbed (`src/lib/instagram-real-provider.ts`, its TODOs). Until it's
+      connected, the homepage shows only the heading and a "Follow" link.
+      Then run `npm run instagram:clear-mock` (try `dry-run` first) to remove
+      the mock posts, their R2 images and the mock connection.
 - [ ] **Delete the `.backups/` folder** after the first successful deploy.
 - [ ] **Add the production domain to the R2 bucket's CORS rules (Cloudflare
       dashboard).** Every upload now goes from the browser straight to R2

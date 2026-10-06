@@ -114,6 +114,7 @@ export default buildConfig({
         "booking",
         "header-nav",
         "booking-cta",
+        "instagram-section",
       ],
       // Collections get plain Live Preview only — no openByDefault, no
       // scroll-to-highlight, and (deliberately) no per-record targeting: a
