@@ -1,31 +1,28 @@
-import type { InstagramProvider, ProviderMedia } from "@/lib/instagram-provider";
+import {
+  checkToken,
+  downloadMediaImage,
+  fetchLinkedMedia,
+  GraphError,
+  metaAppFromEnv,
+  type MetaApp,
+} from "#src/lib/instagram-graph.ts";
+import type { InstagramProvider, ProviderMedia } from "#src/lib/instagram-provider.ts";
 
-// The real Instagram API, not wired up yet: waiting on her account being
-// confirmed as a Professional account. Until then every call answers "not
-// configured", which the sync records without touching her posts or
-// marking anything as needing a reconnect.
+// The real Instagram API: the Instagram API with Facebook Login
+// (lib/instagram-graph.ts). Her Instagram Creator account is linked to a
+// Facebook Page, and the token saved for each connection (Instagram Tokens)
+// is that Page's token, from the connect flow (lib/instagram-connect.ts).
 //
-// TODO(instagram): implement with the Instagram API with Instagram Login
-// (graph.instagram.com), which works for Professional (Business or Creator)
-// accounts without a Facebook Page:
-//   - App credentials: INSTAGRAM_APP_ID / INSTAGRAM_APP_SECRET env vars, and
-//     a connect route (studio-only) that runs the OAuth flow, swaps the code
-//     for a long-lived token (60 days) and saves it in Instagram Tokens
-//     (collections/InstagramTokens.ts, Local API only) plus the account's id
-//     and username on its Instagram Connection, with isMock false.
-//   - fetchRecentMedia: GET https://graph.instagram.com/me?fields=user_id,username
-//     then GET https://graph.instagram.com/me/media?fields=id,media_type,
-//     media_url,thumbnail_url,permalink,caption,timestamp&limit=<limit>.
-//     media_type IMAGE → "image", VIDEO (incl. reels) → "video" with
-//     thumbnail_url as the image, CAROUSEL_ALBUM → "carousel" (media_url is
-//     its first item). A 400 with OAuthException / code 190 means the token
-//     is dead: return reason "auth".
-//   - refreshToken: GET https://graph.instagram.com/refresh_access_token
-//     ?grant_type=ig_refresh_token&access_token=<token>; the token must be
-//     at least 24 hours old. Returns { access_token, expires_in (seconds) }.
-//   - downloadImage: fetch(media.imageUrl) right after fetchRecentMedia,
-//     before the signed CDN link expires.
-//   - Never log or return the token.
+//   - fetchRecentMedia: the Instagram account linked to the Page, and its
+//     recent posts. A token Meta refuses (or a missing permission, or the
+//     account unlinked from the Page) is reason "auth": she reconnects.
+//   - refreshToken: a Page token has no expiry date and can't be renewed, so
+//     this checks it instead (lib/instagram-sync.ts refreshTokens, daily)
+//     and reports when Meta's data access for it runs out, if ever.
+//   - downloadImage: the post's image from Instagram's CDN, right after
+//     fetchRecentMedia, before the signed link expires.
+//
+// Never logs or returns the token.
 
 const NOT_CONFIGURED = {
   ok: false,
@@ -33,16 +30,43 @@ const NOT_CONFIGURED = {
   message: "The Instagram connection isn't set up yet.",
 } as const;
 
-export const realProvider: InstagramProvider = {
-  name: "real",
-  isMock: false,
-  async fetchRecentMedia() {
-    return NOT_CONFIGURED;
-  },
-  async refreshToken() {
-    return NOT_CONFIGURED;
-  },
-  async downloadImage(media: ProviderMedia) {
-    throw new Error(`Can't download ${media.igId}: the Instagram connection isn't set up yet.`);
-  },
-};
+const failure = (err: unknown) =>
+  err instanceof GraphError && err.needsReconnect
+    ? ({ ok: false, reason: "auth", message: `Instagram stopped accepting the connection: ${err.message}` } as const)
+    : ({ ok: false, reason: "error", message: err instanceof Error ? err.message : "Instagram didn't answer." } as const);
+
+export function createRealProvider({
+  fetchFn = (...args: Parameters<typeof fetch>) => fetch(...args),
+  app = metaAppFromEnv,
+}: { fetchFn?: typeof fetch; app?: () => MetaApp | null } = {}): InstagramProvider {
+  return {
+    name: "real",
+    isMock: false,
+    async fetchRecentMedia({ accessToken, limit }) {
+      if (!accessToken) return NOT_CONFIGURED;
+      try {
+        return { ok: true, ...(await fetchLinkedMedia(fetchFn, accessToken, limit)) };
+      } catch (err) {
+        return failure(err);
+      }
+    },
+    async refreshToken({ accessToken }) {
+      const meta = app();
+      if (!meta) return NOT_CONFIGURED;
+      try {
+        const check = await checkToken(fetchFn, meta, accessToken);
+        if (!check.valid) {
+          return { ok: false, reason: "auth", message: "Instagram stopped accepting the connection. Reconnect the account." };
+        }
+        return { ok: true, accessToken, expiresAt: check.expiresAt };
+      } catch (err) {
+        return failure(err);
+      }
+    },
+    async downloadImage(media: ProviderMedia) {
+      return downloadMediaImage(fetchFn, media.imageUrl);
+    },
+  };
+}
+
+export const realProvider = createRealProvider();

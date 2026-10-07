@@ -2,8 +2,8 @@
 // used. Shared by the Instagram collections (collections/Instagram*.ts), the
 // Instagram Section global, the sync (Phase 2) and the homepage.
 //
-// Mock posts: until her account is confirmed as a Professional account the
-// sync runs a mock provider that makes fake posts. Local dev and the live
+// Mock posts: in local dev (where the real connect can't run) the sync can
+// use a mock provider that makes fake posts. Local dev and the live
 // site share one database, so mock posts made locally sit in the live
 // database too; they're marked `isMock` and only ever made or shown when
 // INSTAGRAM_MOCK=1 is set, and never on the production deployment, whatever

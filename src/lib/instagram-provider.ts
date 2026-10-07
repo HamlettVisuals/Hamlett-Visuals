@@ -1,9 +1,8 @@
 // Where synced Instagram posts come from. The sync (lib/instagram-sync.ts)
-// only ever talks to an InstagramProvider, so the mock provider used until
-// her account is confirmed as a Professional account
-// (lib/instagram-mock-provider.ts) can be swapped for the real Instagram API
-// (lib/instagram-real-provider.ts) without touching the sync, the studio or
-// the homepage.
+// only ever talks to an InstagramProvider: the mock provider in local dev
+// (lib/instagram-mock-provider.ts) or the real Instagram API with Facebook
+// Login (lib/instagram-real-provider.ts), without touching the sync, the
+// studio or the homepage.
 //
 // No imports, so unit tests can load it directly.
 
@@ -34,7 +33,8 @@ type Failure = {
 };
 
 export type FetchMediaResult = { ok: true; account: ProviderAccount; media: ProviderMedia[] } | Failure;
-export type RefreshTokenResult = { ok: true; accessToken: string; expiresAt: string } | Failure;
+// expiresAt null: the token has no expiry date (a Facebook Page token).
+export type RefreshTokenResult = { ok: true; accessToken: string; expiresAt: string | null } | Failure;
 export type DownloadedImage = { data: Buffer; mimeType: string };
 
 export interface InstagramProvider {
@@ -43,7 +43,10 @@ export interface InstagramProvider {
   readonly isMock: boolean;
   /** The account's most recent posts, newest first, at most `limit`. */
   fetchRecentMedia(args: { slot: number; accessToken: string | null; limit: number }): Promise<FetchMediaResult>;
-  /** A fresh long-lived token in exchange for the current one. */
+  /**
+   * The token to keep from now on and when it stops working: a renewed one,
+   * or (for a token that can't be renewed) the same one, checked.
+   */
   refreshToken(args: { accessToken: string }): Promise<RefreshTokenResult>;
   /** The bytes of a post's image (ProviderMedia.imageUrl). */
   downloadImage(media: ProviderMedia): Promise<DownloadedImage>;

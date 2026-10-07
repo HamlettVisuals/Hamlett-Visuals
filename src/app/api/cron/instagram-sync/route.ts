@@ -4,7 +4,7 @@ import config from "@payload-config";
 import { instagramProvider, refreshTokens, syncAllAccounts } from "@/lib/instagram-sync";
 
 // The daily Instagram sync (vercel.json `crons`; once a day is the most the
-// Hobby plan allows): renews tokens that are close to expiring, then copies
+// Hobby plan allows): checks each saved token (renewing it where it can), then copies
 // each connected account's recent posts into Payload (lib/instagram-sync.ts).
 //
 // Vercel calls it with `Authorization: Bearer <CRON_SECRET>`; anything else

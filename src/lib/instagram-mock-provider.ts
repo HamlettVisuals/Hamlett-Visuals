@@ -4,8 +4,8 @@ import type { Payload } from "payload";
 import type { InstagramProvider, MediaType, ProviderMedia } from "@/lib/instagram-provider";
 import { r2, r2Bucket, storedFileKey } from "@/lib/r2";
 
-// Stand-in for the real Instagram API until her account is confirmed as a
-// Professional account (lib/instagram-real-provider.ts). Makes MOCK_POSTS
+// Stand-in for the real Instagram API (lib/instagram-real-provider.ts) in
+// local dev, where Facebook Login can't come back to. Makes MOCK_POSTS
 // posts per account from a few of her own site photos, with a mix of
 // photos, videos and carousels a few days apart, so the studio's picker and
 // the homepage grid can be built and checked against something realistic.

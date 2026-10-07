@@ -3806,6 +3806,14 @@ a.editor-overview__tile:focus-visible,
   opacity: 0.6;
 }
 
+/* Several Instagram accounts came back from Facebook Login: one button each. */
+.ig-account__choices {
+  display: flex;
+  flex-basis: 100%;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
 .ig-account__message {
   flex-basis: 100%;
   margin: 0;

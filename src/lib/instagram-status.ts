@@ -6,7 +6,7 @@ import { INSTAGRAM_SLOTS } from "@/lib/instagram-limits";
 // (components/admin/Instagram/*), as served by /api/instagram/status. The
 // status is the one the site goes by: a mock connection where mock posts
 // aren't allowed (production) reads as not connected. Never includes a
-// token.
+// token (only when it stops working, as `reconnectBy`).
 
 export type AccountStatus = {
   slot: number;
@@ -15,6 +15,9 @@ export type AccountStatus = {
   lastSyncedAt: string | null;
   lastError: string | null;
   isMock: boolean;
+  // When Meta stops accepting this account's token (its data access runs
+  // out), if that's known; she reconnects before then. Null: no end date.
+  reconnectBy: string | null;
 };
 
 export type InstagramStatus = { mockAllowed: boolean; accounts: AccountStatus[] };
@@ -26,6 +29,17 @@ export async function instagramStatus(payload: Payload): Promise<InstagramStatus
     limit: 2,
     depth: 0,
   });
+  // Dates only; Local API with overrideAccess, so select nothing else.
+  const { docs: tokens } = await payload.find({
+    collection: "instagram-tokens",
+    select: { connection: true, expiresAt: true },
+    limit: 2,
+    depth: 0,
+    overrideAccess: true,
+  });
+  const expiryOf = (connectionId: number) =>
+    tokens.find((token) => (typeof token.connection === "object" ? token.connection.id : token.connection) === connectionId)
+      ?.expiresAt ?? null;
   return {
     mockAllowed: mockInstagramAllowed(),
     accounts: INSTAGRAM_SLOTS.map((slot) => {
@@ -38,6 +52,7 @@ export async function instagramStatus(payload: Payload): Promise<InstagramStatus
         lastSyncedAt: usable ? (connection.lastSyncedAt ?? null) : null,
         lastError: usable ? (connection.lastError ?? null) : null,
         isMock: Boolean(usable && connection.isMock),
+        reconnectBy: usable && !connection.isMock ? expiryOf(connection.id) : null,
       };
     }),
   };

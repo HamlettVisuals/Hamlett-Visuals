@@ -21,12 +21,17 @@ as it's done.
       of the shared Supabase database before launch.
 - [ ] **Replace the placeholder Privacy Policy and Terms text.** Visitors can
       see it now.
-- [ ] **Instagram: connect the real account.** The Instagram Section, sync
-      and homepage grid are built against a mock provider; the real one is
-      stubbed (`src/lib/instagram-real-provider.ts`, its TODOs). Until it's
-      connected, the homepage shows only the heading and a "Follow" link.
-      Then run `npm run instagram:clear-mock` (try `dry-run` first) to remove
-      the mock posts, their R2 images and the mock connection.
+- [ ] **Instagram: connect the real account.** Uses the Instagram API with
+      Facebook Login: her Instagram Creator account must be linked to a
+      Facebook Page she manages. Set `META_APP_ID` and `META_APP_SECRET`
+      (Vercel Production), add
+      `https://hamlett-visuals.vercel.app/api/instagram/callback` to the Meta
+      app's Valid OAuth Redirect URIs, then click "Connect account" on the
+      Instagram Section in the studio on the live site and tick her Page and
+      Instagram account. Until it's connected, the homepage shows only the
+      heading and a "Follow" link. Then run `npm run instagram:clear-mock`
+      (try `dry-run` first) to remove the mock posts, their R2 images and the
+      mock connection.
 - [ ] **Delete the `.backups/` folder** after the first successful deploy.
 - [ ] **Add the production domain to the R2 bucket's CORS rules (Cloudflare
       dashboard).** Every upload now goes from the browser straight to R2

@@ -37,6 +37,12 @@ export function loadStatus(): Promise<void> {
   return loading;
 }
 
+/** Back from Facebook Login: fetch the statuses again, and posts to reload. */
+export async function reloadStatus(): Promise<void> {
+  await loadStatus();
+  set({ version: state.version + 1 });
+}
+
 /** After a sync or connect: the new statuses, and posts to reload. */
 export function statusChanged(status: InstagramStatus) {
   set({ status, version: state.version + 1, error: null });

@@ -98,6 +98,11 @@ export async function syncSlot(
   if (connection && Boolean(connection.isMock) !== provider.isMock) {
     return { ...result, message: `Slot ${slot} is a ${connection.isMock ? "mock" : "real"} connection; left alone.` };
   }
+  if (!provider.isMock && connection?.status === "not_connected") {
+    // A connect that didn't finish (no Instagram account linked to her Page,
+    // say): its message stays on the card until she connects again.
+    return { ...result, message: `Slot ${slot} isn't connected.` };
+  }
   if (!connection) {
     // A real account only exists once she's connected it. The mock one
     // stands in for @hamlettvisuals in slot 1; slot 2 stays empty until
@@ -199,18 +204,17 @@ export async function syncAllAccounts(payload: Payload, provider: InstagramProvi
   return results;
 }
 
-// Long-lived Instagram tokens last 60 days and can be renewed once they're
-// a day old. Renewed once fewer than REFRESH_WITHIN_DAYS are left, so a few
-// missed daily runs never let one lapse.
-const REFRESH_WITHIN_DAYS = 30;
-
-export type RefreshResult = { connection: number; outcome: "refreshed" | "not_due" | "failed"; message?: string };
+// Every saved token is checked once a day: the provider renews it if it can
+// or confirms it still works, and reports when it stops (null: no expiry
+// date, as for a Facebook Page token). One Meta refuses marks its account
+// as needing reconnecting before the sync even tries it.
+export type RefreshResult = { connection: number; outcome: "checked" | "failed"; message?: string };
 
 export async function refreshTokens(payload: Payload, provider: InstagramProvider = instagramProvider(payload)) {
   if (provider.isMock) return [];
   const { docs } = await payload.find({
     collection: "instagram-tokens",
-    select: { connection: true, accessToken: true, expiresAt: true },
+    select: { connection: true, accessToken: true },
     limit: 0,
     depth: 0,
     overrideAccess: true,
@@ -218,11 +222,6 @@ export async function refreshTokens(payload: Payload, provider: InstagramProvide
   const results: RefreshResult[] = [];
   for (const token of docs) {
     const connection = typeof token.connection === "object" ? token.connection.id : token.connection;
-    const daysLeft = token.expiresAt ? (Date.parse(token.expiresAt) - Date.now()) / 86_400_000 : 0;
-    if (daysLeft > REFRESH_WITHIN_DAYS) {
-      results.push({ connection, outcome: "not_due" });
-      continue;
-    }
     const refreshed = await provider.refreshToken({ accessToken: token.accessToken });
     if (refreshed.ok) {
       await payload.update({
@@ -232,7 +231,7 @@ export async function refreshTokens(payload: Payload, provider: InstagramProvide
         depth: 0,
         overrideAccess: true,
       });
-      results.push({ connection, outcome: "refreshed" });
+      results.push({ connection, outcome: "checked" });
     } else {
       if (refreshed.reason === "auth") {
         await payload.update({
