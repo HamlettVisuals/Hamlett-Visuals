@@ -28,13 +28,25 @@ export const META_SCOPES = ["instagram_basic", "pages_show_list"] as const;
 
 type Fetch = typeof fetch;
 
-export type MetaApp = { appId: string; appSecret: string };
+export type MetaApp = {
+  appId: string;
+  appSecret: string;
+  // A Facebook Login for Business configuration (App Dashboard →
+  // Facebook Login for Business → Configurations: user access token,
+  // instagram_basic + pages_show_list). Optional: Meta accepts `scope` for
+  // this route and its own guide uses it; only set if Meta refuses that.
+  loginConfigId?: string;
+};
 
-/** META_APP_ID / META_APP_SECRET, or null where they aren't set (local dev). */
+/**
+ * META_APP_ID / META_APP_SECRET (and META_LOGIN_CONFIG_ID if set), or null
+ * where the app isn't set up (local dev).
+ */
 export function metaAppFromEnv(): MetaApp | null {
   const appId = process.env.META_APP_ID;
   const appSecret = process.env.META_APP_SECRET;
-  return appId && appSecret ? { appId, appSecret } : null;
+  const loginConfigId = process.env.META_LOGIN_CONFIG_ID?.trim();
+  return appId && appSecret ? { appId, appSecret, ...(loginConfigId ? { loginConfigId } : {}) } : null;
 }
 
 export class GraphError extends Error {
@@ -79,14 +91,24 @@ const graphUrl = (path: string, params: Record<string, string>) => `${GRAPH}${pa
 
 // ---- signing in
 
-/** Facebook Login's consent screen, coming back to META_REDIRECT_URI. */
+// Meta's Instagram onboarding screens in the login (Business Login for
+// Instagram): they help her link her Instagram account to her Page as she
+// signs in, if it isn't yet.
+const IG_ONBOARDING_EXTRAS = JSON.stringify({ setup: { channel: "IG_API_ONBOARDING" } });
+
+/**
+ * Facebook Login's consent screen, coming back to META_REDIRECT_URI. Asks
+ * for META_SCOPES, or (with a login configuration set) for whatever that
+ * configuration names: Meta says not to send both.
+ */
 export function loginDialogUrl(app: MetaApp, state: string): string {
   const params = new URLSearchParams({
     client_id: app.appId,
     redirect_uri: META_REDIRECT_URI,
     state,
     response_type: "code",
-    scope: META_SCOPES.join(","),
+    ...(app.loginConfigId ? { config_id: app.loginConfigId } : { scope: META_SCOPES.join(",") }),
+    extras: IG_ONBOARDING_EXTRAS,
   });
   return `https://www.facebook.com/${GRAPH_VERSION}/dialog/oauth?${params}`;
 }

@@ -31,7 +31,10 @@ as it's done.
       Instagram account. Until it's connected, the homepage shows only the
       heading and a "Follow" link. Then run `npm run instagram:clear-mock`
       (try `dry-run` first) to remove the mock posts, their R2 images and the
-      mock connection.
+      mock connection. If Meta refuses the login (asks for a configuration
+      instead of permissions), create one under Facebook Login for Business →
+      Configurations (User access token; permissions `instagram_basic` and
+      `pages_show_list`) and set its ID as `META_LOGIN_CONFIG_ID`.
 - [ ] **Delete the `.backups/` folder** after the first successful deploy.
 - [ ] **Add the production domain to the R2 bucket's CORS rules (Cloudflare
       dashboard).** Every upload now goes from the browser straight to R2

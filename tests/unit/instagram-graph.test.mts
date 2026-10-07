@@ -93,6 +93,41 @@ test("the login dialog asks for the two scopes and comes back to the callback", 
   assert.equal(url.searchParams.get("response_type"), "code");
   assert.equal(url.searchParams.get("redirect_uri"), graph.META_REDIRECT_URI);
   assert.equal(url.searchParams.has("client_secret"), false);
+  assert.equal(url.searchParams.has("config_id"), false);
+  assert.deepEqual(JSON.parse(url.searchParams.get("extras") ?? ""), { setup: { channel: "IG_API_ONBOARDING" } });
+});
+
+test("with a login configuration, the dialog sends config_id instead of scope", () => {
+  const url = new URL(graph.loginDialogUrl({ ...APP, loginConfigId: "cfg-987" }, "signed.state"));
+  assert.equal(url.searchParams.get("config_id"), "cfg-987");
+  assert.equal(url.searchParams.has("scope"), false);
+  assert.equal(url.searchParams.get("client_id"), "app-123");
+  assert.equal(url.searchParams.get("state"), "signed.state");
+  assert.equal(url.searchParams.get("response_type"), "code");
+  assert.equal(url.searchParams.get("redirect_uri"), graph.META_REDIRECT_URI);
+  assert.match(url.searchParams.get("extras") ?? "", /IG_API_ONBOARDING/);
+});
+
+test("META_LOGIN_CONFIG_ID is optional: read when set, left out when unset or blank", () => {
+  const keys = ["META_APP_ID", "META_APP_SECRET", "META_LOGIN_CONFIG_ID"] as const;
+  const saved = Object.fromEntries(keys.map((key) => [key, process.env[key]]));
+  try {
+    process.env.META_APP_ID = "app-123";
+    process.env.META_APP_SECRET = "shh-secret";
+    delete process.env.META_LOGIN_CONFIG_ID;
+    assert.deepEqual(graph.metaAppFromEnv(), { appId: "app-123", appSecret: "shh-secret" });
+    process.env.META_LOGIN_CONFIG_ID = "  ";
+    assert.deepEqual(graph.metaAppFromEnv(), { appId: "app-123", appSecret: "shh-secret" });
+    process.env.META_LOGIN_CONFIG_ID = "cfg-987";
+    assert.deepEqual(graph.metaAppFromEnv(), { appId: "app-123", appSecret: "shh-secret", loginConfigId: "cfg-987" });
+    delete process.env.META_APP_SECRET;
+    assert.equal(graph.metaAppFromEnv(), null);
+  } finally {
+    for (const key of keys) {
+      if (saved[key] === undefined) delete process.env[key];
+      else process.env[key] = saved[key];
+    }
+  }
 });
 
 // ---- account lookup
