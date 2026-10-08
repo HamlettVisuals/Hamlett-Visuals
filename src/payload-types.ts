@@ -84,6 +84,7 @@ export interface Config {
     'instagram-connections': InstagramConnection;
     'instagram-tokens': InstagramToken;
     'instagram-posts': InstagramPost;
+    'instagram-videos': InstagramVideo;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -108,6 +109,7 @@ export interface Config {
     'instagram-connections': InstagramConnectionsSelect<false> | InstagramConnectionsSelect<true>;
     'instagram-tokens': InstagramTokensSelect<false> | InstagramTokensSelect<true>;
     'instagram-posts': InstagramPostsSelect<false> | InstagramPostsSelect<true>;
+    'instagram-videos': InstagramVideosSelect<false> | InstagramVideosSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -830,6 +832,15 @@ export interface InstagramConnection {
   isMock?: boolean | null;
   lastSyncedAt?: string | null;
   lastError?: string | null;
+  lastVideoReport?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -880,6 +891,27 @@ export interface InstagramPost {
       filename?: string | null;
     };
   };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "instagram-videos".
+ */
+export interface InstagramVideo {
+  id: number;
+  post: number | InstagramPost;
+  isMock?: boolean | null;
+  prefix?: string | null;
+  updatedAt: string;
+  createdAt: string;
+  url?: string | null;
+  thumbnailURL?: string | null;
+  filename?: string | null;
+  mimeType?: string | null;
+  filesize?: number | null;
+  width?: number | null;
+  height?: number | null;
+  focalX?: number | null;
+  focalY?: number | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -972,6 +1004,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'instagram-posts';
         value: number | InstagramPost;
+      } | null)
+    | ({
+        relationTo: 'instagram-videos';
+        value: number | InstagramVideo;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -1418,6 +1454,7 @@ export interface InstagramConnectionsSelect<T extends boolean = true> {
   isMock?: T;
   lastSyncedAt?: T;
   lastError?: T;
+  lastVideoReport?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -1470,6 +1507,26 @@ export interface InstagramPostsSelect<T extends boolean = true> {
               filename?: T;
             };
       };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "instagram-videos_select".
+ */
+export interface InstagramVideosSelect<T extends boolean = true> {
+  post?: T;
+  isMock?: T;
+  prefix?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  url?: T;
+  thumbnailURL?: T;
+  filename?: T;
+  mimeType?: T;
+  filesize?: T;
+  width?: T;
+  height?: T;
+  focalX?: T;
+  focalY?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1762,9 +1819,6 @@ export interface InstagramSection {
          * Shown above this account's posts when both accounts are on your homepage, e.g. "Weddings". Up to 20 characters.
          */
         label?: string | null;
-        /**
-         * Only takes effect once this account is connected.
-         */
         visible?: boolean | null;
         /**
          * Up to 9 posts to show first, in this order. The rest of the grid fills with your most recent posts.

@@ -1,4 +1,4 @@
-import type { MediaType, ProviderAccount, ProviderMedia } from "#src/lib/instagram-provider.ts";
+import { VideoTooLargeError, type MediaType, type ProviderAccount, type ProviderMedia } from "#src/lib/instagram-provider.ts";
 
 // Every call this site makes to Meta for Instagram: the Instagram API with
 // Facebook Login (graph.facebook.com). Her Instagram Creator account is
@@ -8,7 +8,7 @@ import type { MediaType, ProviderAccount, ProviderMedia } from "#src/lib/instagr
 //
 // Used by the connect flow (app/api/instagram/callback, lib/instagram-connect.ts)
 // and the real provider (lib/instagram-real-provider.ts). `fetch` is passed
-// in and there are no runtime imports, so unit tests run it against faked
+// in and its only import is the provider module, so unit tests run it against faked
 // Meta responses (tests/unit/instagram-graph.test.mts).
 //
 // Tokens go in query strings (Meta's documented way) and are never logged,
@@ -421,4 +421,57 @@ export async function downloadMediaImage(fetchFn: Fetch, url: string): Promise<{
   const mimeType = (res.headers.get("content-type") ?? "image/jpeg").split(";")[0].trim();
   if (!mimeType.startsWith("image/")) throw new Error(`Instagram's image link sent ${mimeType}, not an image.`);
   return { data: Buffer.from(await res.arrayBuffer()), mimeType };
+}
+
+// ---- her videos
+
+/**
+ * A fresh link to a video post's file: `media_url` of a VIDEO (reels
+ * included). null when Instagram leaves it out (media with copyrighted
+ * content, e.g. licensed music) or the post isn't a video any more.
+ */
+export async function fetchVideoUrl(fetchFn: Fetch, pageToken: string, igId: string): Promise<string | null> {
+  const media = await graphGet<{ media_type?: string; media_url?: string }>(
+    fetchFn,
+    graphUrl(`/${encodeURIComponent(igId)}`, { fields: "media_type,media_url", access_token: pageToken }),
+  );
+  return media.media_type === "VIDEO" && media.media_url ? media.media_url : null;
+}
+
+/**
+ * A video file from Instagram's CDN, refused past `maxBytes`: up front when
+ * the response says its size, and while reading when it doesn't, so a big
+ * file is never held in memory whole. Gives up after `timeoutMs`.
+ */
+export async function downloadMediaVideo(
+  fetchFn: Fetch,
+  url: string,
+  { maxBytes, timeoutMs }: { maxBytes: number; timeoutMs: number },
+): Promise<{ data: Buffer; mimeType: string }> {
+  if (!/^https:\/\//.test(url)) throw new Error("Not an Instagram video link.");
+  const res = await fetchFn(url, { cache: "no-store", signal: AbortSignal.timeout(timeoutMs) });
+  if (!res.ok || !res.body) throw new Error(`Instagram's video link answered ${res.status}.`);
+  const mimeType = (res.headers.get("content-type") ?? "video/mp4").split(";")[0].trim();
+  if (!mimeType.startsWith("video/")) throw new Error(`Instagram's video link sent ${mimeType}, not a video.`);
+  const tooLarge = (bytes: number) =>
+    new VideoTooLargeError(`The video is ${Math.round(bytes / 1048576)}MB, over the ${Math.round(maxBytes / 1048576)}MB limit.`);
+  const declared = Number(res.headers.get("content-length"));
+  if (declared > maxBytes) {
+    await res.body.cancel().catch(() => {});
+    throw tooLarge(declared);
+  }
+  const chunks: Uint8Array[] = [];
+  let total = 0;
+  const reader = res.body.getReader();
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    total += value.byteLength;
+    if (total > maxBytes) {
+      await reader.cancel().catch(() => {});
+      throw tooLarge(total);
+    }
+    chunks.push(value);
+  }
+  return { data: Buffer.concat(chunks), mimeType };
 }

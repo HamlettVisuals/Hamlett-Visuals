@@ -6,6 +6,7 @@ import { createMockProvider } from "@/lib/instagram-mock-provider";
 import type { InstagramProvider, ProviderMedia } from "@/lib/instagram-provider";
 import { KEEP_PER_ACCOUNT, postsToPrune } from "@/lib/instagram-prune";
 import { realProvider } from "@/lib/instagram-real-provider";
+import { copyVideos, newVideoBudget, type VideoBudget, type VideoReport } from "@/lib/instagram-videos";
 import type { InstagramConnection, InstagramPost } from "@/payload-types";
 
 // Copies each connected account's recent Instagram posts into Payload
@@ -35,6 +36,9 @@ export type SyncResult = {
   updated: number;
   pruned: number;
   failedPosts: number;
+  // The video copy after the images (lib/instagram-videos.ts); null when it
+  // didn't run.
+  videos?: VideoReport | null;
 };
 
 // Instagram's images are at most 1440px wide; anything bigger (a mock
@@ -88,9 +92,10 @@ export async function syncSlot(
   payload: Payload,
   slot: number,
   provider: InstagramProvider = instagramProvider(payload),
-  // Mock only: connect this slot if it isn't yet (the studio's stubbed
-  // "Connect" button where mock posts are allowed).
-  { connectMock = false }: { connectMock?: boolean } = {},
+  // connectMock: mock only, connect this slot if it isn't yet (the studio's
+  // stubbed "Connect" button where mock posts are allowed).
+  // videoBudget: shared by every slot in one run (the daily cron).
+  { connectMock = false, videoBudget = newVideoBudget() }: { connectMock?: boolean; videoBudget?: VideoBudget } = {},
 ): Promise<SyncResult> {
   const result: SyncResult = { slot, outcome: "skipped", created: 0, updated: 0, pruned: 0, failedPosts: 0 };
   // Off the production deployment a real sync writes nothing at all.
@@ -196,14 +201,66 @@ export async function syncSlot(
     result.pruned = toDelete.size;
   }
 
+  // Videos last, so they never hold up the images; a failure here doesn't
+  // fail the sync (the next run tries again).
+  try {
+    result.videos = await copyVideos(payload, {
+      connection,
+      provider,
+      accessToken: token?.accessToken ?? null,
+      featuredIds: featured,
+      budget: videoBudget,
+    });
+  } catch (err) {
+    payload.logger.error({ err: err instanceof Error ? err.message : err, slot }, "[instagram-videos] video copy failed");
+  }
+
   return { ...result, outcome: "synced" };
 }
 
 export async function syncAllAccounts(payload: Payload, provider: InstagramProvider = instagramProvider(payload)) {
   const results: SyncResult[] = [];
+  const videoBudget = newVideoBudget();
   // One after the other: both share the R2 uploads and the database pool.
-  for (const slot of INSTAGRAM_SLOTS) results.push(await syncSlot(payload, slot, provider));
+  for (const slot of INSTAGRAM_SLOTS) results.push(await syncSlot(payload, slot, provider, { videoBudget }));
   return results;
+}
+
+/**
+ * Only the video copy, for one connected slot: the studio's "copy videos"
+ * calls after Sync now (app/api/instagram/videos) and the copy after she
+ * publishes new picks. Null when the slot isn't connected, or this server
+ * may not touch it (lib/instagram-videos.ts copyVideos).
+ */
+export async function copyVideosForSlot(
+  payload: Payload,
+  slot: number,
+  provider: InstagramProvider = instagramProvider(payload),
+  budget: VideoBudget = newVideoBudget(),
+): Promise<VideoReport | null> {
+  const connection = await connectionFor(payload, slot);
+  if (!connection || connection.status !== "connected") return null;
+  const token = provider.isMock ? null : await tokenFor(payload, connection.id);
+  return copyVideos(payload, {
+    connection,
+    provider,
+    accessToken: token?.accessToken ?? null,
+    featuredIds: await featuredPostIds(payload),
+    budget,
+  });
+}
+
+/** After she publishes new featured picks: copy their videos, both slots, one budget. */
+export async function copyVideosAfterPublish(payload: Payload) {
+  const provider = instagramProvider(payload);
+  const budget = newVideoBudget();
+  for (const slot of INSTAGRAM_SLOTS) {
+    try {
+      await copyVideosForSlot(payload, slot, provider, budget);
+    } catch (err) {
+      payload.logger.error({ err: err instanceof Error ? err.message : err, slot }, "[instagram-videos] copy after publish failed");
+    }
+  }
 }
 
 // Every saved token is checked once a day: the provider renews it if it can

@@ -36,6 +36,19 @@ export type FetchMediaResult = { ok: true; account: ProviderAccount; media: Prov
 // expiresAt null: the token has no expiry date (a Facebook Page token).
 export type RefreshTokenResult = { ok: true; accessToken: string; expiresAt: string | null } | Failure;
 export type DownloadedImage = { data: Buffer; mimeType: string };
+export type DownloadedVideo = { data: Buffer; mimeType: string };
+// url null: Instagram gave no video link for it (it leaves media_url out
+// for media with copyrighted content, e.g. licensed music), so there's
+// nothing to copy and the tile keeps its cover image.
+export type VideoLinkResult = { ok: true; url: string | null } | Failure;
+
+/** A video over the size cap (lib/instagram-video-limits.ts); skipped, not retried. */
+export class VideoTooLargeError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "VideoTooLargeError";
+  }
+}
 
 export interface InstagramProvider {
   readonly name: "mock" | "real";
@@ -50,4 +63,8 @@ export interface InstagramProvider {
   refreshToken(args: { accessToken: string }): Promise<RefreshTokenResult>;
   /** The bytes of a post's image (ProviderMedia.imageUrl). */
   downloadImage(media: ProviderMedia): Promise<DownloadedImage>;
+  /** A fresh link to a video post's video file (links expire, so asked for right before downloading). */
+  fetchVideoUrl(args: { igId: string; accessToken: string | null }): Promise<VideoLinkResult>;
+  /** The video's bytes; throws VideoTooLargeError past maxBytes (before or while downloading). */
+  downloadVideo(url: string, maxBytes: number): Promise<DownloadedVideo>;
 }

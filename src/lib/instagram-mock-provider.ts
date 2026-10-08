@@ -1,7 +1,8 @@
 import type { Readable } from "node:stream";
 import { GetObjectCommand } from "@aws-sdk/client-s3";
 import type { Payload } from "payload";
-import type { InstagramProvider, MediaType, ProviderMedia } from "@/lib/instagram-provider";
+import { mockVideoClip } from "@/lib/instagram-mock-video";
+import { VideoTooLargeError, type InstagramProvider, type MediaType, type ProviderMedia } from "@/lib/instagram-provider";
 import { r2, r2Bucket, storedFileKey } from "@/lib/r2";
 
 // Stand-in for the real Instagram API (lib/instagram-real-provider.ts) in
@@ -82,6 +83,18 @@ export function createMockProvider(payload: Payload): InstagramProvider {
     },
     async refreshToken() {
       return { ok: false, reason: "not_configured", message: "Mock accounts have no token." };
+    },
+    // Every video gets the same generated test clip (lib/instagram-mock-video.ts),
+    // saved as its own file; a few have "no video link", as reels with
+    // licensed music do on the real API.
+    async fetchVideoUrl({ igId }) {
+      return { ok: true, url: Number(igId.split("-").at(-1)) % 10 === 7 ? null : `mock-video:${igId}` };
+    },
+    async downloadVideo(url, maxBytes) {
+      if (!url.startsWith("mock-video:")) throw new Error("Not a mock video.");
+      const data = await mockVideoClip();
+      if (data.length > maxBytes) throw new VideoTooLargeError("The mock video is over the size limit.");
+      return { data, mimeType: "video/mp4" };
     },
     async downloadImage(media) {
       const key = media.imageUrl.replace(/^r2:/, "");

@@ -68,5 +68,12 @@ export const InstagramConnections: CollectionConfig = {
       name: "lastError",
       type: "text",
     },
+    {
+      // What the last video copy did (lib/instagram-videos.ts VideoReport):
+      // how many videos the account keeps, copied, had no video link from
+      // Instagram, were too big, failed, or are still to copy.
+      name: "lastVideoReport",
+      type: "json",
+    },
   ],
 };

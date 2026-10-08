@@ -1,12 +1,15 @@
 import {
   checkToken,
   downloadMediaImage,
+  downloadMediaVideo,
   fetchLinkedMedia,
+  fetchVideoUrl,
   GraphError,
   metaAppFromEnv,
   type MetaApp,
 } from "#src/lib/instagram-graph.ts";
 import type { InstagramProvider, ProviderMedia } from "#src/lib/instagram-provider.ts";
+import { VIDEO_DOWNLOAD_TIMEOUT_SECONDS } from "#src/lib/instagram-video-limits.ts";
 
 // The real Instagram API: the Instagram API with Facebook Login
 // (lib/instagram-graph.ts). Her Instagram Creator account is linked to a
@@ -21,6 +24,8 @@ import type { InstagramProvider, ProviderMedia } from "#src/lib/instagram-provid
 //     and reports when Meta's data access for it runs out, if ever.
 //   - downloadImage: the post's image from Instagram's CDN, right after
 //     fetchRecentMedia, before the signed link expires.
+//   - fetchVideoUrl / downloadVideo: a video post's file, its link asked
+//     for right before downloading (lib/instagram-videos.ts).
 //
 // Never logs or returns the token.
 
@@ -65,6 +70,17 @@ export function createRealProvider({
     },
     async downloadImage(media: ProviderMedia) {
       return downloadMediaImage(fetchFn, media.imageUrl);
+    },
+    async fetchVideoUrl({ igId, accessToken }) {
+      if (!accessToken) return NOT_CONFIGURED;
+      try {
+        return { ok: true, url: await fetchVideoUrl(fetchFn, accessToken, igId) };
+      } catch (err) {
+        return failure(err);
+      }
+    },
+    async downloadVideo(url, maxBytes) {
+      return downloadMediaVideo(fetchFn, url, { maxBytes, timeoutMs: VIDEO_DOWNLOAD_TIMEOUT_SECONDS * 1000 });
     },
   };
 }

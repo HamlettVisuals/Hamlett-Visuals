@@ -534,3 +534,69 @@ test("pick cookie: encrypted (the token isn't readable in it) and only opens wit
   assert.equal(oauth.openPick(sealed, SECRET, NOW + 600_001), null);
   assert.equal(oauth.openPick(`${sealed}x`, SECRET, NOW), null);
 });
+
+// ---- videos
+
+test("a video's fresh link: media_url of a VIDEO; none when Instagram leaves it out", async () => {
+  const { fetchFn, calls } = fakeMeta(
+    on("/v1", () => ({ body: { id: "v1", media_type: "VIDEO", media_url: "https://cdn/v1.mp4" } })),
+    on("/v2", () => ({ body: { id: "v2", media_type: "VIDEO" } })),
+    on("/c1", () => ({ body: { id: "c1", media_type: "CAROUSEL_ALBUM", media_url: "https://cdn/c1.jpg" } })),
+  );
+  assert.equal(await graph.fetchVideoUrl(fetchFn, "page-token", "v1"), "https://cdn/v1.mp4");
+  assert.equal(await graph.fetchVideoUrl(fetchFn, "page-token", "v2"), null);
+  assert.equal(await graph.fetchVideoUrl(fetchFn, "page-token", "c1"), null);
+  assert.equal(calls[0].searchParams.get("fields"), "media_type,media_url");
+  assert.equal(calls[0].searchParams.get("access_token"), "page-token");
+});
+
+test("real provider: a video link Meta refuses means reconnect; no token is 'not configured'", async () => {
+  const { fetchFn } = fakeMeta(on("/v1", () => ({ status: 400, body: { error: { message: "Invalid OAuth access token", code: 190 } } })));
+  const provider = createRealProvider({ fetchFn, app: () => APP });
+  assert.equal((await provider.fetchVideoUrl({ igId: "v1", accessToken: "page-token" })).reason, "auth");
+  assert.equal((await provider.fetchVideoUrl({ igId: "v1", accessToken: null })).reason, "not_configured");
+});
+
+const videoResponse = (bytes: number, headers: Record<string, string> = {}) =>
+  (async () =>
+    new Response(new Uint8Array(bytes), { headers: { "content-type": "video/mp4", ...headers } })) as unknown as typeof fetch;
+
+test("a video download returns its bytes and type", async () => {
+  const video = await graph.downloadMediaVideo(videoResponse(1000), "https://cdn/v.mp4", { maxBytes: 5000, timeoutMs: 1000 });
+  assert.equal(video.data.length, 1000);
+  assert.equal(video.mimeType, "video/mp4");
+});
+
+test("a video over the cap is refused from its declared size, before reading it", async () => {
+  let read = false;
+  const fetchFn = (async () =>
+    new Response(
+      new ReadableStream(
+        {
+          pull(controller) {
+            read = true;
+            controller.enqueue(new Uint8Array(10));
+          },
+        },
+        // Nothing pulled until someone reads.
+        { highWaterMark: 0 },
+      ),
+      { headers: { "content-type": "video/mp4", "content-length": "6000" } },
+    )) as unknown as typeof fetch;
+  await assert.rejects(graph.downloadMediaVideo(fetchFn, "https://cdn/v.mp4", { maxBytes: 5000, timeoutMs: 1000 }), {
+    name: "VideoTooLargeError",
+  });
+  assert.equal(read, false);
+});
+
+test("a video over the cap with no declared size is refused while reading", async () => {
+  await assert.rejects(graph.downloadMediaVideo(videoResponse(6000), "https://cdn/v.mp4", { maxBytes: 5000, timeoutMs: 1000 }), {
+    name: "VideoTooLargeError",
+  });
+});
+
+test("a video link that sends something else, or isn't https, is refused", async () => {
+  const html = (async () => new Response("<html>", { headers: { "content-type": "text/html" } })) as unknown as typeof fetch;
+  await assert.rejects(graph.downloadMediaVideo(html, "https://cdn/v.mp4", { maxBytes: 5000, timeoutMs: 1000 }), /not a video/);
+  await assert.rejects(graph.downloadMediaVideo(videoResponse(10), "http://cdn/v.mp4", { maxBytes: 5000, timeoutMs: 1000 }), /Not an Instagram video link/);
+});

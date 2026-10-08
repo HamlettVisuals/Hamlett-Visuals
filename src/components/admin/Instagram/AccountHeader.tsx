@@ -4,6 +4,7 @@ import { useEffect, useState, useSyncExternalStore } from "react";
 import type { UIFieldClientComponent } from "payload";
 import { useFormFields } from "@payloadcms/ui";
 import type { InstagramStatus } from "@/lib/instagram-status";
+import type { VideoReport } from "@/lib/instagram-videos";
 import { reloadStatus, rowPathOf, statusChanged, useInstagramStatus } from "./store";
 
 // The top of each Instagram account card (globals/InstagramSection.ts,
@@ -37,6 +38,22 @@ const readReturned = (): Returned => {
 };
 const noSubscribe = () => () => {};
 const useReturned = () => useSyncExternalStore(noSubscribe, readReturned, () => null);
+
+// "Videos: 3 copied, 2 with no video link from Instagram." for the message
+// after a sync; nothing when no video was copied or skipped.
+const videoSummary = (report: VideoReport | null | undefined, copied: number) => {
+  if (!report || (!copied && !report.noMediaUrl && !report.tooLarge && !report.failed && !report.pending)) return "";
+  const parts = [`${copied} copied`];
+  if (report.noMediaUrl) parts.push(`${report.noMediaUrl} with no video link from Instagram`);
+  if (report.tooLarge) parts.push(`${report.tooLarge} too large`);
+  if (report.failed) parts.push(`${report.failed} failed (tried again next sync)`);
+  if (report.pending) parts.push(`${report.pending} still to copy`);
+  return ` Videos: ${parts.join(", ")}.`;
+};
+
+// After a sync with videos still pending, at most this many more rounds
+// (app/api/instagram/videos), each within the server's per-run limits.
+const MAX_VIDEO_ROUNDS = 10;
 
 const dueWithin = (iso: string | null | undefined, days: number) =>
   Boolean(iso) && Date.parse(iso as string) - Date.now() < days * 86_400_000;
@@ -101,7 +118,14 @@ const AccountHeader: UIFieldClientComponent = ({ path }) => {
         // Facebook Login, for a real connect: the card stays busy while it goes.
         redirect?: string;
         username?: string;
-        result?: { outcome: string; message?: string; created: number; updated: number; pruned: number };
+        result?: {
+          outcome: string;
+          message?: string;
+          created: number;
+          updated: number;
+          pruned: number;
+          videos?: VideoReport | null;
+        };
         status?: InstagramStatus;
       } | null;
       if (res.ok && body?.redirect) {
@@ -116,14 +140,30 @@ const AccountHeader: UIFieldClientComponent = ({ path }) => {
         setMessage({ text: body.result.message ?? "Nothing to sync.", tone: "error" });
       } else {
         const { created, updated } = body.result;
-        setMessage({
-          text: body.username
-            ? `Connected @${body.username}. ${created} post${created === 1 ? "" : "s"} copied.`
-            : created || updated
-              ? `Synced: ${created} new, ${updated} updated.`
-              : "Synced. No new posts.",
-          tone: "ok",
-        });
+        const text = body.username
+          ? `Connected @${body.username}. ${created} post${created === 1 ? "" : "s"} copied.`
+          : created || updated
+            ? `Synced: ${created} new, ${updated} updated.`
+            : "Synced. No new posts.";
+        // Videos still to copy: more rounds while each one gets somewhere.
+        let videos = body.result.videos ?? null;
+        let copied = videos?.copied ?? 0;
+        for (let round = 0; videos?.pending && round < MAX_VIDEO_ROUNDS; round++) {
+          setMessage({ text: `${text} Copying videos: ${videos.pending} left…`, tone: "ok" });
+          const more = await fetch("/api/instagram/videos", {
+            method: "POST",
+            credentials: "include",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ slot }),
+          });
+          const next = ((await more.json().catch(() => null)) as { report?: VideoReport | null } | null)?.report;
+          if (!more.ok || !next) break;
+          const stuck = !next.copied && next.pending >= videos.pending;
+          copied += next.copied;
+          videos = next;
+          if (stuck) break;
+        }
+        setMessage({ text: `${text}${videoSummary(videos, copied)}`, tone: "ok" });
       }
       setBusy(null);
     } catch {

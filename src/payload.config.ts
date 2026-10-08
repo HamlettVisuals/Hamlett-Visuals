@@ -46,6 +46,7 @@ import { Logos } from "#src/collections/Logos.ts";
 import { InstagramConnections } from "#src/collections/InstagramConnections.ts";
 import { InstagramTokens } from "#src/collections/InstagramTokens.ts";
 import { InstagramPosts } from "#src/collections/InstagramPosts.ts";
+import { InstagramVideos } from "#src/collections/InstagramVideos.ts";
 
 import { HeaderNav } from "#src/globals/HeaderNav.ts";
 import { Hero } from "#src/globals/Hero.ts";
@@ -245,6 +246,7 @@ export default buildConfig({
     InstagramConnections,
     InstagramTokens,
     InstagramPosts,
+    InstagramVideos,
   ]))),
   globals: revalidateGlobalsOnChange(hideInternalFieldsFromHistory(addCharacterCounters([
     HeaderNav,
@@ -357,6 +359,12 @@ export default buildConfig({
         // Synced Instagram images (InstagramPosts.ts), copied in by the
         // server, never uploaded from the browser.
         "instagram-posts": { prefix: UPLOAD_FOLDERS["instagram-posts"] },
+        // Their video files (InstagramVideos.ts), played straight from R2
+        // through a signed link like Backstage's videos.
+        "instagram-videos": {
+          prefix: UPLOAD_FOLDERS["instagram-videos"],
+          signedDownloads: { shouldUseSignedURL: () => true },
+        },
       },
       clientUploads: {
         access: ({ req }) => Boolean(req.user),

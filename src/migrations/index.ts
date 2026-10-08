@@ -9,6 +9,7 @@ import * as migration_20261002_185706_testimonials_admin from './20261002_185706
 import * as migration_20261005_233216_booking_page_copy from './20261005_233216_booking_page_copy';
 import * as migration_20261005_234930_inquiry_time_and_instagram from './20261005_234930_inquiry_time_and_instagram';
 import * as migration_20261006_223744_instagram_section from './20261006_223744_instagram_section';
+import * as migration_20261008_232139_instagram_videos from './20261008_232139_instagram_videos';
 
 export const migrations = [
   {
@@ -64,6 +65,11 @@ export const migrations = [
   {
     up: migration_20261006_223744_instagram_section.up,
     down: migration_20261006_223744_instagram_section.down,
-    name: '20261006_223744_instagram_section'
+    name: '20261006_223744_instagram_section',
+  },
+  {
+    up: migration_20261008_232139_instagram_videos.up,
+    down: migration_20261008_232139_instagram_videos.down,
+    name: '20261008_232139_instagram_videos'
   },
 ];

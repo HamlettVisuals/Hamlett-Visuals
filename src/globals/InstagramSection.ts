@@ -1,4 +1,4 @@
-import type { FilterOptions, GlobalBeforeChangeHook, GlobalConfig, Where } from "payload";
+import type { FilterOptions, GlobalAfterChangeHook, GlobalBeforeChangeHook, GlobalConfig, Where } from "payload";
 import { publicReadAdminWrite } from "#src/access/isAdmin.ts";
 import { instagramUsername, validateInstagramHandle } from "#src/lib/contact-details.ts";
 import { DEFAULT_ACCOUNTS, normalizeAccounts, type AccountRow } from "#src/lib/instagram-accounts.ts";
@@ -34,6 +34,34 @@ const keepAccountsInShape: GlobalBeforeChangeHook = ({ data }) => {
   return data;
 };
 
+// New featured picks may be videos not copied yet (only featured and recent
+// posts keep a video, lib/instagram-videos.ts): copy them once the save has
+// answered, with Next's after(), so Publish doesn't wait. Within one run's
+// budget and the usual rules (real accounts on production only); anything
+// left waits for the next sync. Loaded only when it runs, so this file's
+// module graph stays "#src/"-only; outside a request (a script) after()
+// throws and the next sync copies them instead.
+const featuredOf = (accounts: unknown) =>
+  JSON.stringify(
+    normalizeAccounts(accounts as AccountRow[] | undefined).map((account) =>
+      (account.featured ?? []).map((post) => (typeof post === "object" && post ? (post as { id: unknown }).id : post)),
+    ),
+  );
+
+const copyNewlyFeaturedVideos: GlobalAfterChangeHook = async ({ doc, previousDoc, req }) => {
+  if (featuredOf(doc?.accounts) === featuredOf(previousDoc?.accounts)) return doc;
+  try {
+    const { after } = await import("next/server");
+    after(async () => {
+      const { copyVideosAfterPublish } = await import("#src/lib/instagram-sync.ts");
+      await copyVideosAfterPublish(req.payload);
+    });
+  } catch {
+    // Not in a request: nothing to schedule on.
+  }
+  return doc;
+};
+
 export const InstagramSection: GlobalConfig = {
   slug: "instagram-section",
   label: "Instagram Section",
@@ -62,6 +90,7 @@ export const InstagramSection: GlobalConfig = {
   versions: true,
   hooks: {
     beforeChange: [keepAccountsInShape],
+    afterChange: [copyNewlyFeaturedVideos],
   },
   fields: [
     {

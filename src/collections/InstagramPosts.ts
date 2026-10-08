@@ -1,5 +1,17 @@
-import type { CollectionConfig } from "payload";
+import type { CollectionBeforeDeleteHook, CollectionConfig } from "payload";
 import { readInstagramPosts } from "#src/access/publicRead.ts";
+
+// A post's video file (InstagramVideos.ts) goes with it: deleted first,
+// while it can still be found by its post, which also removes it from R2.
+const deleteItsVideo: CollectionBeforeDeleteHook = async ({ id, req }) => {
+  await req.payload.delete({
+    collection: "instagram-videos",
+    where: { post: { equals: id } },
+    depth: 0,
+    overrideAccess: true,
+    req,
+  });
+};
 
 // Her Instagram posts as last synced: one upload per post, its image copied
 // into R2 (in its own `instagram` folder, not the Photos library) because
@@ -22,6 +34,9 @@ export const InstagramPosts: CollectionConfig = {
     defaultColumns: ["filename", "connection", "mediaType", "postedAt"],
   },
   defaultSort: "-postedAt",
+  hooks: {
+    beforeDelete: [deleteItsVideo],
+  },
   access: {
     read: readInstagramPosts,
     create: () => false,
