@@ -72,7 +72,7 @@ test("a record is only safe to delete if all its files are mock files in its own
 // The shared database as it could be: her real connection, posts and
 // videos; mock ones; and a fake R2 holding her Backstage videos, real
 // Instagram files, mock files and a mock leftover.
-function world({ extraVideos = [] as Record<string, unknown>[] } = {}) {
+function world({ extraVideos = [] as ({ id: number } & Record<string, unknown>)[] } = {}) {
   const db = fakePayload({
     "instagram-connections": [
       { id: 2, slot: 1, isMock: false, username: "hamlettvisuals" },
