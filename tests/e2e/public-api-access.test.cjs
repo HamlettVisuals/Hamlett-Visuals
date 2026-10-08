@@ -57,11 +57,22 @@ const anon = async (path) => {
     const outside = body.docs.filter((d) => !(d.category && typeof d.category === "object" && d.category.published && !d.category.deletedAt));
     check(`${slug}: all in a shown category`, outside.length === 0, outside.map((d) => d.id));
   }
-  const mockPosts = await anon("/instagram-posts?limit=1&depth=0&where[isMock][equals]=true");
-  if (mockInstagramAllowed) {
-    check("instagram-posts: mock posts read (mock allowed here)", mockPosts.status === 200 && mockPosts.body.totalDocs > 0, mockPosts.body?.totalDocs);
-  } else {
-    check("instagram-posts: no mock posts", mockPosts.status === 200 && mockPosts.body.totalDocs === 0, mockPosts.body?.totalDocs);
+  // Whether mock posts and videos are readable doesn't depend on any
+  // existing: Payload's /access reports a signed-out read as plain `true`
+  // when nothing is filtered out, or `{ permission, where }` when it is.
+  const access = await anon("/access");
+  for (const slug of ["instagram-posts", "instagram-videos"]) {
+    const read = access.body?.collections?.[slug]?.read;
+    const mock = await anon(`/${slug}?limit=1&depth=0&where[isMock][equals]=true`);
+    if (mockInstagramAllowed) {
+      check(`${slug}: mock ones readable signed out (mock allowed here)`, mock.status === 200 && read === true, { status: mock.status, read });
+    } else {
+      check(
+        `${slug}: no mock ones signed out`,
+        mock.status === 200 && mock.body.totalDocs === 0 && JSON.stringify(read?.where) === JSON.stringify({ isMock: { not_equals: true } }),
+        { totalDocs: mock.body?.totalDocs, read },
+      );
+    }
   }
   const categories = await anon("/categories?limit=100&depth=0");
   check("the CRM-only Other category isn't listed", !categories.body.docs.some((c) => c.slug === "other"), categories.body.docs.map((c) => c.slug));
