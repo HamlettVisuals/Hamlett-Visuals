@@ -102,13 +102,19 @@ async function addPosts(page, ids) {
 }
 
 // Drags one tile's handle onto another tile (mouse, or CDP touch with a
-// press-and-hold first).
+// press-and-hold first). The tile goes to the middle of the screen first:
+// at the top it can sit under the sticky Publish bar (how far down the page
+// is depends on the picks saved in the shared database), and the press
+// would land on the bar. Checks the press really is on the handle.
 async function dragTile(page, from, to, cdp) {
   const tiles = card(page, 0).locator(".ig-featured__tile");
-  await tiles.nth(from).scrollIntoViewIfNeeded();
+  await tiles.nth(from).evaluate((el) => el.scrollIntoView({ block: "center", inline: "nearest" }));
+  await page.waitForTimeout(300);
   const a = await tiles.nth(from).locator(".ig-featured__handle").boundingBox();
   const b = await tiles.nth(to).boundingBox();
   const x0 = a.x + a.width / 2, y0 = a.y + a.height / 2;
+  const onHandle = await page.evaluate(([x, y]) => Boolean(document.elementFromPoint(x, y)?.closest(".ig-featured__handle")), [x0, y0]);
+  check(`drag ${from + 1}→${to + 1} starts on the tile's handle`, onHandle);
   const x1 = b.x + b.width / 2, y1 = b.y + b.height / 2;
   const tp = (type, pts) => cdp.send("Input.dispatchTouchEvent", { type, touchPoints: pts });
   if (cdp) { await tp("touchStart", [{ x: x0, y: y0 }]); await page.waitForTimeout(400); await tp("touchMove", [{ x: x0 + 6, y: y0 }]); }

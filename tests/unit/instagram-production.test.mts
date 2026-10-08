@@ -15,7 +15,7 @@ import path from "node:path";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
 const load = (file: string) => import(pathToFileURL(path.join(ROOT, "src", ...file.split("/"))).href);
-const { mockInstagramAllowed, connectionIsLive } = await load("lib/instagram-connection.ts");
+const { mockInstagramAllowed, connectionIsLive, realInstagramAllowed } = await load("lib/instagram-connection.ts");
 const { readInstagramPosts } = await load("access/publicRead.ts");
 const { getInstagramHome } = await load("lib/instagram-home.ts");
 const { instagramView } = await load("lib/instagram-view.ts");
@@ -31,7 +31,34 @@ function setEnv(env: Partial<Record<(typeof ENV_KEYS)[number], string>>) {
 afterEach(() => setEnv(saved as Record<string, string>));
 const production = () => setEnv({ INSTAGRAM_MOCK: "1", VERCEL_ENV: "production" });
 
-// ---- the gate
+// ---- the gates
+
+test("real accounts are only touched on the production deployment", () => {
+  production();
+  assert.equal(realInstagramAllowed(), true);
+});
+
+test("local dev and previews never touch real accounts, whatever INSTAGRAM_MOCK says", () => {
+  for (const env of [
+    {},
+    { INSTAGRAM_MOCK: "1" },
+    { INSTAGRAM_MOCK: "0" },
+    { VERCEL_ENV: "preview" },
+    { VERCEL_ENV: "preview", INSTAGRAM_MOCK: "1" },
+    { VERCEL_ENV: "development" },
+    { VERCEL_ENV: "Production" },
+  ]) {
+    setEnv(env);
+    assert.equal(realInstagramAllowed(), false, JSON.stringify(env));
+  }
+});
+
+test("mock and real never both apply: no server may run both", () => {
+  for (const env of [{}, { INSTAGRAM_MOCK: "1" }, { VERCEL_ENV: "production" }, { VERCEL_ENV: "production", INSTAGRAM_MOCK: "1" }, { VERCEL_ENV: "preview", INSTAGRAM_MOCK: "1" }]) {
+    setEnv(env);
+    assert.equal(mockInstagramAllowed() && realInstagramAllowed(), false, JSON.stringify(env));
+  }
+});
 
 test("production never allows mock posts, even with INSTAGRAM_MOCK=1", () => {
   production();

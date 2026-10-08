@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { getPayload } from "payload";
 import config from "@payload-config";
 import { accountChoices, connectWithUserToken } from "@/lib/instagram-connect";
+import { REAL_ONLY_ON_LIVE_SITE, realInstagramAllowed } from "@/lib/instagram-connection";
 import { metaAppFromEnv } from "@/lib/instagram-graph";
 import { openPick, PICK_COOKIE } from "@/lib/instagram-oauth-state";
 import { instagramStatus } from "@/lib/instagram-status";
@@ -21,6 +22,7 @@ async function ticketFor(slot: number) {
   const payload = await getPayload({ config });
   const { user } = await payload.auth({ headers: await getHeaders() });
   if (!user) return { payload, error: Response.json({ error: "Unauthorized." }, { status: 401 }) };
+  if (!realInstagramAllowed()) return { payload, error: Response.json({ error: REAL_ONLY_ON_LIVE_SITE }, { status: 501 }) };
   const ticket = openPick((await cookies()).get(PICK_COOKIE)?.value, payload.secret);
   const app = metaAppFromEnv();
   if (!ticket || ticket.slot !== slot || ticket.userId !== String(user.id) || !app) {

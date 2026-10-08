@@ -1,6 +1,6 @@
 import type { Payload } from "payload";
 import { normalizeAccounts } from "@/lib/instagram-accounts";
-import { realConnectionUpdate } from "@/lib/instagram-connection";
+import { REAL_ONLY_ON_LIVE_SITE, realConnectionUpdate, realInstagramAllowed } from "@/lib/instagram-connection";
 import {
   checkToken,
   chooseAccount,
@@ -74,6 +74,7 @@ export async function accountChoices(
 
 /** Why the slot didn't connect, kept on its card. */
 export async function recordConnectProblem(payload: Payload, slot: number, message: string) {
+  if (!realInstagramAllowed()) return;
   const connection = await connectionFor(payload, slot);
   // A real connection that still works stays connected; the card shows the
   // message from the callback instead.
@@ -108,6 +109,8 @@ export async function connectWithUserToken(
     fetchFn?: typeof fetch;
   },
 ): Promise<ConnectOutcome> {
+  // Everything below writes her real connection: production only.
+  if (!realInstagramAllowed()) return { kind: "problem", message: REAL_ONLY_ON_LIVE_SITE };
   const pages = await listPages(fetchFn, userToken);
   const accounts = linkedAccountsOf(pages);
   const taken = await takenElsewhere(payload, slot);

@@ -2,7 +2,7 @@ import { headers as getHeaders } from "next/headers";
 import { NextResponse } from "next/server";
 import { getPayload } from "payload";
 import config from "@payload-config";
-import { mockInstagramAllowed } from "@/lib/instagram-connection";
+import { mockInstagramAllowed, REAL_ONLY_ON_LIVE_SITE, realInstagramAllowed } from "@/lib/instagram-connection";
 import { loginDialogUrl, metaAppFromEnv } from "@/lib/instagram-graph";
 import { INSTAGRAM_SLOTS } from "@/lib/instagram-limits";
 import { newNonce, OAUTH_TTL_SECONDS, signState, STATE_COOKIE } from "@/lib/instagram-oauth-state";
@@ -33,6 +33,7 @@ export async function POST(request: Request) {
     return Response.json({ result, status: await instagramStatus(payload) });
   }
 
+  if (!realInstagramAllowed()) return Response.json({ error: REAL_ONLY_ON_LIVE_SITE }, { status: 501 });
   const app = metaAppFromEnv();
   if (!app) {
     return Response.json({ error: "Instagram isn't set up on this site yet (the Meta app's ID and secret are missing)." }, { status: 501 });

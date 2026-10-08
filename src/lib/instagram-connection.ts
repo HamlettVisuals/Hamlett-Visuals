@@ -23,6 +23,19 @@ export function mockInstagramAllowed(): boolean {
   return process.env.INSTAGRAM_MOCK === "1" && process.env.VERCEL_ENV !== "production";
 }
 
+/**
+ * Whether this server may touch real Instagram accounts: sync them, check
+ * their tokens, connect them. Only the production deployment. Local dev
+ * (and preview deployments) share the live database, so anywhere else a
+ * real sync would write her real connection and posts from the wrong place;
+ * there, real connections are left alone whatever INSTAGRAM_MOCK says.
+ */
+export function realInstagramAllowed(): boolean {
+  return process.env.VERCEL_ENV === "production";
+}
+
+export const REAL_ONLY_ON_LIVE_SITE = "Real Instagram accounts only sync and connect on the live site.";
+
 type ConnectionLike = { status?: string | null; isMock?: boolean | null };
 
 // How the account's last sync went, for the studio card:

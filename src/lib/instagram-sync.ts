@@ -1,7 +1,7 @@
 import type { Payload } from "payload";
 import sharp from "sharp";
 import { INSTAGRAM_SLOTS } from "@/lib/instagram-limits";
-import { mockInstagramAllowed } from "@/lib/instagram-connection";
+import { mockInstagramAllowed, REAL_ONLY_ON_LIVE_SITE, realInstagramAllowed } from "@/lib/instagram-connection";
 import { createMockProvider } from "@/lib/instagram-mock-provider";
 import type { InstagramProvider, ProviderMedia } from "@/lib/instagram-provider";
 import { KEEP_PER_ACCOUNT, postsToPrune } from "@/lib/instagram-prune";
@@ -93,6 +93,8 @@ export async function syncSlot(
   { connectMock = false }: { connectMock?: boolean } = {},
 ): Promise<SyncResult> {
   const result: SyncResult = { slot, outcome: "skipped", created: 0, updated: 0, pruned: 0, failedPosts: 0 };
+  // Off the production deployment a real sync writes nothing at all.
+  if (!provider.isMock && !realInstagramAllowed()) return { ...result, message: REAL_ONLY_ON_LIVE_SITE };
   let connection = await connectionFor(payload, slot);
 
   if (connection && Boolean(connection.isMock) !== provider.isMock) {
@@ -211,7 +213,7 @@ export async function syncAllAccounts(payload: Payload, provider: InstagramProvi
 export type RefreshResult = { connection: number; outcome: "checked" | "failed"; message?: string };
 
 export async function refreshTokens(payload: Payload, provider: InstagramProvider = instagramProvider(payload)) {
-  if (provider.isMock) return [];
+  if (provider.isMock || !realInstagramAllowed()) return [];
   const { docs } = await payload.find({
     collection: "instagram-tokens",
     select: { connection: true, accessToken: true },

@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { getPayload } from "payload";
 import config from "@payload-config";
 import { connectWithUserToken } from "@/lib/instagram-connect";
+import { REAL_ONLY_ON_LIVE_SITE, realInstagramAllowed } from "@/lib/instagram-connection";
 import { exchangeCodeForUserToken, metaAppFromEnv } from "@/lib/instagram-graph";
 import { OAUTH_TTL_SECONDS, PICK_COOKIE, sealPick, STATE_COOKIE, verifyState } from "@/lib/instagram-oauth-state";
 
@@ -51,6 +52,7 @@ export async function GET(request: Request) {
   if (params.get("error") || !params.get("code")) {
     return back(request, slot, "error", "Facebook sign-in was cancelled, so nothing changed.");
   }
+  if (!realInstagramAllowed()) return back(request, slot, "error", REAL_ONLY_ON_LIVE_SITE);
   const app = metaAppFromEnv();
   if (!app) return back(request, slot, "error", "Instagram isn't set up on this site yet.");
 
