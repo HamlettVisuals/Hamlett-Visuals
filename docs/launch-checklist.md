@@ -21,23 +21,30 @@ as it's done.
       of the shared Supabase database before launch.
 - [ ] **Replace the placeholder Privacy Policy and Terms text.** Visitors can
       see it now.
-- [ ] **Instagram: connect the real account.** Uses the Instagram API with
-      Facebook Login: her Instagram Creator account must be linked to a
-      Facebook Page she manages. Set `META_APP_ID` and `META_APP_SECRET`
-      (Vercel Production), add
-      `https://hamlett-visuals.vercel.app/api/instagram/callback` to the Meta
-      app's Valid OAuth Redirect URIs, then click "Connect account" on the
-      Instagram Section in the studio on the live site and tick her Page and
-      Instagram account. Until it's connected, the homepage shows only the
-      heading and a "Follow" link. Then run `npm run instagram:clear-mock`
-      (try `dry-run` first) to remove the mock posts, their R2 images and the
-      mock connection. If Meta refuses the login (asks for a configuration
-      instead of permissions), create one under Facebook Login for Business →
-      Configurations (User access token; permissions `instagram_basic` and
-      `pages_show_list`) and set its ID as `META_LOGIN_CONFIG_ID`. If her Page
-      belongs to a business portfolio and isn't shared, set
-      `META_EXTRA_SCOPES=business_management` (and add that permission to
-      the app's use case first).
+- [x] **Instagram: connect the real account.** Done 2026-10-08: her
+      Instagram Creator account (@hamlettvisuals), linked to her Facebook
+      Page, is connected through the Instagram API with Facebook Login and
+      syncing on the live site; the mock posts and connection are cleared.
+      Set up: `META_APP_ID` / `META_APP_SECRET` (Vercel Production), the
+      redirect URI below in the Meta app's Valid OAuth Redirect URIs, and
+      `META_EXTRA_SCOPES` (below). Not set: `META_LOGIN_CONFIG_ID`, only
+      needed if Meta ever refuses the `scope` login (then create a
+      configuration under Facebook Login for Business → Configurations: User
+      access token; `instagram_basic`, `pages_show_list`,
+      `pages_read_engagement`, `business_management`).
+- [ ] **Instagram: custom domain.** When the real domain goes live, add
+      `https://<new-domain>/api/instagram/callback` to the Meta app's Valid
+      OAuth Redirect URIs, and change `META_REDIRECT_URI` in
+      `src/lib/instagram-graph.ts` to match (it's in the code, not an env
+      var; the login and the code exchange must use the same one), so
+      Connect and Reconnect keep working. Existing syncing is unaffected;
+      only connecting breaks until then.
+- [ ] **Instagram: keep the Meta app as it is.** Keep the Meta app ("Hamlett
+      Visuals Site", ID 1104297962192207) in Development mode with her as a
+      Tester (in Development mode only people with a role on the app can
+      sign in), and keep `META_EXTRA_SCOPES=business_management,pages_read_engagement`
+      in Vercel Production: her Page needs both, and reconnecting without
+      them brings back the permission error.
 - [ ] **Delete the `.backups/` folder** after the first successful deploy.
 - [ ] **Add the production domain to the R2 bucket's CORS rules (Cloudflare
       dashboard).** Every upload now goes from the browser straight to R2
