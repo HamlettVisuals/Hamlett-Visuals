@@ -152,3 +152,9 @@ as it's done.
       `events.sort_date` and `_events_v.version_sort_date` (and their
       indexes). Backup first, check the SQL, run it before deploying.
 - [ ] Publish a test testimonial with a photo and confirm the photo shows on the testimonial only, not in any album gallery; then delete it.
+- [ ] **Instagram hover-to-play (Phase B): paused.** Only 1 of 5 kept
+      videos had a `media_url` (likely Instagram licensed music; first live
+      sync, 2026-10-08). Build once at least one or two featured videos have
+      copied; check `lastVideoReport` on her Instagram connection. When
+      built, also mark in the featured picker which video posts have a
+      playable file. Phase A (copying the files into R2) keeps running.
