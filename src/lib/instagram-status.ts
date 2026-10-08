@@ -1,5 +1,11 @@
 import type { Payload } from "payload";
-import { connectionIsLive, mockInstagramAllowed, type ConnectionStatus } from "@/lib/instagram-connection";
+import {
+  connectionIsLive,
+  mockInstagramAllowed,
+  syncState,
+  type ConnectionStatus,
+  type SyncState,
+} from "@/lib/instagram-connection";
 import { INSTAGRAM_SLOTS } from "@/lib/instagram-limits";
 
 // What the studio's Instagram account cards show for each slot
@@ -12,8 +18,11 @@ export type AccountStatus = {
   slot: number;
   status: ConnectionStatus;
   username: string | null;
+  // The last sync that worked (never a failed one).
   lastSyncedAt: string | null;
   lastError: string | null;
+  // How the last sync went (lib/instagram-connection.ts syncState).
+  syncState: SyncState;
   isMock: boolean;
   // When Meta stops accepting this account's token (its data access runs
   // out), if that's known; she reconnects before then. Null: no end date.
@@ -25,7 +34,7 @@ export type InstagramStatus = { mockAllowed: boolean; accounts: AccountStatus[] 
 export async function instagramStatus(payload: Payload): Promise<InstagramStatus> {
   const { docs } = await payload.find({
     collection: "instagram-connections",
-    select: { slot: true, status: true, username: true, lastSyncedAt: true, lastError: true, isMock: true },
+    select: { slot: true, status: true, username: true, lastSyncedAt: true, lastError: true, isMock: true, updatedAt: true },
     limit: 2,
     depth: 0,
   });
@@ -51,6 +60,7 @@ export async function instagramStatus(payload: Payload): Promise<InstagramStatus
         username: usable ? (connection.username ?? null) : null,
         lastSyncedAt: usable ? (connection.lastSyncedAt ?? null) : null,
         lastError: usable ? (connection.lastError ?? null) : null,
+        syncState: usable ? syncState(connection) : "never",
         isMock: Boolean(usable && connection.isMock),
         reconnectBy: usable && !connection.isMock ? expiryOf(connection.id) : null,
       };

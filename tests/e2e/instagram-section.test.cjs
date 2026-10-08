@@ -34,13 +34,17 @@ const POSTS = Array.from({ length: 12 }, (_, i) => ({
 }));
 const caption = (id) => POSTS.find((p) => p.id === id).caption;
 
+// slot2: false (not connected), true (connected), or "failed" (connected,
+// its first sync failed, as after a real connect missing a permission).
 const status = (slot2) => ({
   mockAllowed: true,
   accounts: [
-    { slot: 1, status: "connected", username: "hamlettvisuals", lastSyncedAt: new Date(Date.now() - 2 * 3600e3).toISOString(), lastError: null, isMock: false },
-    slot2
-      ? { slot: 2, status: "connected", username: "second", lastSyncedAt: new Date().toISOString(), lastError: null, isMock: false }
-      : { slot: 2, status: "not_connected", username: null, lastSyncedAt: null, lastError: null, isMock: false },
+    { slot: 1, status: "connected", username: "hamlettvisuals", lastSyncedAt: new Date(Date.now() - 2 * 3600e3).toISOString(), lastError: null, isMock: false, syncState: "ok" },
+    slot2 === "failed"
+      ? { slot: 2, status: "connected", username: "second", lastSyncedAt: null, lastError: "(#10) Application does not have permission for this action", isMock: false, syncState: "failed" }
+      : slot2
+        ? { slot: 2, status: "connected", username: "second", lastSyncedAt: new Date().toISOString(), lastError: null, isMock: false, syncState: "ok" }
+        : { slot: 2, status: "not_connected", username: null, lastSyncedAt: null, lastError: null, isMock: false, syncState: "never" },
   ],
 });
 
@@ -160,6 +164,24 @@ async function dragTile(page, from, to, cdp) {
   check("and reports what changed", (await card(page, 0).locator(".ig-account__message").innerText()) === "Synced: 2 new, 1 updated.");
   check("and reloads the posts to pick from", seen.postFetches > fetchesBefore, `${fetchesBefore} -> ${seen.postFetches}`);
   await page.screenshot({ path: `${shots}/1-cards.png`, fullPage: true });
+  await ctx.close();
+
+  // ---- 1440, second account connected but its first sync failed
+  ({ ctx, guard } = await newContext(browser, { viewport: { width: 1440, height: 950 } }));
+  page = await ctx.newPage();
+  page.on("pageerror", (e) => errors.push(e.message));
+  await fakeInstagram(page, { slot2Connected: "failed" });
+  await open(page);
+
+  section("a failed sync shows as an error, not a success time");
+  const failedStatus = card(page, 1).locator(".ig-account__status");
+  check("second account: Connected · last sync failed", (await failedStatus.innerText()) === "Connected · last sync failed", await failedStatus.innerText());
+  check("in the error style", /ig-account__status--sync_failed/.test(await failedStatus.getAttribute("class")));
+  const failedError = await card(page, 1).locator(".ig-account__error").innerText();
+  check("with the reason and no successful sync yet", /does not have permission/.test(failedError) && /No successful sync yet\./.test(failedError), failedError);
+  check("no 'last synced' time anywhere on the card", !/last synced/.test(await card(page, 1).locator(".ig-account__header").innerText()));
+  check("main account unaffected", (await card(page, 0).locator(".ig-account__status").innerText()) === "Connected · last synced 2 hours ago");
+  await page.screenshot({ path: `${shots}/1b-sync-failed.png`, fullPage: true });
   await ctx.close();
 
   // ---- 1440, both connected: picker, note, drag, save

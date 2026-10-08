@@ -3772,6 +3772,15 @@ a.editor-overview__tile:focus-visible,
   background: var(--theme-warning-500, #d97706);
 }
 
+/* Connected, but the last sync failed (AccountHeader.tsx). */
+.ig-account__status--sync_failed {
+  color: var(--theme-error-650, #b42318);
+}
+
+.ig-account__status--sync_failed::before {
+  background: var(--theme-error-500, #dc2626);
+}
+
 .ig-account__mock {
   align-self: flex-start;
   padding: 2px 8px;

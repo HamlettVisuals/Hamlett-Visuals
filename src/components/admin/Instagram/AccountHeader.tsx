@@ -137,10 +137,17 @@ const AccountHeader: UIFieldClientComponent = ({ path }) => {
     message ?? (backHere && !actedOn ? { text: backHere.text, tone: backHere.result === "ok" ? "ok" : "error" } : null);
 
   const connected = account?.status === "connected";
+  // Older status answers have no syncState: go by the last sync time.
+  const sync = account?.syncState ?? (account?.lastSyncedAt ? "ok" : "never");
+  const syncFailed = connected && sync === "failed";
   const statusText = !account
     ? error ?? "Loading…"
     : account.status === "connected"
-      ? `Connected${account.lastSyncedAt ? ` · last synced ${timeAgo(account.lastSyncedAt)}` : ""}`
+      ? syncFailed
+        ? "Connected · last sync failed"
+        : account.lastSyncedAt
+          ? `Connected · last synced ${timeAgo(account.lastSyncedAt)}`
+          : "Connected · not synced yet"
       : account.status === "needs_reconnect"
         ? "Needs reconnecting"
         : "Not connected";
@@ -149,11 +156,23 @@ const AccountHeader: UIFieldClientComponent = ({ path }) => {
     <div className="ig-account__header" data-slot={slot}>
       <div className="ig-account__title">
         {account?.isMock && <span className="ig-account__mock">Mock data (local only)</span>}
-        <span className={`ig-account__status ig-account__status--${account?.status ?? "loading"}`} role="status">
+        <span
+          className={`ig-account__status ig-account__status--${syncFailed ? "sync_failed" : (account?.status ?? "loading")}`}
+          role="status"
+        >
           {statusText}
         </span>
         {account && account.status !== "connected" && account.lastError && (
           <span className="ig-account__error">{account.lastError}</span>
+        )}
+        {connected && (sync === "failed" || sync === "partial") && account.lastError && (
+          <span className="ig-account__error">
+            {account.lastError}
+            {syncFailed &&
+              (account.lastSyncedAt
+                ? ` Last successful sync ${timeAgo(account.lastSyncedAt)}.`
+                : " No successful sync yet.")}
+          </span>
         )}
         {connected && reconnectSoon && (
           <span className="ig-account__error">

@@ -1,5 +1,6 @@
 import type { Payload } from "payload";
 import { normalizeAccounts } from "@/lib/instagram-accounts";
+import { realConnectionUpdate } from "@/lib/instagram-connection";
 import {
   checkToken,
   chooseAccount,
@@ -141,14 +142,7 @@ async function saveConnection(
   fetchFn: typeof fetch,
 ): Promise<SyncResult> {
   const existing = await connectionFor(payload, slot);
-  const switched = Boolean(existing && !existing.isMock && existing.igUserId && existing.igUserId !== account.igUserId);
-  const data = {
-    status: "connected" as const,
-    username: account.username,
-    igUserId: account.igUserId,
-    isMock: false,
-    lastError: null,
-  };
+  const { switched, data } = realConnectionUpdate(existing, account);
   const connection = existing
     ? await payload.update({ collection: "instagram-connections", id: existing.id, data, depth: 0 })
     : await payload.create({ collection: "instagram-connections", data: { slot, ...data }, depth: 0 });
