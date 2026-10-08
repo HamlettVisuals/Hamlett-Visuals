@@ -30,7 +30,7 @@ export const FinalCtaFooter: GlobalConfig = {
     },
     group: "Site",
     description:
-      "The bottom of every page: your closing line and button, your footer links and which contact details to show. Privacy Policy, Terms and the copyright line are always there.",
+      "The bottom of every page: your closing line and button, your footer links and which contact details to show. The copyright line is always there, and so are Privacy Policy and Terms once they have text.",
     // Same Live Preview treatment as the other wired globals — opens
     // automatically and scrolls to/highlights the #footer section via
     // LivePreviewHighlight.

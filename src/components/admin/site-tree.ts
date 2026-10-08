@@ -49,8 +49,6 @@ export type TreeNode = LeafNode | DisabledNode | GroupNode;
 export const isGroup = (node: TreeNode): node is GroupNode => "children" in node;
 export const isDisabled = (node: TreeNode): node is DisabledNode => "disabled" in node;
 
-const NOT_YET_EDITABLE = "Not yet editable — no CMS content for this page";
-
 export const EDITOR_PATH = "/editor";
 
 // Editor's own branch — everything that edits the public website.
@@ -107,8 +105,15 @@ export const editorTree: TreeNode[] = [
     alsoActiveFor: ["/collections/testimonials", "/globals/testimonials-page", "/collections/testimonial-submissions"],
   },
   { kind: "global", slug: "booking", label: "Booking Page" },
-  { disabled: true, label: "Privacy Policy", note: NOT_YET_EDITABLE },
-  { disabled: true, label: "Terms & Conditions", note: NOT_YET_EDITABLE },
+  {
+    label: "Legal",
+    path: EDITOR_PATH,
+    anchor: "legal",
+    children: [
+      { kind: "global", slug: "privacy-policy", label: "Privacy Policy" },
+      { kind: "global", slug: "terms", label: "Terms & Conditions" },
+    ],
+  },
   { kind: "global", slug: "site-settings", label: "Site Settings" },
 ];
 

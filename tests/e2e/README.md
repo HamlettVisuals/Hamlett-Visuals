@@ -114,6 +114,7 @@ Results are:
 | `booking-section.test.cjs` | Booking Section: its name in the page title, breadcrumb, sidebar and Editor overview (and "Booking Page"), the note when all contact switches are off but the contact line has text |
 | `testimonials-section.test.cjs` | Testimonials Section: its name in the page title, breadcrumb, sidebar and Editor overview; the picks as rows (mocked testimonials): adding with the picker, which leaves out what's picked, removing, the 4 limit, reordering by the handle with a mouse and press-and-hold touch, and the order a save sends |
 | `footer-editor.test.cjs` | The Footer editor: its name in the page title, breadcrumb, sidebar and Editor overview; footer link column labels (wide and phone); a link to an empty Backstage/Testimonials page gets the editor's note (incl. mocked counts) and is hidden in the site's footer |
+| `legal-pages.test.cjs` | Privacy Policy and Terms: signed out, an empty page 404s and its footer link is hidden (a written one shows); both editors under Editor > Legal; typed text (H2, paragraph, list) and a Last updated date show in Live Preview in the site's styles, and Publish (faked) sends them |
 | `hero-seconds.test.cjs` | Hook (Hero) "Seconds per photo": the 2–10s slider in half seconds and its value, Live Preview following a new speed (bar fill and slide changes), the 1200ms crossfade unchanged, the homepage using the saved value, reduced motion never rotating, what Publish sends, the slider on a phone |
 | `hero-slides-collapsed.test.cjs` | Hook (Hero) slides start collapsed; each header shows its photo's thumbnail, slide number and name (and "+ mobile image"), checked against the saved slides; opening a row, a new slide, the phone |
 | `instagram-home.test.cjs` | Homepage Instagram section, signed out as saved: a grid of 9 or two labelled blocks of 6 (side by side at 1440, stacked at 390) or heading + Follow only; every tile 4:5, linking to its post in a new tab, caption as alt, badges on videos and carousels, 4px corners, images loading. Then in Live Preview, unsaved: one account, featured picks first in order, both accounts, both off, section off (nothing saved) |
@@ -130,7 +131,9 @@ set up, Payload's Resend adapter, and the config choosing it) against a
 fake Resend; a "[Resend API Error]" line in its output is the simulated
 "can't be reached" case. `listing-pages.test.mts` covers the rule that hides an About
 quick link while its page has nothing published, and shows it again
-once it has. `package-thumbnail.test.mts` covers the Packages list's
+once it has. `legal-pages.test.mts` covers the Privacy Policy and Terms
+pages' "Last updated" rule (today when the text changes, unless she set the
+date herself) and when a page counts as empty. `package-thumbnail.test.mts` covers the Packages list's
 photo (the category's cover, or the placeholder), compiled with esbuild.
 
 ## Test data

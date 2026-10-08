@@ -60,6 +60,7 @@ import { TestimonialsPage } from "#src/globals/TestimonialsPage.ts";
 import { FinalCtaFooter } from "#src/globals/FinalCtaFooter.ts";
 import { SiteSettings } from "#src/globals/SiteSettings.ts";
 import { Booking } from "#src/globals/Booking.ts";
+import { PrivacyPolicy, Terms } from "#src/globals/LegalPages.ts";
 import { serverURL } from "#src/lib/server-url.ts";
 import { addCharacterCounters } from "#src/lib/character-counters.ts";
 import { hideInternalFieldsFromHistory } from "#src/lib/hide-internal-history.ts";
@@ -99,7 +100,8 @@ export default buildConfig({
       // FeaturedOffer.tsx, Offers.tsx, Testimonials.tsx, Footer.tsx,
       // BookingCta.tsx, Instagram.tsx, Nav.tsx,
       // (site)/portfolio/[category]/page.tsx + components/Gallery/* for
-      // events/photos, and (site)/testimonials/page.tsx for testimonials.
+      // events/photos, (site)/testimonials/page.tsx for testimonials, and
+      // components/LegalPage.tsx for the Privacy Policy and Terms.
       // Add others as they're connected; the site-content.ts placeholders
       // don't read from Payload yet, so enabling live preview for them would
       // do nothing.
@@ -116,6 +118,8 @@ export default buildConfig({
         "header-nav",
         "booking-cta",
         "instagram-section",
+        "privacy-policy",
+        "terms",
       ],
       // Collections get plain Live Preview only — no openByDefault, no
       // scroll-to-highlight, and (deliberately) no per-record targeting: a
@@ -261,6 +265,8 @@ export default buildConfig({
     FinalCtaFooter,
     SiteSettings,
     Booking,
+    PrivacyPolicy,
+    Terms,
   ]))),
   // The largest file any upload may be: Backstage's video cap. For uploads
   // sent straight from the browser to R2 (clientUploads) this size is also

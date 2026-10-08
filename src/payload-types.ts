@@ -132,6 +132,8 @@ export interface Config {
     'final-cta-footer': FinalCtaFooter;
     'site-settings': SiteSetting;
     booking: Booking;
+    'privacy-policy': PrivacyPolicy;
+    terms: Term;
   };
   globalsSelect: {
     'header-nav': HeaderNavSelect<false> | HeaderNavSelect<true>;
@@ -146,6 +148,8 @@ export interface Config {
     'final-cta-footer': FinalCtaFooterSelect<false> | FinalCtaFooterSelect<true>;
     'site-settings': SiteSettingsSelect<false> | SiteSettingsSelect<true>;
     booking: BookingSelect<false> | BookingSelect<true>;
+    'privacy-policy': PrivacyPolicySelect<false> | PrivacyPolicySelect<true>;
+    terms: TermsSelect<false> | TermsSelect<true>;
   };
   locale: null;
   widgets: {
@@ -1891,7 +1895,7 @@ export interface TestimonialsPage {
   createdAt?: string | null;
 }
 /**
- * The bottom of every page: your closing line and button, your footer links and which contact details to show. Privacy Policy, Terms and the copyright line are always there.
+ * The bottom of every page: your closing line and button, your footer links and which contact details to show. The copyright line is always there, and so are Privacy Policy and Terms once they have text.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "final-cta-footer".
@@ -2054,6 +2058,80 @@ export interface Booking {
    * The text under the thank-you heading.
    */
   confirmationMessage: string;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * Your Privacy Policy page: how you collect and use people's information.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "privacy-policy".
+ */
+export interface PrivacyPolicy {
+  id: number;
+  /**
+   * The page's heading, also used for the browser tab.
+   */
+  title: string;
+  /**
+   * Write your policy here. Use headings to break it into sections. While this is empty, the page and its footer link are hidden.
+   */
+  body?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * Updates automatically when you change the text. You can override it.
+   */
+  lastUpdated?: string | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * Your Terms & Conditions page: bookings, payments, cancellations and usage.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "terms".
+ */
+export interface Term {
+  id: number;
+  /**
+   * The page's heading, also used for the browser tab.
+   */
+  title: string;
+  /**
+   * Write your policy here. Use headings to break it into sections. While this is empty, the page and its footer link are hidden.
+   */
+  body?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * Updates automatically when you change the text. You can override it.
+   */
+  lastUpdated?: string | null;
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -2280,6 +2358,30 @@ export interface BookingSelect<T extends boolean = true> {
   submitLabel?: T;
   confirmationHeading?: T;
   confirmationMessage?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "privacy-policy_select".
+ */
+export interface PrivacyPolicySelect<T extends boolean = true> {
+  title?: T;
+  body?: T;
+  lastUpdated?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "terms_select".
+ */
+export interface TermsSelect<T extends boolean = true> {
+  title?: T;
+  body?: T;
+  lastUpdated?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

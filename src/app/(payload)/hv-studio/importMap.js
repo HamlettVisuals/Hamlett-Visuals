@@ -74,6 +74,12 @@ import { PageSettingsTabs as PageSettingsTabs_bd1f1a10fb821c4e2d8168b11002cb4e }
 import { default as default_77367a543f762dbbf1879e23275ea1dd } from '../../../components/admin/FooterLinksField'
 import { default as default_f374578049e4e5ccb6fe72e599427a6f } from '../../../components/admin/LogoSizeField'
 import { default as default_d80f7a11e660137d5eae10e03c064f66 } from '../../../components/admin/StepRowLabel'
+import { FixedToolbarFeatureClient as FixedToolbarFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
+import { UnorderedListFeatureClient as UnorderedListFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
+import { OrderedListFeatureClient as OrderedListFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
+import { UnderlineFeatureClient as UnderlineFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
+import { HeadingFeatureClient as HeadingFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
+import { ParagraphFeatureClient as ParagraphFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
 import { default as default_beebdd1cde60416cd3f6a700617bab88 } from '../../../components/admin/SiteNav'
 import { default as default_c0cbf3957e7eaa73f00c2e486a7de526 } from '../../../components/admin/ModalTouchScroll'
 import { S3ClientUploadHandler as S3ClientUploadHandler_f97aa6c64367fa259c5bc0567239ef24 } from '@payloadcms/storage-s3/client'
@@ -162,6 +168,12 @@ export const importMap = {
   "/components/admin/FooterLinksField#default": default_77367a543f762dbbf1879e23275ea1dd,
   "/components/admin/LogoSizeField#default": default_f374578049e4e5ccb6fe72e599427a6f,
   "/components/admin/StepRowLabel#default": default_d80f7a11e660137d5eae10e03c064f66,
+  "@payloadcms/richtext-lexical/client#FixedToolbarFeatureClient": FixedToolbarFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
+  "@payloadcms/richtext-lexical/client#UnorderedListFeatureClient": UnorderedListFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
+  "@payloadcms/richtext-lexical/client#OrderedListFeatureClient": OrderedListFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
+  "@payloadcms/richtext-lexical/client#UnderlineFeatureClient": UnderlineFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
+  "@payloadcms/richtext-lexical/client#HeadingFeatureClient": HeadingFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
+  "@payloadcms/richtext-lexical/client#ParagraphFeatureClient": ParagraphFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
   "/components/admin/SiteNav#default": default_beebdd1cde60416cd3f6a700617bab88,
   "/components/admin/ModalTouchScroll#default": default_c0cbf3957e7eaa73f00c2e486a7de526,
   "@payloadcms/storage-s3/client#S3ClientUploadHandler": S3ClientUploadHandler_f97aa6c64367fa259c5bc0567239ef24,

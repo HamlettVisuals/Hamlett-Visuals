@@ -19,8 +19,9 @@ import type { FinalCtaFooter, SiteSetting } from "@/payload-types";
 // / labels, Inter for values.
 
 // A link to a page with nothing published yet (Backstage, Testimonials) is
-// left out until that page has something, like About's quick links:
-// `hiddenHrefs` comes from lib/listing-pages.ts via the layout.
+// left out until that page has something, like About's quick links, and so
+// is Privacy Policy or Terms until it has text: `hiddenHrefs` comes from
+// lib/listing-pages.ts and lib/legal-pages.ts via the layout.
 export default function Footer({
   finalCtaFooter,
   siteSettings,
@@ -57,6 +58,7 @@ export default function Footer({
   const showInstagram = data.showInstagram !== false && instagram;
   const siteName = settings.siteName || "Hamlett Visuals";
   const footerNav = (data.footerNav ?? []).filter((item) => !hiddenHrefs.includes(item.href));
+  const legalLinks = LEGAL_LINKS.filter((link) => !hiddenHrefs.includes(link.href));
 
   return (
     <footer id="footer" className="border-t border-hairline bg-canvas-tint">
@@ -128,18 +130,21 @@ export default function Footer({
         )}
 
         {/* Fixed, not editable: the copyright line (studio name from Site
-            Settings, this year) and the legal pages beside it. */}
+            Settings, this year) and the legal pages beside it, those that
+            have text. */}
         <div className="mt-8 flex flex-col items-center gap-1.5 text-caption text-muted sm:flex-row sm:flex-wrap sm:justify-center sm:gap-x-4">
           <p>
             &copy; {new Date().getFullYear()} {siteName}. All rights reserved.
           </p>
-          <nav aria-label="Legal" className="flex gap-x-4">
-            {LEGAL_LINKS.map((link) => (
-              <Link key={link.href} href={link.href} className="link text-muted">
-                {link.label}
-              </Link>
-            ))}
-          </nav>
+          {legalLinks.length > 0 && (
+            <nav aria-label="Legal" className="flex gap-x-4">
+              {legalLinks.map((link) => (
+                <Link key={link.href} href={link.href} className="link text-muted">
+                  {link.label}
+                </Link>
+              ))}
+            </nav>
+          )}
         </div>
       </div>
     </footer>
