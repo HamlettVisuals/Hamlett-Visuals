@@ -34,7 +34,10 @@ as it's done.
       mock connection. If Meta refuses the login (asks for a configuration
       instead of permissions), create one under Facebook Login for Business →
       Configurations (User access token; permissions `instagram_basic` and
-      `pages_show_list`) and set its ID as `META_LOGIN_CONFIG_ID`.
+      `pages_show_list`) and set its ID as `META_LOGIN_CONFIG_ID`. If her Page
+      belongs to a business portfolio and isn't shared, set
+      `META_EXTRA_SCOPES=business_management` (and add that permission to
+      the app's use case first).
 - [ ] **Delete the `.backups/` folder** after the first successful deploy.
 - [ ] **Add the production domain to the R2 bucket's CORS rules (Cloudflare
       dashboard).** Every upload now goes from the browser straight to R2

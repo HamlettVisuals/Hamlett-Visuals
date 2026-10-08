@@ -3,7 +3,11 @@ import { normalizeAccounts } from "@/lib/instagram-accounts";
 import {
   checkToken,
   chooseAccount,
+  describeLogin,
+  grantedPermissions,
+  linkedAccountsOf,
   listLinkedAccounts,
+  listPages,
   type LinkedAccount,
   type MetaApp,
 } from "@/lib/instagram-graph";
@@ -84,7 +88,7 @@ export async function recordConnectProblem(payload: Payload, slot: number, messa
 function problemMessage(choice: Exclude<ReturnType<typeof chooseAccount>, { kind: "connect" | "pick" }>): string {
   switch (choice.kind) {
     case "none":
-      return `${NO_LINKED_ACCOUNT}. Link your Instagram account to your Facebook Page, then connect again (and tick that Page when Facebook asks).`;
+      return `${NO_LINKED_ACCOUNT}. Link your Instagram account to your Facebook Page, then connect again (and tick that Page and account when Facebook asks).`;
     case "no_match":
       return `None of your Facebook Pages is linked to @${choice.wanted} (found ${choice.found.map((u) => `@${u}`).join(", ")}). Fix the username on this card, or clear it to choose, then connect again.`;
     case "taken":
@@ -103,7 +107,8 @@ export async function connectWithUserToken(
     fetchFn?: typeof fetch;
   },
 ): Promise<ConnectOutcome> {
-  const accounts = await listLinkedAccounts(fetchFn, userToken);
+  const pages = await listPages(fetchFn, userToken);
+  const accounts = linkedAccountsOf(pages);
   const taken = await takenElsewhere(payload, slot);
   if (igUserId) {
     const picked = accounts.find((account) => account.igUserId === igUserId && !taken.includes(account.igUserId));
@@ -116,7 +121,12 @@ export async function connectWithUserToken(
     return { kind: "pick", accounts: choice.accounts.map(({ igUserId: id, username }) => ({ igUserId: id, username })) };
   }
   if (choice.kind !== "connect") {
-    const message = problemMessage(choice);
+    let message = problemMessage(choice);
+    // What Facebook actually shared, so the card says why (no tokens).
+    if (choice.kind === "none" || choice.kind === "no_match") {
+      const permissions = await grantedPermissions(fetchFn, userToken).catch(() => null);
+      message = `${message} ${describeLogin(permissions, pages)}`;
+    }
     await recordConnectProblem(payload, slot, message);
     return { kind: "problem", message };
   }

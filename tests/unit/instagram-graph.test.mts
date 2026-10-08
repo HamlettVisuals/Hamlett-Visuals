@@ -109,12 +109,13 @@ test("with a login configuration, the dialog sends config_id instead of scope", 
 });
 
 test("META_LOGIN_CONFIG_ID is optional: read when set, left out when unset or blank", () => {
-  const keys = ["META_APP_ID", "META_APP_SECRET", "META_LOGIN_CONFIG_ID"] as const;
+  const keys = ["META_APP_ID", "META_APP_SECRET", "META_LOGIN_CONFIG_ID", "META_EXTRA_SCOPES"] as const;
   const saved = Object.fromEntries(keys.map((key) => [key, process.env[key]]));
   try {
     process.env.META_APP_ID = "app-123";
     process.env.META_APP_SECRET = "shh-secret";
     delete process.env.META_LOGIN_CONFIG_ID;
+    delete process.env.META_EXTRA_SCOPES;
     assert.deepEqual(graph.metaAppFromEnv(), { appId: "app-123", appSecret: "shh-secret" });
     process.env.META_LOGIN_CONFIG_ID = "  ";
     assert.deepEqual(graph.metaAppFromEnv(), { appId: "app-123", appSecret: "shh-secret" });
@@ -128,6 +129,47 @@ test("META_LOGIN_CONFIG_ID is optional: read when set, left out when unset or bl
       else process.env[key] = saved[key];
     }
   }
+});
+
+// ---- extra scopes (META_EXTRA_SCOPES)
+
+test("extra scopes: parsed from commas or spaces, junk and repeats dropped", () => {
+  assert.deepEqual(graph.parseExtraScopes("business_management"), ["business_management"]);
+  assert.deepEqual(graph.parseExtraScopes(" business_management, pages_read_engagement  business_management"), [
+    "business_management",
+    "pages_read_engagement",
+  ]);
+  assert.deepEqual(graph.parseExtraScopes("instagram_basic,Bad-Scope,&x=1"), []);
+  assert.deepEqual(graph.parseExtraScopes(undefined), []);
+  assert.deepEqual(graph.parseExtraScopes(""), []);
+});
+
+test("extra scopes: off by default, read from META_EXTRA_SCOPES when set", () => {
+  const keys = ["META_APP_ID", "META_APP_SECRET", "META_LOGIN_CONFIG_ID", "META_EXTRA_SCOPES"] as const;
+  const saved = Object.fromEntries(keys.map((key) => [key, process.env[key]]));
+  try {
+    process.env.META_APP_ID = "app-123";
+    process.env.META_APP_SECRET = "shh-secret";
+    delete process.env.META_LOGIN_CONFIG_ID;
+    delete process.env.META_EXTRA_SCOPES;
+    assert.equal(graph.metaAppFromEnv().extraScopes, undefined);
+    process.env.META_EXTRA_SCOPES = "business_management";
+    assert.deepEqual(graph.metaAppFromEnv().extraScopes, ["business_management"]);
+  } finally {
+    for (const key of keys) {
+      if (saved[key] === undefined) delete process.env[key];
+      else process.env[key] = saved[key];
+    }
+  }
+});
+
+test("extra scopes go after the two we always ask for; a login configuration replaces them all", () => {
+  const app = { ...APP, extraScopes: ["business_management"] };
+  const url = new URL(graph.loginDialogUrl(app, "s"));
+  assert.equal(url.searchParams.get("scope"), "instagram_basic,pages_show_list,business_management");
+  const configured = new URL(graph.loginDialogUrl({ ...app, loginConfigId: "cfg-987" }, "s"));
+  assert.equal(configured.searchParams.has("scope"), false);
+  assert.equal(configured.searchParams.get("config_id"), "cfg-987");
 });
 
 // ---- account lookup
@@ -164,6 +206,84 @@ test("lists only Pages with an Instagram account, following paging, without dupl
 test("no Pages, or none with Instagram linked: an empty list", async () => {
   const { fetchFn } = fakeMeta(on("/me/accounts", () => ({ body: { data: [page("1"), page("2")] } })));
   assert.deepEqual(await graph.listLinkedAccounts(fetchFn, "user-token"), []);
+});
+
+test("every shared Page is listed, linked or not; only linked ones become accounts", async () => {
+  const { fetchFn } = fakeMeta(
+    on("/me/accounts", () => ({
+      body: { data: [page("1", { id: "ig-a", username: "hamlettvisuals" }), page("2"), { id: "3", name: "No token" }] },
+    })),
+  );
+  const pages = await graph.listPages(fetchFn, "user-token");
+  assert.deepEqual(
+    pages.map((p: { pageName: string; instagram: unknown; pageToken: unknown }) => [p.pageName, p.instagram, p.pageToken]),
+    [
+      ["Page 1", { igUserId: "ig-a", username: "hamlettvisuals" }, "page-token-1"],
+      ["Page 2", null, "page-token-2"],
+      ["No token", null, null],
+    ],
+  );
+  assert.deepEqual(
+    graph.linkedAccountsOf(pages).map((a: { igUserId: string }) => a.igUserId),
+    ["ig-a"],
+  );
+});
+
+test("granted permissions come from /me/permissions, split into granted and declined", async () => {
+  const { fetchFn, calls } = fakeMeta(
+    on("/me/permissions", () => ({
+      body: {
+        data: [
+          { permission: "pages_show_list", status: "granted" },
+          { permission: "instagram_basic", status: "declined" },
+          { permission: "public_profile", status: "granted" },
+        ],
+      },
+    })),
+  );
+  assert.deepEqual(await graph.grantedPermissions(fetchFn, "user-token"), {
+    granted: ["pages_show_list", "public_profile"],
+    declined: ["instagram_basic"],
+  });
+  assert.equal(calls[0].searchParams.get("access_token"), "user-token");
+});
+
+const shared = (name: string, username?: string) => ({
+  pageId: `id-${name}`,
+  pageName: name,
+  pageToken: `secret-token-${name}`,
+  instagram: username ? { igUserId: `ig-${name}`, username } : null,
+});
+
+test("diagnostics: permissions granted, Pages returned, and which have Instagram linked; never a token or id", () => {
+  const text: string = graph.describeLogin(
+    { granted: ["instagram_basic", "pages_show_list", "public_profile"], declined: [] },
+    [shared("Hamlett Visuals"), shared("Hamlett Weddings", "hamlett.weddings")],
+  );
+  assert.equal(
+    text,
+    'Facebook granted: instagram_basic, pages_show_list, public_profile. Pages returned: 2: "Hamlett Visuals" (no Instagram account linked); "Hamlett Weddings" (Instagram @hamlett.weddings).',
+  );
+  assert.doesNotMatch(text, /secret-token|id-Hamlett|ig-Hamlett/);
+});
+
+test("diagnostics: declined or missing permissions, and no Pages shared", () => {
+  assert.equal(
+    graph.describeLogin({ granted: ["public_profile"], declined: ["pages_show_list"] }, []),
+    "Facebook granted: public_profile. Declined: pages_show_list. Missing: instagram_basic, pages_show_list. Pages returned: 0 (Facebook shared no Pages with the site).",
+  );
+  assert.equal(
+    graph.describeLogin(null, [shared("Only")]),
+    'Couldn\'t check which permissions Facebook granted. Pages returned: 1: "Only" (no Instagram account linked).',
+  );
+});
+
+test("diagnostics: a long list of Pages is cut short", () => {
+  const pages = Array.from({ length: 13 }, (_, i) => shared(`P${i + 1}`));
+  const text: string = graph.describeLogin({ granted: ["instagram_basic", "pages_show_list"], declined: [] }, pages);
+  assert.match(text, /Pages returned: 13: /);
+  assert.match(text, /"P10" \(no Instagram account linked\), and 3 more\.$/);
+  assert.doesNotMatch(text, /"P11"/);
 });
 
 const A = { pageId: "1", pageName: "", pageToken: "t1", igUserId: "ig-a", username: "hamlettvisuals" };

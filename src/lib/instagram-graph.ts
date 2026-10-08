@@ -26,6 +26,17 @@ export const META_REDIRECT_URI = "https://hamlett-visuals.vercel.app/api/instagr
 // to each, instagram_basic to read that account's profile and media.
 export const META_SCOPES = ["instagram_basic", "pages_show_list"] as const;
 
+/**
+ * META_EXTRA_SCOPES (comma- or space-separated), for permissions only some
+ * setups need: business_management when her Page belongs to a business
+ * portfolio and Facebook shares it no other way. Anything that isn't a
+ * permission name is dropped; so are the ones already asked for.
+ */
+export function parseExtraScopes(value: string | null | undefined): string[] {
+  const names = (value ?? "").split(/[\s,]+/).filter((name) => /^[a-z_]+$/.test(name));
+  return [...new Set(names)].filter((name) => !(META_SCOPES as readonly string[]).includes(name));
+}
+
 type Fetch = typeof fetch;
 
 export type MetaApp = {
@@ -36,17 +47,26 @@ export type MetaApp = {
   // instagram_basic + pages_show_list). Optional: Meta accepts `scope` for
   // this route and its own guide uses it; only set if Meta refuses that.
   loginConfigId?: string;
+  // META_EXTRA_SCOPES (parseExtraScopes), asked for on top of META_SCOPES.
+  extraScopes?: string[];
 };
 
 /**
- * META_APP_ID / META_APP_SECRET (and META_LOGIN_CONFIG_ID if set), or null
- * where the app isn't set up (local dev).
+ * META_APP_ID / META_APP_SECRET (and META_LOGIN_CONFIG_ID and
+ * META_EXTRA_SCOPES if set), or null where the app isn't set up (local dev).
  */
 export function metaAppFromEnv(): MetaApp | null {
   const appId = process.env.META_APP_ID;
   const appSecret = process.env.META_APP_SECRET;
+  if (!appId || !appSecret) return null;
   const loginConfigId = process.env.META_LOGIN_CONFIG_ID?.trim();
-  return appId && appSecret ? { appId, appSecret, ...(loginConfigId ? { loginConfigId } : {}) } : null;
+  const extraScopes = parseExtraScopes(process.env.META_EXTRA_SCOPES);
+  return {
+    appId,
+    appSecret,
+    ...(loginConfigId ? { loginConfigId } : {}),
+    ...(extraScopes.length ? { extraScopes } : {}),
+  };
 }
 
 export class GraphError extends Error {
@@ -98,8 +118,8 @@ const IG_ONBOARDING_EXTRAS = JSON.stringify({ setup: { channel: "IG_API_ONBOARDI
 
 /**
  * Facebook Login's consent screen, coming back to META_REDIRECT_URI. Asks
- * for META_SCOPES, or (with a login configuration set) for whatever that
- * configuration names: Meta says not to send both.
+ * for META_SCOPES and any extra ones, or (with a login configuration set)
+ * for whatever that configuration names: Meta says not to send both.
  */
 export function loginDialogUrl(app: MetaApp, state: string): string {
   const params = new URLSearchParams({
@@ -107,7 +127,9 @@ export function loginDialogUrl(app: MetaApp, state: string): string {
     redirect_uri: META_REDIRECT_URI,
     state,
     response_type: "code",
-    ...(app.loginConfigId ? { config_id: app.loginConfigId } : { scope: META_SCOPES.join(",") }),
+    ...(app.loginConfigId
+      ? { config_id: app.loginConfigId }
+      : { scope: [...META_SCOPES, ...(app.extraScopes ?? [])].join(",") }),
     extras: IG_ONBOARDING_EXTRAS,
   });
   return `https://www.facebook.com/${GRAPH_VERSION}/dialog/oauth?${params}`;
@@ -164,9 +186,16 @@ type PageList = {
 // Plenty for one person's Pages; stops a paging loop running away.
 const MAX_PAGE_LISTS = 5;
 
-/** Her Pages that have an Instagram account linked, with each Page's token. */
-export async function listLinkedAccounts(fetchFn: Fetch, userToken: string): Promise<LinkedAccount[]> {
-  const accounts: LinkedAccount[] = [];
+/** Every Page Facebook shared with the app, linked to Instagram or not. */
+export type SharedPage = {
+  pageId: string;
+  pageName: string;
+  pageToken: string | null;
+  instagram: { igUserId: string; username: string } | null;
+};
+
+export async function listPages(fetchFn: Fetch, userToken: string): Promise<SharedPage[]> {
+  const pages: SharedPage[] = [];
   let url: string | undefined = graphUrl("/me/accounts", {
     fields: "id,name,access_token,instagram_business_account{id,username}",
     limit: "100",
@@ -176,19 +205,77 @@ export async function listLinkedAccounts(fetchFn: Fetch, userToken: string): Pro
     const list: PageList = await graphGet<PageList>(fetchFn, url);
     for (const page of list.data ?? []) {
       const ig = page.instagram_business_account;
-      if (!ig?.id || !ig.username || !page.access_token) continue;
-      accounts.push({
+      pages.push({
         pageId: page.id,
         pageName: page.name ?? "",
-        pageToken: page.access_token,
-        igUserId: ig.id,
-        username: ig.username,
+        pageToken: page.access_token ?? null,
+        instagram: ig?.id && ig.username ? { igUserId: ig.id, username: ig.username } : null,
       });
     }
     url = list.paging?.next;
   }
+  return pages;
+}
+
+/** The Pages with an Instagram account linked (and a token to read it), one per account. */
+export function linkedAccountsOf(pages: SharedPage[]): LinkedAccount[] {
+  const accounts = pages.flatMap((page) =>
+    page.instagram && page.pageToken
+      ? [{ pageId: page.pageId, pageName: page.pageName, pageToken: page.pageToken, ...page.instagram }]
+      : [],
+  );
   // The same Instagram account can be linked to more than one Page.
   return accounts.filter((a, i) => accounts.findIndex((b) => b.igUserId === a.igUserId) === i);
+}
+
+/** Her Pages that have an Instagram account linked, with each Page's token. */
+export async function listLinkedAccounts(fetchFn: Fetch, userToken: string): Promise<LinkedAccount[]> {
+  return linkedAccountsOf(await listPages(fetchFn, userToken));
+}
+
+export type GrantedPermissions = { granted: string[]; declined: string[] };
+
+/** What she actually allowed on Facebook's consent screen (/me/permissions). */
+export async function grantedPermissions(fetchFn: Fetch, userToken: string): Promise<GrantedPermissions> {
+  const { data } = await graphGet<{ data?: { permission?: string; status?: string }[] }>(
+    fetchFn,
+    graphUrl("/me/permissions", { access_token: userToken }),
+  );
+  const named = (status: string) =>
+    (data ?? []).flatMap((row) => (row.status === status && row.permission ? [row.permission] : [])).sort();
+  return { granted: named("granted"), declined: named("declined") };
+}
+
+// Enough to see what Facebook shared without the message running on.
+const MAX_PAGES_DESCRIBED = 10;
+
+/**
+ * Why a connect found no account, in plain words for the card: which
+ * permissions Facebook granted (null: couldn't tell), how many Pages it
+ * shared, and for each whether it has Instagram linked. Names only, never
+ * a token or an id.
+ */
+export function describeLogin(permissions: GrantedPermissions | null, pages: SharedPage[]): string {
+  const parts: string[] = [];
+  if (permissions) {
+    const missing = META_SCOPES.filter((scope) => !permissions.granted.includes(scope));
+    parts.push(`Facebook granted: ${permissions.granted.join(", ") || "nothing"}.`);
+    if (permissions.declined.length) parts.push(`Declined: ${permissions.declined.join(", ")}.`);
+    if (missing.length) parts.push(`Missing: ${missing.join(", ")}.`);
+  } else {
+    parts.push("Couldn't check which permissions Facebook granted.");
+  }
+  const described = pages.slice(0, MAX_PAGES_DESCRIBED).map((page) => {
+    const name = page.pageName ? `"${page.pageName}"` : "(unnamed Page)";
+    return page.instagram ? `${name} (Instagram @${page.instagram.username})` : `${name} (no Instagram account linked)`;
+  });
+  const more = pages.length > MAX_PAGES_DESCRIBED ? `, and ${pages.length - MAX_PAGES_DESCRIBED} more` : "";
+  parts.push(
+    pages.length
+      ? `Pages returned: ${pages.length}: ${described.join("; ")}${more}.`
+      : "Pages returned: 0 (Facebook shared no Pages with the site).",
+  );
+  return parts.join(" ");
 }
 
 export type AccountChoice =
