@@ -71,17 +71,19 @@ Results are:
 ## Known failures
 
 - `hero-seconds.test.cjs`, "preview at 2: the bar fills over 2000ms, straight
-  away": fails on committed code (seen 2026-10-03, before and after that
-  day's work). The Live Preview keeps the 4.5s default instead of the
-  unsaved 2s. Not fixed yet; to look at in a later session.
-- `drawer-touch-scroll.test.cjs` (WebKit, iPhone profile): slow (about 11
-  minutes) and has failed the same 5 checks in every run since 2026-10-03
-  (not yet run against the code from before that day). Four are the hero slide "Choose from existing" drawer
-  never opening in the test: a test-side issue, not an app bug (confirmed
-  working on a real iPhone, 2026-10-05). The fifth is an "Edit photo
-  details" drawer's close button not found in landscape (which drawer it
-  hits varies between runs). To look at in a later session, with
-  hero-seconds.
+  away": flaky. First seen failing on committed code on 2026-10-03 (before
+  and after that day's work): the Live Preview keeps the 4.5s default
+  instead of the unsaved 2s. On 2026-10-09 it failed in one full run and
+  passed in the next, with no change to the hero code in between. Not
+  fixed yet; to look at in a later session.
+- `drawer-touch-scroll.test.cjs` (WebKit, iPhone profile): slow (about 5
+  minutes as of 2026-10-09). Fails one check: an "Edit photo details"
+  drawer's close button not found in landscape (which drawer it hits
+  varies between runs). Until 2026-10-09 it also failed four checks on the
+  hero slide "Choose from existing" drawer never opening. That was the
+  Hero's Live Preview covering the form on a phone, not the test: phones
+  now open every editor on its fields (components/admin/NarrowLivePreview.tsx),
+  and those four pass. To look at in a later session, with hero-seconds.
 
 ## The tests
 
@@ -102,11 +104,13 @@ Results are:
 | `photos-page-retired.test.cjs` | No Photos page: redirects, a photo's ✕ and breadcrumbs, "Remove from album" message, every photo field can upload |
 | `album-grid.test.cjs` | The album page's photo grid: order, cover, drag and keyboard reorder, photo menu, edit drawer, failed save |
 | `album-uploads.test.cjs` | Uploading into an album (to a made-up R2 address), refusals, drag-and-drop, "Save & upload photos" |
+| `album-videos.test.cjs` | Album videos: the Videos panel on the album page (upload to a made-up R2 address, the server's refusal shown as-is, a .mov refused before upload, title, poster picker, automatic poster, reorder, delete to the Trash, the fast-start warning), each collection's size cap in its signed upload link (real link requests, nothing uploaded), signed-out reads of videos and posters, and the player on a category page via the development-only sample (`?galleryState=video`) in installed Chrome: poster, hover zoom, play in place, phone width |
 | `album-add-existing.test.cjs` | "Add existing photos" from the library |
 | `album-live-preview.test.cjs` | Live Preview refreshing after photo changes |
 | `card-drawer-scroll.test.cjs` | Kanban drawers scroll to their end on phones, tablets and desktop, incl. an on-screen keyboard |
 | `calendar.test.cjs` | The kanban Calendar at seven sizes: markers per day, agenda, taps, a crowded day |
 | `about-editor.test.cjs` | The About editor: Bio limited to paragraphs, bold, italic and links; Quick links column labels (wide and phone); a link to an empty Backstage/Testimonials page hidden on the homepage, with the editor's note |
+| `narrow-live-preview.test.cjs` | On a phone, all 15 editors that open with Live Preview open on their fields; the eye button shows and hides the preview (labels, "Edit fields" hint, unsaved edits follow) without changing the saved preference; each page reopens on its fields; on a desktop each opens as before |
 | `featured-offer.test.cjs` | Featured Offer: the Show on homepage switch (greyed fields, spotlight and badge hidden in Live Preview), package labels, hidden-package and no-photos warnings (mocked) |
 | `offers-category.test.cjs` | Offers & pricing rows and the spotlight card show the category under the name only when it differs (homepage, and an unsaved title in Live Preview) |
 | `packages-list.test.cjs` | Packages list: title links to the edit page, category cover or placeholder, the Featured tag (incl. mocked spotlight states), drag handles and the Live/Hidden pill, compact rows that fit at 375, 390 and 844x390 (desktop unchanged) |
