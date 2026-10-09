@@ -83,6 +83,7 @@ import { HeadingFeatureClient as HeadingFeatureClient_e70f5e05f09f93e00b997edb1e
 import { ParagraphFeatureClient as ParagraphFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
 import { default as default_beebdd1cde60416cd3f6a700617bab88 } from '../../../components/admin/SiteNav'
 import { default as default_c0cbf3957e7eaa73f00c2e486a7de526 } from '../../../components/admin/ModalTouchScroll'
+import { default as default_b8437299ca67d3ea978e73b754d83e26 } from '../../../components/admin/NarrowLivePreview'
 import { S3ClientUploadHandler as S3ClientUploadHandler_f97aa6c64367fa259c5bc0567239ef24 } from '@payloadcms/storage-s3/client'
 import { default as default_417d8d667e84e4656bf87771dc7c88df } from '../../../components/admin/KanbanBoard'
 import { default as default_d497c752e6aa0ef2ce3452cd1f73ca34 } from '../../../components/admin/EditorOverview'
@@ -178,6 +179,7 @@ export const importMap = {
   "@payloadcms/richtext-lexical/client#ParagraphFeatureClient": ParagraphFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
   "/components/admin/SiteNav#default": default_beebdd1cde60416cd3f6a700617bab88,
   "/components/admin/ModalTouchScroll#default": default_c0cbf3957e7eaa73f00c2e486a7de526,
+  "/components/admin/NarrowLivePreview#default": default_b8437299ca67d3ea978e73b754d83e26,
   "@payloadcms/storage-s3/client#S3ClientUploadHandler": S3ClientUploadHandler_f97aa6c64367fa259c5bc0567239ef24,
   "/components/admin/KanbanBoard#default": default_417d8d667e84e4656bf87771dc7c88df,
   "/components/admin/EditorOverview#default": default_d497c752e6aa0ef2ce3452cd1f73ca34,

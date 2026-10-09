@@ -269,11 +269,12 @@
    layout.
 
    Only at Payload's mid-break (≤1024px), where the preview goes full width
-   and covers the form. On wider screens the form stays beside the preview,
-   so the pill was just a stray black label floating by the preview
-   toolbar. */
+   and covers the form, and only while it's actually shown there: those
+   screens open on the fields (NarrowLivePreview.tsx, below). On wider
+   screens the form stays beside the preview, so the pill was just a stray
+   black label floating by the preview toolbar. */
 @media (max-width: 1024px) {
-  .doc-controls__controls-wrapper:has(.live-preview-toggler--active)::after {
+  html[data-narrow-preview="shown"] .doc-controls__controls-wrapper:has(.live-preview-toggler--active)::after {
     content: "Edit fields";
     position: absolute;
     top: 100%;
@@ -697,6 +698,53 @@
 .preview-size__btn:focus-visible {
   outline: 2px solid var(--theme-elevation-800);
   outline-offset: 1px;
+}
+
+/* Live Preview on narrow screens (≤1024px, Payload's mid-break, where an
+   open preview takes the whole width): every editor opens on its fields,
+   and the eye button shows and hides the preview without changing the
+   saved open/closed preference (components/admin/NarrowLivePreview.tsx,
+   which sets html[data-narrow-preview="shown"]). Until then the preview
+   Payload opened is hidden and the form gets the full width back, and the
+   button looks like Payload's own "show the preview" one: unpressed, with
+   the plain eye instead of the crossed-out one. Wider screens are left as
+   Payload lays them out. */
+@media (max-width: 1024px) {
+  html:not([data-narrow-preview="shown"]) .live-preview-window--is-live-previewing {
+    display: none;
+  }
+
+  html:not([data-narrow-preview="shown"]) .collection-edit__main--is-live-previewing {
+    width: 100%;
+  }
+
+  html:not([data-narrow-preview="shown"]) .collection-edit__main--is-live-previewing::after {
+    display: none;
+  }
+
+  html:not([data-narrow-preview="shown"]) .live-preview-toggler--active {
+    border-color: var(--theme-elevation-100);
+    background-color: transparent;
+  }
+
+  html:not([data-narrow-preview="shown"]) .live-preview-toggler--active .icon--eye {
+    visibility: hidden;
+  }
+
+  /* Payload's open eye (icons/Eye, active=false), drawn in the button's
+     text colour. */
+  html:not([data-narrow-preview="shown"]) .live-preview-toggler--active::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 15px;
+    background-color: currentColor;
+    transform: translate(-50%, -50%);
+    -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 12'%3E%3Cg fill='none' stroke='black' stroke-width='0.75'%3E%3Ccircle cx='8.5' cy='6' r='2.5'/%3E%3Cpath d='M8.5 1C3.83333 1 1.5 6 1.5 6C1.5 6 3.83333 11 8.5 11C13.1667 11 15.5 6 15.5 6C15.5 6 13.1667 1 8.5 1Z'/%3E%3C/g%3E%3C/svg%3E") center / contain no-repeat;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 12'%3E%3Cg fill='none' stroke='black' stroke-width='0.75'%3E%3Ccircle cx='8.5' cy='6' r='2.5'/%3E%3Cpath d='M8.5 1C3.83333 1 1.5 6 1.5 6C1.5 6 3.83333 11 8.5 11C13.1667 11 15.5 6 15.5 6C15.5 6 13.1667 1 8.5 1Z'/%3E%3C/g%3E%3C/svg%3E") center / contain no-repeat;
+  }
 }
 
 /* Payload gives the preview pane (.live-preview-window__main) height: 100%

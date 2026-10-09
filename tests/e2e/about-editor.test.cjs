@@ -28,15 +28,19 @@ const LISTING = {
 // whether this user last left it open or closed, so without this the
 // layout under test (a full-width form, or half beside the preview)
 // would depend on whoever last used the studio. Closing it saves that
-// choice as a preference, which the guard fakes.
+// choice as a preference, which the guard fakes. Phones always open on
+// the fields (components/admin/NarrowLivePreview.tsx), so there it's left.
 async function openAbout(page, { preview = false } = {}) {
   await page.goto(`${ADMIN}/globals/about`, { timeout: 120000 });
   await page.locator(".nav-links--quick .nav-links__row").first().waitFor({ state: "attached", timeout: 60000 });
   const toggler = page.locator(".live-preview-toggler");
   await toggler.waitFor({ timeout: 30000 });
+  const narrow = await page.evaluate(() => window.matchMedia("(max-width: 1024px)").matches);
   const open = await toggler.evaluate((el) => el.classList.contains("live-preview-toggler--active"));
-  if (open !== preview) await toggler.click();
-  await page.locator(`.live-preview-toggler${preview ? "" : ":not(.live-preview-toggler--active)"}`).waitFor({ timeout: 10000 });
+  if (!narrow && open !== preview) {
+    await toggler.click();
+    await page.locator(`.live-preview-toggler${preview ? "" : ":not(.live-preview-toggler--active)"}`).waitFor({ timeout: 10000 });
+  }
   await page.locator(".nav-links--quick .nav-links__row").first().waitFor({ timeout: 30000 });
   await page.waitForTimeout(2500);
 }

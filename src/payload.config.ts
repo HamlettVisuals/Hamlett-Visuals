@@ -141,8 +141,10 @@ export default buildConfig({
     },
     components: {
       // Touch scrolling inside every drawer and modal on iPhones, and
-      // drawers sized to the visible viewport — see ModalTouchScroll.tsx.
-      providers: ["/components/admin/ModalTouchScroll#default"],
+      // drawers sized to the visible viewport — see ModalTouchScroll.tsx. On
+      // phones, editors open on their fields with the preview a tap away —
+      // see NarrowLivePreview.tsx.
+      providers: ["/components/admin/ModalTouchScroll#default", "/components/admin/NarrowLivePreview#default"],
       // Replaces the default alphabetical/admin.group sidebar with a tree
       // that mirrors the real site's page structure — see SiteNav.tsx and
       // site-tree.ts.
