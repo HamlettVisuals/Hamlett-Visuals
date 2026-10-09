@@ -23,9 +23,21 @@ const LISTING = {
   },
 };
 
-async function openAbout(page) {
+// Opens the About editor with Live Preview closed (`preview: false`) or
+// open. About opens with the preview by default, but Payload remembers
+// whether this user last left it open or closed, so without this the
+// layout under test (a full-width form, or half beside the preview)
+// would depend on whoever last used the studio. Closing it saves that
+// choice as a preference, which the guard fakes.
+async function openAbout(page, { preview = false } = {}) {
   await page.goto(`${ADMIN}/globals/about`, { timeout: 120000 });
-  await page.locator(".nav-links--quick .nav-links__row").first().waitFor({ timeout: 60000 });
+  await page.locator(".nav-links--quick .nav-links__row").first().waitFor({ state: "attached", timeout: 60000 });
+  const toggler = page.locator(".live-preview-toggler");
+  await toggler.waitFor({ timeout: 30000 });
+  const open = await toggler.evaluate((el) => el.classList.contains("live-preview-toggler--active"));
+  if (open !== preview) await toggler.click();
+  await page.locator(`.live-preview-toggler${preview ? "" : ":not(.live-preview-toggler--active)"}`).waitFor({ timeout: 10000 });
+  await page.locator(".nav-links--quick .nav-links__row").first().waitFor({ timeout: 30000 });
   await page.waitForTimeout(2500);
 }
 
@@ -73,6 +85,18 @@ const rowLabels = (page) =>
   check("shown over the first row", rows[0]?.every((l) => l.visible && l.above), rows[0]);
   check("not repeated over the other rows", rows.slice(1).every((row) => row.every((l) => !l.visible)), rows.slice(1));
   check("each label belongs to its input", rows.flat().every((l) => l.forInput));
+
+  // 1b. With Live Preview open the form is half as wide, so the rows wrap
+  // and every row shows its labels, as on a phone.
+  {
+    const withPreview = await ctx.newPage();
+    withPreview.on("pageerror", (e) => errors.push(e.message));
+    await openAbout(withPreview, { preview: true });
+    const narrow = await rowLabels(withPreview);
+    check("beside Live Preview: rows wrap, every row shows its labels", narrow.length > 0 && narrow.every((row) => row.length === 3 && row.every((l) => l.visible && l.above)), narrow);
+    await withPreview.locator(".nav-links--quick").screenshot({ path: `${shots}/quick-links-beside-preview.png` });
+    await withPreview.close();
+  }
 
   // 2. The note on a link to an empty page.
   const notes = await page.locator(".nav-links--quick .nav-links__row").evaluateAll((els) =>

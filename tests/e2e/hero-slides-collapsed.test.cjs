@@ -77,6 +77,20 @@ async function open(page) {
     .catch(() => {});
 }
 
+// On a phone an open Live Preview fills the screen and the fields sit
+// behind "Edit fields". The Hero opens with it by default, and Payload
+// remembers whether this user last left it open, so the phone checks close
+// it first rather than depend on whoever last used the studio (the
+// preference this saves is faked by the guard).
+async function closeLivePreview(page) {
+  const open = page.locator(".live-preview-toggler--active");
+  if (await open.count()) {
+    await open.click();
+    await page.locator(".live-preview-toggler:not(.live-preview-toggler--active)").waitFor({ timeout: 10000 });
+    await page.locator(ROWS).first().waitFor({ timeout: 30000 });
+  }
+}
+
 (async () => {
   const browser = await launchBrowser();
   const errors = [];
@@ -156,6 +170,7 @@ async function open(page) {
   page = await phone.ctx.newPage();
   page.on("pageerror", (e) => errors.push(e.message));
   await open(page);
+  await closeLivePreview(page);
   rows = await rowState(page);
   check(
     "on the phone too: rows start as saved, with names",
