@@ -2074,7 +2074,7 @@ export interface PrivacyPolicy {
    */
   title: string;
   /**
-   * Write your policy here. Use headings to break it into sections. While this is empty, the page and its footer link are hidden.
+   * Write your policy here. Use headings to break it into sections. While this is empty, the page and its footer link are hidden. Your contact email and phone from Site Settings are shown automatically at the bottom.
    */
   body?: {
     root: {

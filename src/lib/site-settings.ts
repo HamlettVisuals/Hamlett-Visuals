@@ -5,8 +5,8 @@ import { contactDetails, type ContactDetails } from "@/lib/contact-details";
 // Thin wrapper around the Site Settings global — app/icon.tsx and
 // app/opengraph-image.tsx both call this rather than reading Payload
 // directly, so favicon/OG fallback logic stays in one place. Contact
-// details (lib/contact-details.ts) are included too, for any server page
-// that needs the real values without its own Payload call.
+// details (lib/contact-details.ts) are included too, for the privacy
+// policy's contact lines (lib/legal-route.tsx).
 
 export type SiteSettings = {
   siteName: string;

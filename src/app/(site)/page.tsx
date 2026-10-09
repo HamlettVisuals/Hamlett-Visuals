@@ -3,6 +3,7 @@ import config from "@payload-config";
 import Hero from "@/components/home/Hero";
 import Categories from "@/components/home/Categories";
 import About from "@/components/home/About";
+import { emptyLegalPages } from "@/lib/legal-pages";
 import { emptyListingPages } from "@/lib/listing-pages";
 import FeaturedOffer from "@/components/home/FeaturedOffer";
 import Offers from "@/components/home/Offers";
@@ -38,8 +39,10 @@ export default async function Home() {
   });
   const hero = await payload.findGlobal({ slug: "hero" });
   const about = await payload.findGlobal({ slug: "about" });
-  // Quick links to a page with nothing published yet are left out (lib/listing-pages.ts).
-  const emptyPages = await emptyListingPages(payload);
+  // Quick links to a page with nothing published yet are left out
+  // (lib/listing-pages.ts), and to Privacy Policy or Terms while it has no
+  // text (lib/legal-pages.ts).
+  const emptyPages = [...(await emptyListingPages(payload)), ...(await emptyLegalPages(payload))];
   const categoriesIntro = await payload.findGlobal({ slug: "categories-intro" });
   // Depth 2: the featured package, then its category (for the link and the
   // hidden/trashed check in components/home/FeaturedOffer.tsx).

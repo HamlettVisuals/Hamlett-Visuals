@@ -11,8 +11,9 @@ import { serverURL } from "#src/lib/server-url.ts";
 
 // Single source of truth for cross-section branding/contact details —
 // mirrors src/lib/site-settings.ts (favicon/OG image). Email, phone and
-// Instagram are shown by the Footer, the Booking CTA and the homepage
-// Instagram section, all through lib/contact-details.ts.
+// Instagram are shown by the Footer, the Booking CTA, the homepage Instagram
+// section and (email and phone) the privacy policy, all through
+// lib/contact-details.ts.
 // The phone number reaches signed-out API readers only while the site
 // shows it somewhere (lib/phone-shown.ts). The site's own pages read on the
 // server, which skips this, and decide for themselves from the switches.

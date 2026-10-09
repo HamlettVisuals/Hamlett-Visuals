@@ -5,6 +5,8 @@ import { getPayload } from "payload";
 import config from "@payload-config";
 import LegalPage from "@/components/LegalPage";
 import { LEGAL_PAGES, hasText } from "@/lib/legal-pages";
+import type { ContactDetails } from "@/lib/contact-details";
+import { getSiteSettings } from "@/lib/site-settings";
 
 // The server half of /privacy-policy and /terms: reads the page's global
 // and renders it (components/LegalPage.tsx), or 404s while it has no text.
@@ -39,6 +41,16 @@ export async function renderLegalPage(href: Href) {
   }
   if (!hasText(doc.body) && !preview) notFound();
 
+  // The Privacy Policy ends with how to reach her, from Site Settings, as
+  // the Footer shows it: the email always, the phone only while the
+  // Footer's "Show phone number" switch is on (lib/phone-shown.ts).
+  let contact: Pick<ContactDetails, "email" | "phone"> | undefined;
+  if (href === "/privacy-policy") {
+    const { contact: details } = await getSiteSettings();
+    const footer = await payload.findGlobal({ slug: "final-cta-footer", depth: 0 });
+    contact = { email: details.email, phone: footer.showPhone !== false ? details.phone : null };
+  }
+
   const { slug, title } = LEGAL_PAGES[href];
-  return <LegalPage slug={slug} doc={doc} fallbackTitle={title} preview={preview} />;
+  return <LegalPage slug={slug} doc={doc} fallbackTitle={title} preview={preview} contact={contact} />;
 }

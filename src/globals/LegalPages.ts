@@ -22,7 +22,7 @@ import { serverURL } from "#src/lib/server-url.ts";
 // globals. Until the text has words in it the page isn't on the site and
 // its footer link is hidden (lib/legal-pages.ts); publishing brings both.
 
-function legalPage(href: keyof typeof LEGAL_PAGES, description: string): GlobalConfig {
+function legalPage(href: keyof typeof LEGAL_PAGES, description: string, bodyNote = ""): GlobalConfig {
   const { slug, title } = LEGAL_PAGES[href];
   return {
     slug: slug satisfies LegalSlug,
@@ -86,7 +86,7 @@ function legalPage(href: keyof typeof LEGAL_PAGES, description: string): GlobalC
         }),
         admin: {
           description:
-            "Write your policy here. Use headings to break it into sections. While this is empty, the page and its footer link are hidden.",
+            `Write your policy here. Use headings to break it into sections. While this is empty, the page and its footer link are hidden.${bodyNote}`,
         },
       },
       {
@@ -106,6 +106,8 @@ function legalPage(href: keyof typeof LEGAL_PAGES, description: string): GlobalC
 export const PrivacyPolicy = legalPage(
   "/privacy-policy",
   "Your Privacy Policy page: how you collect and use people's information.",
+  // The contact lines under the text (lib/legal-route.tsx).
+  " Your contact email and phone from Site Settings are shown automatically at the bottom.",
 );
 
 export const Terms = legalPage("/terms", "Your Terms & Conditions page: bookings, payments, cancellations and usage.");

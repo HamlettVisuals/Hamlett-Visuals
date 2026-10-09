@@ -6,7 +6,9 @@
 //       list) and a "Last updated" date show in Live Preview with the
 //       site's styles, and Publish sends them. The Publish is faked by the
 //       guard, so nothing is saved.
-// Also: both editors sit under Editor > Legal in the sidebar.
+// Also: both editors sit under Editor > Legal in the sidebar, and the
+// Privacy Policy ends with the Site Settings email and phone once it has
+// text (Terms doesn't).
 //
 // Every write is faked by the shared guard (lib/guard.cjs); reads are real.
 // Run with `npm run test:e2e legal-pages` (see README.md).
@@ -113,6 +115,8 @@ const hasText = (node) =>
   check("H2 in the section-heading style", /font-display/.test(styles.h2) && /text-heading/.test(styles.h2) && /text-ink/.test(styles.h2), styles.h2);
   check("paragraph in the body style", /text-body/.test(styles.p) && /text-muted/.test(styles.p), styles.p);
   check("list as a bulleted body list", /list-disc/.test(styles.ul) && /text-body/.test(styles.ul), styles.ul);
+  // The date reaches the preview on its own message, after the text.
+  await frame.locator("header p", { hasText: "Last updated" }).waitFor({ timeout: 20000 }).catch(() => {});
   const updated = await frame.locator("header p").allInnerTexts().catch(() => []);
   check("'Last updated September 1, 2026' under the title", updated.includes("Last updated September 1, 2026"), updated);
   await page.screenshot({ path: `${shots}/2-live-preview.png` });
@@ -122,6 +126,44 @@ const hasText = (node) =>
   const sent = guard.writes().find((w) => /\/globals\/terms/.test(w.url));
   check("Publish sends the global (faked)", !!sent, guard.lines().slice(-5));
   check("…with the text", /Bookings/.test(sent?.body ?? "") || /Bookings/.test(JSON.stringify(sent ?? {})), (sent?.body ?? "").slice(0, 200));
+
+  check("Terms has no contact block", (await frame.getByText("Questions about this policy?").count()) === 0);
+  await page.close();
+
+  section("Privacy Policy: contact lines under the text, from Site Settings");
+  const settings = await (await ctx.request.get(`${API}/globals/site-settings?depth=0`)).json();
+  const footerDoc = await (await ctx.request.get(`${API}/globals/final-cta-footer?depth=0`)).json();
+  const email = settings.contact?.email?.trim() || null;
+  const phoneOn = footerDoc.showPhone !== false && !!settings.contact?.phone?.trim();
+  page = await ctx.newPage();
+  page.on("pageerror", (e) => errors.push(e.message));
+  await page.goto(`${ADMIN}/globals/privacy-policy`, { timeout: 120000 });
+  const ppBody = page.locator(".rich-text-lexical [contenteditable='true']").first();
+  await ppBody.waitFor({ timeout: 60000 });
+  const desc = await page.locator(".field-type.rich-text-lexical .field-description, .field-type.richText .field-description").first().innerText().catch(() => "");
+  check("body description mentions the contact lines", desc.includes("Your contact email and phone from Site Settings are shown automatically at the bottom."), desc);
+  if (!(await page.locator(".live-preview-window iframe").count())) await page.locator(".live-preview-toggler").click().catch(() => {});
+  const ppFrame = page.frameLocator(".live-preview-window iframe").first();
+  await ppFrame.locator("h1").waitFor({ timeout: 60000 });
+  const wasEmpty = !written["/privacy-policy"];
+  if (wasEmpty) check("no contact block while the text is empty", (await ppFrame.getByText("Questions about this policy?").count()) === 0);
+  await ppBody.click();
+  await page.keyboard.press("Control+a");
+  await page.keyboard.press("Backspace");
+  await page.keyboard.type("We only keep what you send us.");
+  const question = ppFrame.getByText("Questions about this policy?");
+  const hasQuestion = await question.waitFor({ timeout: 20000 }).then(() => true, () => false);
+  check(`contact block ${email || phoneOn ? "shown" : "left out (nothing in Site Settings)"}`, hasQuestion === Boolean(email || phoneOn));
+  const contactLinks = await ppFrame.locator("main section a").evaluateAll((links) => links.map((a) => a.getAttribute("href")));
+  if (email) check("email as a mailto link", contactLinks.includes(`mailto:${email}`), contactLinks);
+  check(phoneOn ? "phone as a tel: link" : "no phone (blank or switched off)", contactLinks.some((h) => h?.startsWith("tel:")) === phoneOn, contactLinks);
+  const after = await ppFrame.locator("main").evaluate((main) => {
+    const q = [...main.querySelectorAll("p")].find((p) => p.textContent === "Questions about this policy?");
+    const text = [...main.querySelectorAll("p")].find((p) => /only keep/.test(p.textContent));
+    return !!q && !!text && !!(text.compareDocumentPosition(q) & Node.DOCUMENT_POSITION_FOLLOWING);
+  });
+  check("block sits below the text", after);
+  await page.screenshot({ path: `${shots}/3-privacy-contact.png` });
 
   check("no page errors", errors.length === 0, errors);
   await browser.close();

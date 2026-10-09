@@ -29,7 +29,9 @@ import type {
 // globals/HeaderNav.ts) — passed in as `headerNav` from
 // (site)/layout.tsx, then kept live via useScopedLivePreview the same way
 // Footer.tsx does for its two globals. The logo and studio name come from
-// the Site Settings global (`siteSettings`), subscribed separately.
+// the Site Settings global (`siteSettings`), subscribed separately. A menu
+// link to Privacy Policy or Terms is left out while that page has no text
+// (`hiddenHrefs`, from lib/legal-pages.ts via the layout), as in the footer.
 
 // A few pixels — enough to mean "we've left the top" without flickering on
 // sub-pixel scroll jitter or elastic overscroll.
@@ -62,9 +64,11 @@ function MenuIcon({ open }: { open: boolean }) {
 export default function Nav({
   headerNav,
   siteSettings,
+  hiddenHrefs = [],
 }: {
   headerNav: HeaderNavGlobal;
   siteSettings: SiteSetting;
+  hiddenHrefs?: string[];
 }) {
   const { data } = useScopedLivePreview<HeaderNavGlobal>({
     initialData: headerNav,
@@ -78,7 +82,7 @@ export default function Nav({
     globalSlug: "site-settings",
     apiRoute: "/hv-studio/api",
   });
-  const navLinks = data.navLinks ?? [];
+  const navLinks = (data.navLinks ?? []).filter((link) => !hiddenHrefs.includes(link.href));
   const bookLabel = data.bookLabel || "Book";
   const bookHref = data.bookHref || "/booking";
 

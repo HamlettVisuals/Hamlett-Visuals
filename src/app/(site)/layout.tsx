@@ -63,7 +63,9 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
   // Footer links to a page with nothing published yet are left out
   // (lib/listing-pages.ts), as are Privacy Policy and Terms until they have
   // text (lib/legal-pages.ts).
-  const emptyPages = [...(await emptyListingPages(payload)), ...(await emptyLegalPages(payload))];
+  // The header menu hides only the empty legal pages.
+  const emptyLegal = await emptyLegalPages(payload);
+  const emptyPages = [...(await emptyListingPages(payload)), ...emptyLegal];
 
   return (
     <html
@@ -71,7 +73,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
       className={`${fraunces.variable} ${inter.variable} h-full`}
     >
       <body className="flex min-h-full flex-col">
-        <Nav headerNav={headerNav} siteSettings={siteSettings} />
+        <Nav headerNav={headerNav} siteSettings={siteSettings} hiddenHrefs={emptyLegal} />
         <main className="flex flex-1 flex-col">{children}</main>
         <Footer
           finalCtaFooter={finalCtaFooter}

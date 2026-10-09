@@ -4,6 +4,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import type { SerializedLinkNode } from "@payloadcms/richtext-lexical";
 import { RichText, type JSXConvertersFunction } from "@payloadcms/richtext-lexical/react";
+import type { ContactDetails } from "@/lib/contact-details";
 import { formatLastUpdated, hasText, type LegalSlug } from "@/lib/legal-pages";
 import { serverURL } from "@/lib/server-url";
 import { useScopedLivePreview } from "@/lib/use-scoped-live-preview";
@@ -91,12 +92,15 @@ export default function LegalPage({
   doc,
   fallbackTitle,
   preview,
+  contact,
 }: {
   slug: LegalSlug;
   doc: LegalDoc;
   fallbackTitle: string;
   /** A signed-in admin's preview of a page that may have no text yet. */
   preview: boolean;
+  /** The Privacy Policy's closing contact lines (lib/legal-route.tsx); blank ones are left out. */
+  contact?: Pick<ContactDetails, "email" | "phone">;
 }) {
   // depth 1: an internal link's category comes back with its slug.
   const { data } = useScopedLivePreview<LegalDoc>({
@@ -123,7 +127,26 @@ export default function LegalPage({
           </p>
         )
       ) : (
-        <RichText data={data.body!} converters={converters} className="mt-10 [&>:first-child]:mt-0" />
+        <>
+          <RichText data={data.body!} converters={converters} className="mt-10 [&>:first-child]:mt-0" />
+          {(contact?.email || contact?.phone) && (
+            <section className="mt-10">
+              <p className="max-w-measure text-body text-muted">Questions about this policy?</p>
+              <div className="mt-3 flex flex-col gap-1.5 text-caption text-muted">
+                {contact.email && (
+                  <a href={`mailto:${contact.email}`} className="link text-ink">
+                    {contact.email}
+                  </a>
+                )}
+                {contact.phone && (
+                  <a href={contact.phone.href} className="link text-ink">
+                    {contact.phone.display}
+                  </a>
+                )}
+              </div>
+            </section>
+          )}
+        </>
       )}
 
       <p className="mt-16">

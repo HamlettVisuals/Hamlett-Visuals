@@ -20,8 +20,9 @@ import type { About as AboutGlobal } from "@/payload-types";
 // The cards come from the About global's `quickLinks` (globals/About.ts;
 // limits in lib/about-limits.ts). Each card's icon follows its destination
 // (lib/quick-link-icons.tsx). A card going to a page with nothing published
-// yet (Backstage, Testimonials) is left out until that page has something:
-// `hiddenHrefs` comes from lib/listing-pages.ts. With no links, the cards
+// yet (Backstage, Testimonials), or to Privacy Policy or Terms while it has
+// no text, is left out until it has something: `hiddenHrefs` comes from
+// lib/listing-pages.ts and lib/legal-pages.ts. With no links, the cards
 // block isn't rendered at all, so no margin is left behind.
 export default function About({
   about,
