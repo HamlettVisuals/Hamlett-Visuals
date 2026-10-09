@@ -134,6 +134,7 @@ function describe(entity: Entity, field: PhotoField, doc: Doc, count: number): s
     "site-settings.ogImage": "your site's share image",
     "backstage.thumbnail": `an old thumbnail on the Backstage item "${name}" (hidden)${trashed}`,
     "pricing-rows.gallery": `the "${name}" package's old photo list (hidden)${trashed}`,
+    "videos.poster": `the poster of the video "${typeof title === "string" && title ? title : (doc.filename ?? name)}"${trashed}`,
   };
   if (known[key]) return known[key];
   return entity.kind === "global" ? `${entity.label}: ${field.label}` : `${entity.label} "${name}": ${field.label}${trashed}`;
@@ -183,7 +184,8 @@ function idsAtRaw(doc: Doc, path: string[]): unknown {
 /**
  * Every photo the site shows somewhere other than its own album: a use in
  * a document the site shows (published, not in the Trash, and for an album
- * or a package, in a category that's shown too) or in a global, through a
+ * or a package, in a category that's shown too; for an album video, in an
+ * album that's shown) or in a global, through a
  * field that isn't retired. What signed-out visitors may read besides album
  * photos (lib/public-photos.ts). Same walk as collectPhotoUses, one query
  * per collection or global that can point at a photo.
@@ -198,6 +200,17 @@ export async function collectShownPhotoIds(req: PayloadRequest): Promise<Set<num
     req,
   });
   const categoryShown = new Set(categories.docs.filter((c) => c.published !== false).map((c) => c.id));
+  // An album video's poster shows when its album does (Trash left out by find).
+  const albums = await req.payload.find({
+    collection: "events",
+    depth: 0,
+    pagination: false,
+    select: { published: true, category: true },
+    req,
+  });
+  const albumShown = new Set(
+    albums.docs.filter((a) => a.published !== false && categoryShown.has(a.category as number)).map((a) => a.id),
+  );
   const docShown = (entity: Entity, doc: Doc) => {
     if (entity.kind === "global") return true;
     if (doc.deletedAt || doc.published === false) return false;
@@ -205,6 +218,7 @@ export async function collectShownPhotoIds(req: PayloadRequest): Promise<Set<num
       const category = doc.category && typeof doc.category === "object" ? (doc.category as { id: number }).id : doc.category;
       return categoryShown.has(category as number);
     }
+    if (entity.slug === "videos") return albumShown.has(doc.event as number);
     return true;
   };
 

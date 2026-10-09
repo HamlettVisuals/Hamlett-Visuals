@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import type { GalleryPhoto } from "./types";
+import type { GalleryPhoto, GalleryVideo } from "./types";
+import AlbumVideo from "./AlbumVideo";
 import HoverZoomImage from "@/components/HoverZoomImage";
 import { formatAlbumDate } from "@/lib/album-date";
 import { DEFAULT_LOCATION, generateAltText } from "@/lib/generate-alt-text";
@@ -22,6 +23,8 @@ export type EventRowProps = {
    */
   slug: string;
   photos: GalleryPhoto[];
+  /** Shown above the photos, each a large player (AlbumVideo). */
+  videos?: GalleryVideo[];
   /** Optional description under the title (up to two lines on phones); nothing shows when blank. */
   description?: string | null;
   /** Optional shoot date (ISO); its month and year show when set. */
@@ -48,6 +51,7 @@ export default function EventRow({
   category,
   slug,
   photos,
+  videos = [],
   description,
   date,
   isFirst = false,
@@ -254,7 +258,9 @@ export default function EventRow({
               <span aria-hidden="true"> · </span>
             </>
           )}
-          {photos.length} {photos.length === 1 ? "photo" : "photos"}
+          {photos.length || !videos.length ? <>{photos.length} {photos.length === 1 ? "photo" : "photos"}</> : null}
+          {photos.length && videos.length ? <span aria-hidden="true"> · </span> : null}
+          {videos.length ? <>{videos.length} {videos.length === 1 ? "video" : "videos"}</> : null}
         </span>
       </div>
 
@@ -262,9 +268,17 @@ export default function EventRow({
         <p className="mt-1 text-body text-muted">{descriptionText}</p>
       )}
 
+      {videos.length > 0 && (
+        <div className="mt-4 flex flex-col gap-6">
+          {videos.map((video) => (
+            <AlbumVideo key={video.id} video={video} albumName={name} />
+          ))}
+        </div>
+      )}
+
       <div className="mt-4">
         {photos.length === 0 ? (
-          <GalleryEmptyState />
+          videos.length === 0 && <GalleryEmptyState />
         ) : (
           <div
             ref={rowRef}

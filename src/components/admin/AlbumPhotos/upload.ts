@@ -1,26 +1,31 @@
+import { ALBUM_VIDEO_MAX_MB, ALBUM_VIDEO_MIME_TYPE, refusals } from "@/lib/album-video-limits";
 import { RASTER_IMAGE_MIME_TYPES } from "@/lib/raster-image-types";
 import { UPLOAD_FOLDERS } from "@/lib/upload-folders";
 import { formatMB, MB, PHOTO_MAX_MB } from "@/lib/upload-sizes";
 
-// Uploading a photo into an album from the album page, the same way the
-// studio's own upload form does it (clientUploads in payload.config.ts):
+// Uploading a file into an album from the album page (a photo, a video, or
+// a video's poster), the same way the studio's own upload form does it
+// (clientUploads in payload.config.ts):
 //
 //   1. ask the R2 plugin for a short-lived signed link
 //      (POST /api/storage-s3-generate-signed-url, as its
-//      S3ClientUploadHandler does), which also picks a file name no other
-//      photo has;
+//      S3ClientUploadHandler does), which also picks a file name nothing
+//      else in the collection has, and carries the collection's size cap
+//      (lib/upload-link-limits.ts);
 //   2. PUT the file straight to R2 through that link, with XHR rather than
 //      fetch so there's upload progress;
-//   3. create the photo: the same multipart request Payload's form sends
+//   3. create the record: the same multipart request Payload's form sends
 //      after a client upload, `_payload` (the fields as JSON) and `file` (a
 //      JSON description of what's in R2, with its `clientUploadContext`),
-//      so the server reads the file back from R2 as usual: the size cap,
-//      resizing and GPS removal (lib/photo-resize.ts), thumbnails, and
-//      removing the file from R2 if the save is refused
-//      (lib/upload-limits.ts).
+//      so the server checks the file in R2 as usual: for a photo the size
+//      cap, resizing and GPS removal (lib/photo-resize.ts) and thumbnails;
+//      for a video its format and length (Videos.ts); and the file is
+//      removed from R2 if the save is refused (lib/upload-limits.ts).
 //
-// The photo is created in the album (`event`), so it goes to the album's
-// end (Photos.ts), with alt text filled in; she can edit both later.
+// A photo or video is created in the album (`event`), so it goes to the
+// album's end, with alt text or a title filled in; she can edit both later.
+
+type Collection = "photos" | "videos";
 
 const EXTENSION_TYPES: Record<string, string> = {
   jpg: "image/jpeg",
@@ -49,6 +54,20 @@ export function checkPhotoFile(file: File): { file: File } | { error: string } {
   return { file: type === file.type ? file : new File([file], file.name, { type, lastModified: file.lastModified }) };
 }
 
+/**
+ * The same for a video: an .mp4 up to 1GB. What's inside it (H.264 or not,
+ * how long) can only be told once it's in R2, on save. A browser that
+ * leaves the type empty gets it from the name.
+ */
+export function checkVideoFile(file: File): { file: File } | { error: string } {
+  const isMp4Name = /\.mp4$/i.test(file.name);
+  if (file.type ? file.type !== ALBUM_VIDEO_MIME_TYPE : !isMp4Name) return { error: refusals.notMp4(file.name) };
+  if (file.size > ALBUM_VIDEO_MAX_MB * MB) return { error: refusals.tooBig(file.size) };
+  return {
+    file: file.type ? file : new File([file], file.name, { type: ALBUM_VIDEO_MIME_TYPE, lastModified: file.lastModified }),
+  };
+}
+
 const errorMessage = (json: unknown, fallback: string): string => {
   const data = json as { errors?: { message?: string }[]; error?: string; message?: string } | null;
   return data?.errors?.map((e) => e.message).filter(Boolean).join(", ") || data?.error || fallback;
@@ -57,7 +76,8 @@ const errorMessage = (json: unknown, fallback: string): string => {
 export type StoredFile = { filename: string; prefix: string };
 
 /** Steps 1 and 2: the file into R2, reporting progress from 0 to 1. */
-export async function putPhotoInStorage(
+export async function putInStorage(
+  collection: Collection,
   file: File,
   apiBase: string,
   onProgress: (fraction: number) => void,
@@ -66,8 +86,8 @@ export async function putPhotoInStorage(
     method: "POST",
     credentials: "include",
     body: JSON.stringify({
-      collectionSlug: "photos",
-      docPrefix: UPLOAD_FOLDERS.photos,
+      collectionSlug: collection,
+      docPrefix: UPLOAD_FOLDERS[collection],
       filename: file.name,
       filesize: file.size,
       mimeType: file.type,
@@ -93,29 +113,50 @@ export async function putPhotoInStorage(
   });
   onProgress(1);
 
-  return { filename: filename || file.name, prefix: docPrefix ?? UPLOAD_FOLDERS.photos };
+  return { filename: filename || file.name, prefix: docPrefix ?? UPLOAD_FOLDERS[collection] };
 }
 
-/** Step 3: the photo itself, in the album. */
-export async function createAlbumPhoto(
+/** Step 3: the record, with `fields` and the stored file. */
+async function createWithStoredFile(
+  collection: Collection,
   file: File,
   stored: StoredFile,
-  { apiBase, albumId, alt }: { apiBase: string; albumId: number; alt: string },
+  fields: Record<string, unknown>,
+  apiBase: string,
+  failure: string,
 ): Promise<{ id: number }> {
   const form = new FormData();
-  form.append("_payload", JSON.stringify({ alt, event: albumId, prefix: stored.prefix }));
+  form.append("_payload", JSON.stringify({ ...fields, prefix: stored.prefix }));
   form.append(
     "file",
     JSON.stringify({
       clientUploadContext: { prefix: stored.prefix },
-      collectionSlug: "photos",
+      collectionSlug: collection,
       filename: stored.filename,
       mimeType: file.type,
       size: file.size,
     }),
   );
-  const res = await fetch(`${apiBase}/photos?depth=0`, { method: "POST", credentials: "include", body: form });
+  const res = await fetch(`${apiBase}/${collection}?depth=0`, { method: "POST", credentials: "include", body: form });
   const json = await res.json().catch(() => null);
-  if (!res.ok || !json?.doc?.id) throw new Error(errorMessage(json, "The photo couldn't be saved."));
+  if (!res.ok || !json?.doc?.id) throw new Error(errorMessage(json, failure));
   return json.doc as { id: number };
+}
+
+/** A photo, in the album (or in none: a video's poster uploaded for it). */
+export function createAlbumPhoto(
+  file: File,
+  stored: StoredFile,
+  { apiBase, albumId, alt }: { apiBase: string; albumId: number | null; alt: string },
+): Promise<{ id: number }> {
+  return createWithStoredFile("photos", file, stored, { alt, event: albumId }, apiBase, "The photo couldn't be saved.");
+}
+
+/** A video, in the album. Its title is left blank; she adds one if she wants. */
+export function createAlbumVideo(
+  file: File,
+  stored: StoredFile,
+  { apiBase, albumId }: { apiBase: string; albumId: number },
+): Promise<{ id: number }> {
+  return createWithStoredFile("videos", file, stored, { event: albumId }, apiBase, "The video couldn't be saved.");
 }

@@ -27,4 +27,18 @@ export type GalleryEvent = {
   /** Optional shoot date (ISO); its month and year show when set. */
   date?: string | null;
   photos: GalleryPhoto[];
+  /** Walkthroughs and highlight reels, shown above the photos (AlbumVideo). */
+  videos: GalleryVideo[];
+};
+
+export type GalleryVideo = {
+  id: number;
+  /** The file's own URL; it answers with a short-lived link to R2. */
+  url: string;
+  title?: string | null;
+  /** Upright pixel size, so the player has the video's shape before it loads. */
+  width?: number | null;
+  height?: number | null;
+  /** Her chosen poster, else the frame made from the video; null if neither. */
+  poster: GalleryPhoto | null;
 };

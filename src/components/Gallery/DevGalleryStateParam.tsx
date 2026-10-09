@@ -3,15 +3,17 @@
 import { useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 
-export type DevGalleryState = "empty" | "loading" | "sparse" | null;
+export type DevGalleryState = "empty" | "loading" | "sparse" | "video" | null;
 
 type DevGalleryStateParamProps = {
   onChange: (state: DevGalleryState) => void;
 };
 
 /**
- * Reads ?galleryState=empty|loading|sparse so CategoryGallery's loading/
- * empty/sparse states can be previewed before real async fetching exists.
+ * Reads ?galleryState=empty|loading|sparse|video so CategoryGallery's
+ * loading/empty/sparse states can be previewed before real async fetching
+ * exists, and an album video without uploading one ("video": a sample on
+ * the first album, see CategoryGallery).
  * Split out of CategoryGallery (rather than calling useSearchParams there
  * directly) so the hook — and the Suspense boundary it requires — is only
  * ever mounted in development, where the parent renders this behind a
@@ -24,7 +26,7 @@ export default function DevGalleryStateParam({
   const searchParams = useSearchParams();
   const raw = searchParams.get("galleryState");
   const state: DevGalleryState =
-    raw === "empty" || raw === "loading" || raw === "sparse" ? raw : null;
+    raw === "empty" || raw === "loading" || raw === "sparse" || raw === "video" ? raw : null;
 
   useEffect(() => {
     onChange(state);

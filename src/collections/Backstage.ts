@@ -6,7 +6,7 @@ import type {
   CollectionConfig,
   PayloadRequest,
 } from "payload";
-import { APIError, isolateObjectProperty } from "payload";
+import { APIError } from "payload";
 import { generateKeyBetween } from "payload/shared";
 import { isAdmin } from "#src/access/isAdmin.ts";
 import { readPublished } from "#src/access/publicRead.ts";
@@ -30,6 +30,7 @@ import {
   removeTemp,
 } from "#src/lib/backstage-media.ts";
 import { RASTER_IMAGE_MIME_TYPES } from "#src/lib/raster-image-types.ts";
+import { nestedUploadReq } from "#src/lib/nested-upload-req.ts";
 import { UPLOAD_FOLDERS, storedFileKey } from "#src/lib/r2.ts";
 import { removeRefusedUpload } from "#src/lib/upload-limits.ts";
 import { resizeLargePhotos } from "#src/lib/photo-resize.ts";
@@ -106,19 +107,9 @@ const keepFile: CollectionBeforeChangeHook = ({ context, data, operation, origin
   return data;
 };
 
-// The request for a save on Backstage Thumbnails made from inside this
-// item's save: same transaction, but its own file and context. Payload's
-// Local API puts the thumbnail's file on `req.file`, and the storage plugin
-// remembers "this request's file" in `req.context` the first time it sees
-// one, so on the shared request the video's upload would be stored with the
-// thumbnail's bytes.
-function thumbnailReq(req: PayloadRequest): PayloadRequest {
-  const isolated = isolateObjectProperty(req, ["file", "payloadUploadSizes", "context"]);
-  isolated.file = undefined;
-  isolated.payloadUploadSizes = undefined;
-  isolated.context = {};
-  return isolated;
-}
+// Thumbnails are saved from inside the item's save, on their own request
+// (lib/nested-upload-req.ts).
+const thumbnailReq = nestedUploadReq;
 
 // Creates a Backstage Thumbnail from a frame of the video.
 async function makeThumbnail(req: PayloadRequest, videoPath: string, duration: number | null, title: string) {

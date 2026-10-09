@@ -2486,22 +2486,26 @@ a.editor-overview__tile:focus-visible,
    the album's photos in her order, the first marked Cover, each with a
    drag handle (top left) and a menu (top right). Both controls sit on the
    photo and stay visible, so they work on touch too. */
-.album-photos {
+.album-photos,
+.album-videos {
   margin-bottom: var(--spacing-field, 24px);
 }
 
-.album-photos__head {
+.album-photos__head,
+.album-videos__head {
   display: flex;
   align-items: center;
   gap: 8px;
   margin-bottom: 4px;
 }
 
-.album-photos__title {
+.album-photos__title,
+.album-videos__title {
   font-weight: 600;
 }
 
-.album-photos__count {
+.album-photos__count,
+.album-videos__count {
   min-width: 24px;
   padding: 1px 8px;
   border-radius: 999px;
@@ -2510,13 +2514,15 @@ a.editor-overview__tile:focus-visible,
   text-align: center;
 }
 
-.album-photos__note {
+.album-photos__note,
+.album-videos__note {
   margin: 0 0 12px;
   color: var(--theme-elevation-600);
   font-size: 13px;
 }
 
-.album-photos__empty {
+.album-photos__empty,
+.album-videos__empty {
   margin: 0;
   padding: 18px 14px;
   border: 1px dashed var(--theme-elevation-250);
@@ -2524,7 +2530,8 @@ a.editor-overview__tile:focus-visible,
   color: var(--theme-elevation-600);
 }
 
-.album-photos__error {
+.album-photos__error,
+.album-videos__error {
   margin: 0 0 12px;
   padding: 10px 14px;
   border-radius: var(--style-radius-m, 4px);
@@ -2533,7 +2540,8 @@ a.editor-overview__tile:focus-visible,
   font-size: 14px;
 }
 
-.album-photos__grid {
+.album-photos__grid,
+.album-videos__grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
   gap: 10px;
@@ -2542,7 +2550,8 @@ a.editor-overview__tile:focus-visible,
   list-style: none;
 }
 
-.album-photos__tile {
+.album-photos__tile,
+.album-videos__tile {
   position: relative;
   aspect-ratio: 1;
   overflow: hidden;
@@ -2550,12 +2559,14 @@ a.editor-overview__tile:focus-visible,
   background: var(--theme-elevation-100);
 }
 
-.album-photos__tile--dragging {
+.album-photos__tile--dragging,
+.album-videos__tile--dragging {
   z-index: 2;
   box-shadow: 0 10px 24px rgba(0, 0, 0, 0.22), 0 0 0 2px var(--theme-elevation-800);
 }
 
-.album-photos__img {
+.album-photos__img,
+.album-videos__img {
   display: block;
   width: 100%;
   height: 100%;
@@ -2563,7 +2574,8 @@ a.editor-overview__tile:focus-visible,
   user-select: none;
 }
 
-.album-photos__img--missing {
+.album-photos__img--missing,
+.album-videos__img--missing {
   display: grid;
   place-items: center;
   color: var(--theme-elevation-600);
@@ -2586,7 +2598,9 @@ a.editor-overview__tile:focus-visible,
 /* Handle and menu button: 36px targets on a dark chip, readable on any
    photo in either theme. */
 .album-photos__handle,
-.album-photos .album-photos__menu-button {
+.album-videos__handle,
+.album-photos .album-photos__menu-button,
+.album-videos .album-videos__menu-button {
   display: grid;
   place-items: center;
   width: 36px;
@@ -2598,7 +2612,8 @@ a.editor-overview__tile:focus-visible,
   color: #fff;
 }
 
-.album-photos__handle {
+.album-photos__handle,
+.album-videos__handle {
   position: absolute;
   top: 6px;
   left: 6px;
@@ -2608,39 +2623,48 @@ a.editor-overview__tile:focus-visible,
   user-select: none;
 }
 
-.album-photos__handle::before {
+.album-photos__handle::before,
+.album-videos__handle::before {
   content: "\22EE\22EE";
   letter-spacing: -3px;
 }
 
-.album-photos__menu {
+.album-photos__menu,
+.album-videos__menu {
   position: absolute;
   top: 6px;
   right: 6px;
 }
 
-.album-photos .album-photos__menu-button svg {
+.album-photos .album-photos__menu-button svg,
+.album-videos .album-videos__menu-button svg {
   width: 20px;
   height: 20px;
 }
 
 .album-photos__handle:hover:not(:disabled),
-.album-photos .album-photos__menu-button:hover {
+.album-videos__handle:hover:not(:disabled),
+.album-photos .album-photos__menu-button:hover,
+.album-videos .album-videos__menu-button:hover {
   background: rgba(0, 0, 0, 0.8);
 }
 
 .album-photos__handle:focus-visible,
-.album-photos .album-photos__menu-button:focus-visible {
+.album-videos__handle:focus-visible,
+.album-photos .album-photos__menu-button:focus-visible,
+.album-videos .album-videos__menu-button:focus-visible {
   outline: 2px solid #fff;
   outline-offset: -4px;
 }
 
-.album-photos__handle:disabled {
+.album-photos__handle:disabled,
+.album-videos__handle:disabled {
   cursor: progress;
   opacity: 0.5;
 }
 
-.album-photos__danger {
+.album-photos__danger,
+.album-videos__danger {
   color: var(--theme-error-700, #8a1f1f);
 }
 
@@ -2652,17 +2676,20 @@ a.editor-overview__tile:focus-visible,
 /* Adding photos: the "Upload photos" button, the drop hint, the whole
    panel lit up while files are dragged over it, and one tile per file on
    its way in (a preview under a progress bar, or why it wasn't added). */
-.album-photos {
+.album-photos,
+.album-videos {
   border-radius: var(--style-radius-m, 6px);
   transition: box-shadow 0.15s, background-color 0.15s;
 }
 
-.album-photos--dropping {
+.album-photos--dropping,
+.album-videos--dropping {
   background: var(--theme-elevation-50);
   box-shadow: 0 0 0 8px var(--theme-elevation-50), 0 0 0 10px var(--theme-elevation-500);
 }
 
-.album-photos__actions {
+.album-photos__actions,
+.album-videos__actions {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -2670,33 +2697,39 @@ a.editor-overview__tile:focus-visible,
   margin-bottom: 12px;
 }
 
-.album-photos__file-input {
+.album-photos__file-input,
+.album-videos__file-input {
   display: none;
 }
 
-.album-photos__drop-hint {
+.album-photos__drop-hint,
+.album-videos__drop-hint {
   color: var(--theme-elevation-600);
   font-size: 13px;
 }
 
-.album-photos--dropping .album-photos__drop-hint {
+.album-photos--dropping .album-photos__drop-hint,
+.album-videos--dropping .album-videos__drop-hint {
   color: var(--theme-text);
   font-weight: 600;
 }
 
-.album-photos__upload {
+.album-photos__upload,
+.album-videos__upload {
   display: flex;
   align-items: flex-end;
   border: 1px dashed var(--theme-elevation-300);
 }
 
-.album-photos__img--pending {
+.album-photos__img--pending,
+.album-videos__img--pending {
   position: absolute;
   inset: 0;
   opacity: 0.45;
 }
 
-.album-photos__upload-info {
+.album-photos__upload-info,
+.album-videos__upload-info {
   position: relative;
   display: flex;
   flex-direction: column;
@@ -2707,18 +2740,21 @@ a.editor-overview__tile:focus-visible,
   font-size: 12px;
 }
 
-.album-photos__upload-name {
+.album-photos__upload-name,
+.album-videos__upload-name {
   overflow: hidden;
   font-weight: 600;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.album-photos__upload-status {
+.album-photos__upload-status,
+.album-videos__upload-status {
   color: var(--theme-elevation-700);
 }
 
-.album-photos__progress {
+.album-photos__progress,
+.album-videos__progress {
   display: block;
   height: 6px;
   overflow: hidden;
@@ -2726,7 +2762,8 @@ a.editor-overview__tile:focus-visible,
   background: var(--theme-elevation-150);
 }
 
-.album-photos__progress-bar {
+.album-photos__progress-bar,
+.album-videos__progress-bar {
   display: block;
   height: 100%;
   background: var(--theme-success-500, #2f8a4c);
@@ -2734,7 +2771,8 @@ a.editor-overview__tile:focus-visible,
 }
 
 /* Grows to fit the reason (the row grows with it) rather than clipping it. */
-.album-photos__upload--error {
+.album-photos__upload--error,
+.album-videos__upload--error {
   aspect-ratio: auto;
   min-height: 132px;
   align-items: stretch;
@@ -2742,21 +2780,25 @@ a.editor-overview__tile:focus-visible,
   background: var(--theme-error-50, #fdecec);
 }
 
-.album-photos__upload--error .album-photos__upload-info {
+.album-photos__upload--error .album-photos__upload-info,
+.album-videos__upload--error .album-videos__upload-info {
   justify-content: flex-start;
   background: none;
 }
 
-.album-photos__upload--error .album-photos__upload-name {
+.album-photos__upload--error .album-photos__upload-name,
+.album-videos__upload--error .album-videos__upload-name {
   white-space: normal;
   overflow-wrap: anywhere;
 }
 
-.album-photos__upload-error {
+.album-photos__upload-error,
+.album-videos__upload-error {
   color: var(--theme-error-700, #8a1f1f);
 }
 
-.album-photos__dismiss {
+.album-photos__dismiss,
+.album-videos__dismiss {
   align-self: flex-start;
   min-height: 32px;
   margin-top: auto;
@@ -2771,9 +2813,139 @@ a.editor-overview__tile:focus-visible,
 
 @media (prefers-reduced-motion: reduce) {
   .album-photos,
-  .album-photos__progress-bar {
+  .album-videos,
+  .album-photos__progress-bar,
+  .album-videos__progress-bar {
     transition: none;
   }
+}
+
+/* The album page's Videos panel (components/admin/AlbumVideos). It shares
+   the Photos panel's styles above (each .album-photos rule names its
+   .album-videos twin), and adds: wider 16:9 tiles with the poster, a play mark
+   and the length on it, the title under it (click to edit), and a warning
+   under a file that isn't set up for fast start. */
+.album-videos__grid {
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  align-items: start;
+}
+
+.album-videos__tile {
+  aspect-ratio: auto;
+  overflow: visible;
+  background: none;
+}
+
+.album-videos__frame {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border-radius: var(--style-radius-m, 6px);
+  background: var(--theme-elevation-100);
+}
+
+.album-videos__upload:not(.album-videos__upload--error) {
+  aspect-ratio: 16 / 9;
+}
+
+.album-videos__play {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.55);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.album-videos__play::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 54%;
+  border-style: solid;
+  border-width: 9px 0 9px 15px;
+  border-color: transparent transparent transparent #fff;
+  transform: translate(-50%, -50%);
+}
+
+.album-videos__duration {
+  position: absolute;
+  right: 6px;
+  bottom: 6px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.72);
+  color: #fff;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  pointer-events: none;
+}
+
+.album-videos__name {
+  display: block;
+  width: 100%;
+  min-height: 32px;
+  margin-top: 6px;
+  padding: 4px 2px;
+  border: none;
+  border-radius: 4px;
+  background: none;
+  color: var(--theme-text);
+  font: inherit;
+  font-weight: 600;
+  text-align: left;
+  cursor: text;
+}
+
+.album-videos__name:hover:not(:disabled) {
+  background: var(--theme-elevation-50);
+}
+
+.album-videos__untitled {
+  color: var(--theme-elevation-500);
+  font-weight: 400;
+}
+
+.album-videos__name-input {
+  display: block;
+  width: 100%;
+  min-height: 32px;
+  margin-top: 6px;
+  padding: 4px 8px;
+  border: 1px solid var(--theme-elevation-400);
+  border-radius: 4px;
+  background: var(--theme-input-bg, var(--theme-bg));
+  color: var(--theme-text);
+  font: inherit;
+}
+
+.album-videos__warning {
+  margin: 6px 0 0;
+  padding: 8px 10px;
+  border-radius: var(--style-radius-m, 4px);
+  background: var(--theme-warning-50, #fff6e0);
+  color: var(--theme-warning-800, #6b4a00);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.album-videos__trash-link {
+  margin: 10px 0 0;
+  font-size: 13px;
+}
+
+.album-videos__trash-link a {
+  color: var(--theme-elevation-600);
+}
+
+/* The poster picker (AlbumVideos/PosterPicker) reuses "Add existing
+   photos"'s drawer; a click picks straight away, so no numbered checks. */
+.poster-picker__grid {
+  margin-bottom: 16px;
 }
 
 /* "Add existing photos" (components/admin/AlbumPhotos/AddExistingPhotos):

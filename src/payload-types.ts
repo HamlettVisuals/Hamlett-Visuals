@@ -85,6 +85,8 @@ export interface Config {
     'instagram-tokens': InstagramToken;
     'instagram-posts': InstagramPost;
     'instagram-videos': InstagramVideo;
+    videos: Video;
+    'video-posters': VideoPoster;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -110,6 +112,8 @@ export interface Config {
     'instagram-tokens': InstagramTokensSelect<false> | InstagramTokensSelect<true>;
     'instagram-posts': InstagramPostsSelect<false> | InstagramPostsSelect<true>;
     'instagram-videos': InstagramVideosSelect<false> | InstagramVideosSelect<true>;
+    videos: VideosSelect<false> | VideosSelect<true>;
+    'video-posters': VideoPostersSelect<false> | VideoPostersSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -918,6 +922,70 @@ export interface InstagramVideo {
   focalY?: number | null;
 }
 /**
+ * Walkthroughs and highlight reels, each shown at the top of its album. Add them from the album's page.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "videos".
+ */
+export interface Video {
+  id: number;
+  /**
+   * Optional. Shown above the video, e.g. "Highlight reel".
+   */
+  title?: string | null;
+  event: number | Event;
+  poster?: (number | null) | Photo;
+  autoPoster?: (number | null) | VideoPoster;
+  duration?: number | null;
+  fastStart?: boolean | null;
+  albumOrder?: string | null;
+  prefix?: string | null;
+  updatedAt: string;
+  createdAt: string;
+  deletedAt?: string | null;
+  url?: string | null;
+  thumbnailURL?: string | null;
+  filename?: string | null;
+  mimeType?: string | null;
+  filesize?: number | null;
+  width?: number | null;
+  height?: number | null;
+  focalX?: number | null;
+  focalY?: number | null;
+}
+/**
+ * Posters made automatically from a frame of each album video.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "video-posters".
+ */
+export interface VideoPoster {
+  id: number;
+  video?: (number | null) | Video;
+  prefix?: string | null;
+  updatedAt: string;
+  createdAt: string;
+  url?: string | null;
+  thumbnailURL?: string | null;
+  filename?: string | null;
+  mimeType?: string | null;
+  filesize?: number | null;
+  width?: number | null;
+  height?: number | null;
+  focalX?: number | null;
+  focalY?: number | null;
+  sizes?: {
+    thumbnail?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+  };
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
@@ -1012,6 +1080,14 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'instagram-videos';
         value: number | InstagramVideo;
+      } | null)
+    | ({
+        relationTo: 'videos';
+        value: number | Video;
+      } | null)
+    | ({
+        relationTo: 'video-posters';
+        value: number | VideoPoster;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -1531,6 +1607,65 @@ export interface InstagramVideosSelect<T extends boolean = true> {
   height?: T;
   focalX?: T;
   focalY?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "videos_select".
+ */
+export interface VideosSelect<T extends boolean = true> {
+  title?: T;
+  event?: T;
+  poster?: T;
+  autoPoster?: T;
+  duration?: T;
+  fastStart?: T;
+  albumOrder?: T;
+  prefix?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  deletedAt?: T;
+  url?: T;
+  thumbnailURL?: T;
+  filename?: T;
+  mimeType?: T;
+  filesize?: T;
+  width?: T;
+  height?: T;
+  focalX?: T;
+  focalY?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "video-posters_select".
+ */
+export interface VideoPostersSelect<T extends boolean = true> {
+  video?: T;
+  prefix?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  url?: T;
+  thumbnailURL?: T;
+  filename?: T;
+  mimeType?: T;
+  filesize?: T;
+  width?: T;
+  height?: T;
+  focalX?: T;
+  focalY?: T;
+  sizes?:
+    | T
+    | {
+        thumbnail?:
+          | T
+          | {
+              url?: T;
+              width?: T;
+              height?: T;
+              mimeType?: T;
+              filesize?: T;
+              filename?: T;
+            };
+      };
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

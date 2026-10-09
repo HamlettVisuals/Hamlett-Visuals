@@ -10,13 +10,13 @@ type AlbumFields = Pick<GalleryEvent, "id" | "description" | "date"> & { title: 
 // One album row on a category page, following the Albums editor's unsaved
 // title, description and date in Live Preview, but only when it's the
 // album being edited (`?lpDoc=<id>`, see Events.ts livePreview.url and
-// lib/use-scoped-collection-live-preview.ts). The photos and slug always
-// come from the server; the row's `id` (its slug) is what the preview URL
+// lib/use-scoped-collection-live-preview.ts). The photos, videos and slug
+// always come from the server; the row's `id` (its slug) is what the preview URL
 // scrolls to.
 export default function LiveEventRow({
   event,
   ...rowProps
-}: { event: GalleryEvent } & Omit<EventRowProps, "name" | "slug" | "photos" | "description" | "date">) {
+}: { event: GalleryEvent } & Omit<EventRowProps, "name" | "slug" | "photos" | "videos" | "description" | "date">) {
   const { data } = useScopedCollectionLivePreview<AlbumFields>({
     initialData: {
       id: event.id,
@@ -36,6 +36,7 @@ export default function LiveEventRow({
       name={data.title}
       slug={event.slug}
       photos={event.photos}
+      videos={event.videos}
       description={data.description}
       date={data.date}
     />

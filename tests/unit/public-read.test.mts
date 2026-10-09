@@ -7,7 +7,7 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 import path from "node:path";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
-const { readPublished, readPublishedInShownCategory, studioOnlyField } = await import(
+const { readPublished, readPublishedInShownCategory, readVideoInShownAlbum, readPosterOfShownVideo, studioOnlyField } = await import(
   pathToFileURL(path.join(ROOT, "src", "access", "publicRead.ts")).href
 );
 
@@ -37,4 +37,22 @@ test("signed out, albums and packages also need their category shown", () => {
 
 test("studio-only fields are left out signed out", () => {
   assert.equal(studioOnlyField(signedOut), false);
+});
+
+test("signed out, album videos only in an album the site shows", () => {
+  assert.equal(readVideoInShownAlbum(signedIn), true);
+  const where = flat(readVideoInShownAlbum(signedOut));
+  assert.match(where, /"deletedAt":\{"exists":false\}/);
+  assert.match(where, /"event\.published":\{"equals":true\}/);
+  assert.match(where, /"event\.deletedAt":\{"exists":false\}/);
+  assert.match(where, /"event\.category\.published":\{"equals":true\}/);
+  assert.match(where, /"event\.category\.deletedAt":\{"exists":false\}/);
+});
+
+test("signed out, a video's automatic poster only when its video shows", () => {
+  assert.equal(readPosterOfShownVideo(signedIn), true);
+  const where = flat(readPosterOfShownVideo(signedOut));
+  assert.match(where, /"video\.deletedAt":\{"exists":false\}/);
+  assert.match(where, /"video\.event\.published":\{"equals":true\}/);
+  assert.match(where, /"video\.event\.category\.deletedAt":\{"exists":false\}/);
 });

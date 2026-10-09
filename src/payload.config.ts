@@ -47,6 +47,8 @@ import { InstagramConnections } from "#src/collections/InstagramConnections.ts";
 import { InstagramTokens } from "#src/collections/InstagramTokens.ts";
 import { InstagramPosts } from "#src/collections/InstagramPosts.ts";
 import { InstagramVideos } from "#src/collections/InstagramVideos.ts";
+import { Videos } from "#src/collections/Videos.ts";
+import { VideoPosters } from "#src/collections/VideoPosters.ts";
 
 import { HeaderNav } from "#src/globals/HeaderNav.ts";
 import { Hero } from "#src/globals/Hero.ts";
@@ -65,7 +67,8 @@ import { serverURL } from "#src/lib/server-url.ts";
 import { addCharacterCounters } from "#src/lib/character-counters.ts";
 import { hideInternalFieldsFromHistory } from "#src/lib/hide-internal-history.ts";
 import { revalidateCollectionsOnChange, revalidateGlobalsOnChange } from "#src/lib/revalidate-site.ts";
-import { MB, VIDEO_MAX_MB } from "#src/lib/backstage-limits.ts";
+import { ALBUM_VIDEO_MAX_MB, MB } from "#src/lib/album-video-limits.ts";
+import { uploadLinkLimits } from "#src/lib/upload-link-limits.ts";
 import { UPLOAD_FOLDERS } from "#src/lib/r2.ts";
 import { emailFrom } from "#src/lib/email-from.ts";
 
@@ -251,6 +254,8 @@ export default buildConfig({
     InstagramTokens,
     InstagramPosts,
     InstagramVideos,
+    Videos,
+    VideoPosters,
   ]))),
   globals: revalidateGlobalsOnChange(hideInternalFieldsFromHistory(addCharacterCounters([
     HeaderNav,
@@ -268,13 +273,14 @@ export default buildConfig({
     PrivacyPolicy,
     Terms,
   ]))),
-  // The largest file any upload may be: Backstage's video cap. For uploads
-  // sent straight from the browser to R2 (clientUploads) this size is also
-  // written into the signed upload link, so R2 itself refuses anything
-  // bigger before it's sent. Smaller per-collection caps are checked on save
-  // (lib/upload-limits.ts, and Backstage.ts for videos).
+  // The largest file any upload may be: an album video's 1GB cap. Uploads
+  // sent straight from the browser to R2 (clientUploads) get their own
+  // collection's cap in the signed upload link instead (uploadLinkLimits
+  // below), so R2 itself refuses anything bigger before it's sent; the
+  // caps are checked again on save (lib/upload-limits.ts, Backstage.ts,
+  // Videos.ts).
   upload: {
-    limits: { fileSize: VIDEO_MAX_MB * MB },
+    limits: { fileSize: ALBUM_VIDEO_MAX_MB * MB },
   },
   editor: lexicalEditor(),
   // Payload's own emails (forgot-password) go out through Resend, with the
@@ -336,12 +342,14 @@ export default buildConfig({
     // clientUploads: the studio's uploads go from the browser straight to
     // R2 through a short-lived signed link, rather than through the server,
     // whose request bodies are capped at ~4.5MB on Vercel. The link carries
-    // the file's exact size, capped at upload.limits.fileSize above, so R2
-    // itself refuses anything bigger; each collection's own, smaller cap is
-    // checked on save (lib/upload-limits.ts). Only a signed-in studio user
+    // the file's exact size, capped at its collection's own limit
+    // (uploadLinkLimits below), so R2 itself refuses anything bigger; the
+    // cap is checked again on save (lib/upload-limits.ts). Only a signed-in studio user
     // can get a link. Payload then reads the file back from R2 to check what
-    // it really is and to make the resized versions, as for any upload. The
-    // bucket's CORS rules must allow this site's origin to PUT.
+    // it really is and to make the resized versions, as for any upload
+    // (album videos excepted: too big for that, they're checked in place,
+    // see Videos.ts). The bucket's CORS rules must allow this site's origin
+    // to PUT.
     //
     // The public testimonial form doesn't use these links: it has its own,
     // token-checked ones (lib/testimonial-uploads.ts).
@@ -371,6 +379,14 @@ export default buildConfig({
           prefix: UPLOAD_FOLDERS["instagram-videos"],
           signedDownloads: { shouldUseSignedURL: () => true },
         },
+        // Album videos (Videos.ts), played straight from R2 through a signed
+        // link, so seeking in a 1GB file never goes through the server.
+        videos: {
+          prefix: UPLOAD_FOLDERS.videos,
+          signedDownloads: { shouldUseSignedURL: () => true },
+        },
+        // Their automatic posters (VideoPosters.ts), made on the server.
+        "video-posters": { prefix: UPLOAD_FOLDERS["video-posters"] },
       },
       clientUploads: {
         access: ({ req }) => Boolean(req.user),
@@ -386,5 +402,9 @@ export default buildConfig({
         },
       },
     }),
+    // Each collection's own size cap in its signed upload links, not just
+    // the largest one (lib/upload-link-limits.ts). After s3Storage(), whose
+    // endpoint it wraps.
+    uploadLinkLimits,
   ],
 });

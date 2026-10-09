@@ -1,9 +1,9 @@
-// File size caps for the studio's uploads, checked when a file is saved.
-// Admin uploads go straight from the browser to R2 (clientUploads in
-// payload.config.ts), and the signed upload link already stops anything
-// over the global cap there (upload.limits.fileSize, Backstage's 200MB
-// video cap). These are the smaller, per-collection caps on top of it.
-// Backstage keeps its own, video-aware checks (backstage-limits.ts).
+// File size caps for the studio's uploads. Admin uploads go straight from
+// the browser to R2 (clientUploads in payload.config.ts); each collection's
+// cap is written into its signed upload link (lib/upload-link-limits.ts),
+// so R2 refuses anything bigger, and checked again when the file is saved.
+// Backstage keeps its own, video-aware checks (backstage-limits.ts), and
+// album videos theirs (album-video-limits.ts).
 //
 // No imports, so the public testimonial form (client side) and
 // backstage-limits.ts can use it too; part of payload.config.ts's module

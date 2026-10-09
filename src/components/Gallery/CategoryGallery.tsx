@@ -1,7 +1,7 @@
 "use client";
 
 import { Suspense, useState } from "react";
-import type { GalleryEvent } from "./types";
+import type { GalleryEvent, GalleryVideo } from "./types";
 import LiveEventRow from "./LiveEventRow";
 import CategoryLightbox from "./CategoryLightbox";
 import GalleryEmptyState from "./GalleryEmptyState";
@@ -19,13 +19,36 @@ type CategoryGalleryProps = {
 /** Photo count used to demo the sparse-grid CSS via ?galleryState=sparse. */
 const SPARSE_PREVIEW_PHOTO_COUNT = 2;
 
+/**
+ * ?galleryState=video (development only): a sample video on the first
+ * album, with its first photo as the poster, to see the player without
+ * uploading one. Nothing serves DEV_SAMPLE_VIDEO_URL; the e2e test
+ * (tests/e2e/album-videos.test.cjs) answers it with a clip of its own.
+ */
+const DEV_SAMPLE_VIDEO_URL = "/dev-sample-video.mp4";
+function withSampleVideo(events: GalleryEvent[]): GalleryEvent[] {
+  if (!events.length) return events;
+  const [first, ...rest] = events;
+  const sample: GalleryVideo = {
+    id: -1,
+    url: DEV_SAMPLE_VIDEO_URL,
+    title: "Highlight reel (sample)",
+    width: 1280,
+    height: 720,
+    poster: first.photos[0] ?? null,
+  };
+  return [{ ...first, videos: [sample, ...first.videos] }, ...rest];
+}
+
 export default function CategoryGallery({
   category,
-  events,
+  events: savedEvents,
 }: CategoryGalleryProps) {
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxStartIndex, setLightboxStartIndex] = useState(0);
   const [devState, setDevState] = useState<DevGalleryState>(null);
+  const events = devState === "video" ? withSampleVideo(savedEvents) : savedEvents;
+  const showGallery = devState === null || devState === "video";
 
   function handlePhotoClick(eventIndex: number, photoIndex: number) {
     const precedingCount = events
@@ -37,6 +60,7 @@ export default function CategoryGallery({
   }
 
   const totalPhotos = events.reduce((sum, event) => sum + event.photos.length, 0);
+  const totalVideos = events.reduce((sum, event) => sum + event.videos.length, 0);
 
   return (
     <>
@@ -60,9 +84,9 @@ export default function CategoryGallery({
         />
       )}
 
-      {devState === null && totalPhotos === 0 && <GalleryEmptyState />}
+      {showGallery && totalPhotos + totalVideos === 0 && <GalleryEmptyState />}
 
-      {devState === null && totalPhotos > 0 && (
+      {showGallery && totalPhotos + totalVideos > 0 && (
         <>
           <div
             className="flex flex-col gap-8"

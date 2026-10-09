@@ -31,7 +31,7 @@ import { comparePhotos } from "@/lib/manual-order";
 import { RASTER_IMAGE_MIME_TYPES } from "@/lib/raster-image-types";
 import EditPhotoDrawer from "@/components/admin/EditPhotoDrawer";
 import AddExistingPhotos from "./AddExistingPhotos";
-import { useUploads, type UploadItem } from "./useUploads";
+import { PHOTO_UPLOADS, useUploads, type UploadItem } from "./useUploads";
 
 // The album's photos, inside the album's edit form (a `ui` field,
 // collections/Events.ts, so Live Preview keeps working): a grid in her
@@ -207,10 +207,11 @@ export default function AlbumPhotos() {
   }, [albumId, load]);
 
   const uploads = useUploads({
+    steps: PHOTO_UPLOADS,
     apiBase,
     albumId,
     alt: `Photo from ${typeof title === "string" && title.trim() ? title.trim() : "this album"}`,
-    onPhotoAdded: async (photoId) => {
+    onAdded: async (photoId) => {
       await load();
       refreshPreview(photoId);
     },
@@ -603,47 +604,59 @@ function PhotoTile({
 }
 
 // A file on its way in: its preview, a progress bar while it goes to R2,
-// then "Saving…" while the photo is made; or why it wasn't added.
-function UploadTile({ item, onDismiss }: { item: UploadItem; onDismiss: () => void }) {
+// then "Saving…" (or `savingLabel`) while the server saves it; or why it
+// wasn't added. Videos' uploads use it too (AlbumVideos), with their own
+// class names (`block`).
+export function UploadTile({
+  item,
+  savingLabel = "Saving…",
+  block = "album-photos",
+  onDismiss,
+}: {
+  item: UploadItem;
+  savingLabel?: string;
+  block?: "album-photos" | "album-videos";
+  onDismiss: () => void;
+}) {
   const [previewFailed, setPreviewFailed] = useState(false);
   const percent = Math.round(item.progress * 100);
   const status = {
     waiting: "Waiting…",
     uploading: `Uploading ${percent}%`,
-    saving: "Saving…",
+    saving: savingLabel,
     error: "Not added",
   }[item.status];
 
   return (
-    <li className={`album-photos__tile album-photos__upload${item.status === "error" ? " album-photos__upload--error" : ""}`}>
+    <li className={`${block}__tile ${block}__upload${item.status === "error" ? ` ${block}__upload--error` : ""}`}>
       {item.preview && !previewFailed && item.status !== "error" && (
         // eslint-disable-next-line @next/next/no-img-element -- local preview of the picked file
-        <img className="album-photos__img album-photos__img--pending" src={item.preview} alt="" onError={() => setPreviewFailed(true)} />
+        <img className={`${block}__img ${block}__img--pending`} src={item.preview} alt="" onError={() => setPreviewFailed(true)} />
       )}
-      <div className="album-photos__upload-info">
-        <span className="album-photos__upload-name" title={item.name}>
+      <div className={`${block}__upload-info`}>
+        <span className={`${block}__upload-name`} title={item.name}>
           {item.name}
         </span>
-        <span className="album-photos__upload-status" aria-live="polite">
+        <span className={`${block}__upload-status`} aria-live="polite">
           {status}
         </span>
         {item.status === "error" ? (
           <>
-            <span className="album-photos__upload-error">{item.error}</span>
-            <button type="button" className="album-photos__dismiss" onClick={onDismiss}>
+            <span className={`${block}__upload-error`}>{item.error}</span>
+            <button type="button" className={`${block}__dismiss`} onClick={onDismiss}>
               Dismiss
             </button>
           </>
         ) : (
           <span
-            className="album-photos__progress"
+            className={`${block}__progress`}
             role="progressbar"
             aria-label={`Uploading ${item.name}`}
             aria-valuemin={0}
             aria-valuemax={100}
             aria-valuenow={percent}
           >
-            <span className="album-photos__progress-bar" style={{ width: `${percent}%` }} />
+            <span className={`${block}__progress-bar`} style={{ width: `${percent}%` }} />
           </span>
         )}
       </div>

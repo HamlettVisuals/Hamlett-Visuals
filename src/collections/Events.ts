@@ -98,6 +98,21 @@ const releasePhotos: CollectionBeforeDeleteHook = async ({ id, req }) => {
   });
 };
 
+// A video belongs to exactly one album, so an album deleted permanently
+// takes its videos with it (and their files and automatic posters, see
+// Videos.ts), including any in the Videos Trash. Moving the album to the
+// Trash keeps them; the site and the public API hide them with it
+// (access/publicRead.ts).
+const deleteVideos: CollectionBeforeDeleteHook = async ({ id, req }) => {
+  await req.payload.delete({
+    collection: "videos",
+    where: { event: { equals: id } },
+    trash: true,
+    overrideAccess: true,
+    req,
+  });
+};
+
 // An album is a single shoot within a category (e.g. the "Priya & Daniel"
 // wedding within Weddings). The collection and its tables are still called
 // `events`; only the labels say "Album". See /portfolio/[category]/page.tsx
@@ -182,7 +197,7 @@ export const Events: CollectionConfig = {
   hooks: {
     beforeChange: [setSortDate, setAlbumOrder],
     afterChange: [moveTestimonials],
-    beforeDelete: [releasePhotos],
+    beforeDelete: [releasePhotos, deleteVideos],
   },
   endpoints: [
     {
@@ -314,6 +329,20 @@ export const Events: CollectionConfig = {
       admin: {
         description: "Optional. The day of the shoot; its month and year show next to the album's title.",
         date: { pickerAppearance: "dayOnly", displayFormat: "d MMM yyyy" },
+      },
+    },
+    {
+      // The album's videos, in her order, shown above its photos on the
+      // site: upload, reorder, title and poster. Each change saves straight
+      // away, like the photos below. Not stored. See
+      // components/admin/AlbumVideos.
+      name: "videos",
+      type: "ui",
+      admin: {
+        disableListColumn: true,
+        components: {
+          Field: "/components/admin/AlbumVideos#default",
+        },
       },
     },
     {

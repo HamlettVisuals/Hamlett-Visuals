@@ -35,6 +35,23 @@ export const readPublished: Access = signedOutOnly({ and: [published, notTrashed
 /** Published, not in the Trash, and in a category that's shown too. */
 export const readPublishedInShownCategory: Access = signedOutOnly({ and: [published, notTrashed, categoryShown] });
 
+// An album the site shows, reached through `path` (e.g. "event."): the
+// same rule as the album's own, readPublishedInShownCategory.
+const albumShown = (path: string): Where[] => [
+  { [`${path}published`]: { equals: true } },
+  { [`${path}deletedAt`]: { exists: false } },
+  { [`${path}category.published`]: { equals: true } },
+  { [`${path}category.deletedAt`]: { exists: false } },
+];
+
+/** Album videos: not in the Trash, in an album the site shows. Records and files alike. */
+export const readVideoInShownAlbum: Access = signedOutOnly({ and: [notTrashed, ...albumShown("event.")] });
+
+/** A video's automatic poster: its video is readable signed out. */
+export const readPosterOfShownVideo: Access = signedOutOnly({
+  and: [{ "video.deletedAt": { exists: false } }, ...albumShown("video.event.")],
+});
+
 /**
  * Instagram posts: signed out, the mock ones (lib/instagram-connection.ts)
  * only where mock posts are allowed (local dev; never production). The

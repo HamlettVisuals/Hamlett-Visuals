@@ -28,7 +28,7 @@ function ffmpegPath(): string {
   return resolved;
 }
 
-function runFfmpeg(args: string[]) {
+export function runFfmpeg(args: string[]) {
   return new Promise<{ stdout: Buffer; stderr: string; failed: boolean }>((resolve) => {
     execFile(
       ffmpegPath(),
@@ -50,13 +50,17 @@ export async function probeDuration(filePath: string): Promise<number | null> {
   return Number(match[1]) * 3600 + Number(match[2]) * 60 + Number(match[3]);
 }
 
-// A JPEG of one frame, at most 1080px on its long side. Taken a second in
-// (or a tenth of the way into a very short clip) so it isn't the black or
-// half-faded first frame most clips open on. Falls back to the first frame
+// A JPEG of one frame, at most `maxSide` px on its long side (1080 unless
+// asked). Taken a second in (or a tenth of the way into a very short clip)
+// so it isn't the black or half-faded first frame most clips open on. Falls back to the first frame
 // if seeking fails. ffmpeg applies the phone's rotation flag itself.
-export async function extractFrame(filePath: string, durationSeconds: number | null): Promise<Buffer | null> {
+export async function extractFrame(
+  filePath: string,
+  durationSeconds: number | null,
+  maxSide = 1080,
+): Promise<Buffer | null> {
   const at = durationSeconds && durationSeconds < 10 ? durationSeconds / 10 : 1;
-  const scale = "scale='if(gt(iw,ih),min(1080,iw),-2)':'if(gt(iw,ih),-2,min(1080,ih))'";
+  const scale = `scale='if(gt(iw,ih),min(${maxSide},iw),-2)':'if(gt(iw,ih),-2,min(${maxSide},ih))'`;
   for (const seek of [at, 0]) {
     const { stdout, failed } = await runFfmpeg([
       "-hide_banner",

@@ -11,6 +11,7 @@ import * as migration_20261005_234930_inquiry_time_and_instagram from './2026100
 import * as migration_20261006_223744_instagram_section from './20261006_223744_instagram_section';
 import * as migration_20261008_232139_instagram_videos from './20261008_232139_instagram_videos';
 import * as migration_20261008_234515_legal_pages from './20261008_234515_legal_pages';
+import * as migration_20261009_181451_album_videos from './20261009_181451_album_videos';
 
 export const migrations = [
   {
@@ -76,6 +77,11 @@ export const migrations = [
   {
     up: migration_20261008_234515_legal_pages.up,
     down: migration_20261008_234515_legal_pages.down,
-    name: '20261008_234515_legal_pages'
+    name: '20261008_234515_legal_pages',
+  },
+  {
+    up: migration_20261009_181451_album_videos.up,
+    down: migration_20261009_181451_album_videos.down,
+    name: '20261009_181451_album_videos'
   },
 ];

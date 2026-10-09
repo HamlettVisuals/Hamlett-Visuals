@@ -14,4 +14,6 @@ export const UPLOAD_FOLDERS = {
   "backstage-thumbnails": "backstage-thumbnails",
   "instagram-posts": "instagram",
   "instagram-videos": "instagram-videos",
+  videos: "videos",
+  "video-posters": "video-posters",
 } as const;
